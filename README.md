@@ -12,7 +12,7 @@ public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQuer
     public class CoreBuildingController : ODataController
     {
 
-		private readonly IMapper _mapper;
+	private readonly IMapper _mapper;
         public CoreBuildingController(MyDbContext context, IMapper mapper)
         {
             Context = context;
