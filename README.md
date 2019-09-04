@@ -16,7 +16,7 @@ public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQuer
         public CoreBuildingController(MyDbContext context, IMapper mapper)
         {
             Context = context;
-			_mapper = mapper;
+            _mapper = mapper;
         }
 
         MyDbContext Context { get; set; }
