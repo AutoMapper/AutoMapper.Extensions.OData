@@ -31,9 +31,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D2A2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{049EE7D1-4ED4-46F4-945B-709D00C48807}"
 	ProjectSection(SolutionItems) = preProject
-		..\AutoMapper.Extensions.ExpressionMapping\appveyor.yml = ..\AutoMapper.Extensions.ExpressionMapping\appveyor.yml
-		..\AutoMapper.Extensions.ExpressionMapping\Build.ps1 = ..\AutoMapper.Extensions.ExpressionMapping\Build.ps1
-		..\AutoMapper.Extensions.ExpressionMapping\Directory.Build.props = ..\AutoMapper.Extensions.ExpressionMapping\Directory.Build.props
+		appveyor.yml = appveyor.yml
+		Build.ps1 = Build.ps1
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Global
