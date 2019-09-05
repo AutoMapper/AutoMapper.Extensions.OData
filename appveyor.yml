@@ -16,21 +16,3 @@ nuget:
 build_script:
 - ps: .\Build.ps1
 test: off
-artifacts:
-- path: .\artifacts\**\*.nupkg
-  name: NuGet
-deploy:
-- provider: NuGet
-  server: https://www.myget.org/F/automapperdev/api/v2/package
-  api_key:
-    secure: zKeQZmIv9PaozHQRJmrlRHN+jMCI64Uvzmb/vwePdXFR5CUNEHalnZdOCg0vrh8t
-  skip_symbols: true
-  on:
-    branch: master
-- provider: NuGet
-  name: production
-  skip_symbols: true
-  api_key:
-    secure: t3blEIQiDIYjjWhOSTTtrcAnzJkmSi+0zYPxC1v4RDzm6oI/gIpD6ZtrOGsYu2jE
-  on:
-    appveyor_repo_tag: true
