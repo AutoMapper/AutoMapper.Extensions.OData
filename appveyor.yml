@@ -16,11 +16,14 @@ nuget:
 build_script:
 - ps: .\Build.ps1
 test: off
+artifacts:
+- path: .\artifacts\**\*.nupkg
+  name: NuGet
 deploy:
 - provider: NuGet
   server: https://www.myget.org/F/automapperdev/api/v2/package
   api_key:
     secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
+  skip_symbols: true
   on:
     branch: master
-    skip_symbols: true
