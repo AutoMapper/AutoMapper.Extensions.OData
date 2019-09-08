@@ -17,7 +17,7 @@ build_script:
 - ps: .\Build.ps1
 test: off
 artifacts:
-- path: .\artifacts\**\*.nupkg
+- path: C:\projects\artifacts\*.nupkg
   name: NuGet
 deploy:
 - provider: NuGet
@@ -32,4 +32,4 @@ deploy:
     secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
   skip_symbols: true
   on:
-    branch: master
+    appveyor_repo_tag: true
