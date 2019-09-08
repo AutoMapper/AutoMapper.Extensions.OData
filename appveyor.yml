@@ -21,17 +21,9 @@ artifacts:
   name: NuGet
 deploy:
 - provider: NuGet
-  server: https://www.myget.org/F/automapperdev/api/v2/package
   api_key:
     secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
   skip_symbols: true
   artifact: '.\artifacts\**\*.nupkg'
   on:
     branch: master
-- provider: NuGet
-  api_key:
-    secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
-  skip_symbols: true
-  artifact: '.\artifacts\**\*.nupkg'
-  on:
-    appveyor_repo_tag: true
