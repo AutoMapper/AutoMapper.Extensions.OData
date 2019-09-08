@@ -17,7 +17,7 @@ build_script:
 - ps: .\Build.ps1
 test: off
 artifacts:
-- path: %APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg
+- path: '%APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg'
   name: NuGet
 deploy:
 - provider: NuGet
@@ -25,13 +25,13 @@ deploy:
   api_key:
     secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
   skip_symbols: true
-  artifact: %APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg
+  artifact: '%APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg'
   on:
     branch: master
 - provider: NuGet
   api_key:
     secure: B0KEVpgWqWxTGf5v5vMjv4Hlu1LWPDNp7b+EEeXrHAkZplGopfYql/09u+CwB1GA
   skip_symbols: true
-  artifact: %APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg
+  artifact: '%APPVEYOR_BUILD_FOLDER%\artifacts\**\*.nupkg'
   on:
     appveyor_repo_tag: true
