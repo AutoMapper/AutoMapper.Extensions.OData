@@ -44,7 +44,7 @@ try {
     Pop-Location
 }
 
-exec { & dotnet pack .\AutoMapper.AspNetCore.OData.EFCore\AutoMapper.AspNetCore.OData.EFCore.csproj -c Release -o ..\..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
-exec { & dotnet pack .\AutoMapper.AspNetCore.OData.EF6\AutoMapper.AspNetCore.OData.EF6.csproj -c Release -o ..\..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
-exec { & dotnet pack .\AutoMapper.AspNet.OData.EF6\AutoMapper.AspNet.OData.EF6.csproj -c Release -o ..\..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
+exec { & dotnet pack .\AutoMapper.AspNetCore.OData.EFCore\AutoMapper.AspNetCore.OData.EFCore.csproj -c Release -o ..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
+exec { & dotnet pack .\AutoMapper.AspNetCore.OData.EF6\AutoMapper.AspNetCore.OData.EF6.csproj -c Release -o ..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
+exec { & dotnet pack .\AutoMapper.AspNet.OData.EF6\AutoMapper.AspNet.OData.EF6.csproj -c Release -o ..\artifacts --include-symbols --no-build --no-restore $versionSuffix }
 
