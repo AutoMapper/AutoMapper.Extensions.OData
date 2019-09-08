@@ -18,6 +18,9 @@ namespace WebAPI.AspNet.OData.EF6.Mappings
                 .ForMember(d => d.Builder, o => o.MapFrom(s => s.Builder))
                 .ForMember(d => d.Tenant, o => o.MapFrom(s => s.Mandator))
                 .ForAllOtherMembers(o => o.Ignore());
+
+            CreateMap<TBuilder, OpsBuilder>();
+            CreateMap<TCity, OpsCity>();
         }
     }
 }
