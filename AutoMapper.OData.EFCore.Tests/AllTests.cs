@@ -42,7 +42,8 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         options.UseInMemoryDatabase("MyDbContext");
                         options.UseInternalServiceProvider(new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider());
-                    }
+                    },
+                    ServiceLifetime.Transient
                 )
                 .AddSingleton<AutoMapper.IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(AllTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService))

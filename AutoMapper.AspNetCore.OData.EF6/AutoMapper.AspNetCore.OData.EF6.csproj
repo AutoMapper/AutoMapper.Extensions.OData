@@ -4,7 +4,7 @@
     <TargetFramework>net461</TargetFramework>
     <RootNamespace>AutoMapper.AspNet.OData</RootNamespace>
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
-    <PackageVersion>1.0.0-preview01</PackageVersion>
+    <PackageVersion>1.0.0-preview02</PackageVersion>
     <Authors>BlaiseD</Authors>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
