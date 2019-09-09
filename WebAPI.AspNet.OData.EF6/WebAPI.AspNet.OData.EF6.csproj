@@ -46,8 +46,11 @@
     <Reference Include="AutoMapper, Version=9.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
+    <Reference Include="AutoMapper.AspNet.OData.EF6, Version=1.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.1.0.0-preview06\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
+    </Reference>
     <Reference Include="AutoMapper.Extensions.ExpressionMapping, Version=3.0.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.Extensions.ExpressionMapping.3.0.2-preview02\lib\net461\AutoMapper.Extensions.ExpressionMapping.dll</HintPath>
+      <HintPath>..\packages\AutoMapper.Extensions.ExpressionMapping.3.0.2\lib\net461\AutoMapper.Extensions.ExpressionMapping.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
@@ -172,10 +175,6 @@
     <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AutoMapper.AspNet.OData.EF6\AutoMapper.AspNet.OData.EF6.csproj">
-      <Project>{4073c9f5-5226-4cf3-91d2-9f695d922268}</Project>
-      <Name>AutoMapper.AspNet.OData.EF6</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DAL\DAL.csproj">
       <Project>{d926a5ac-b4dc-47a3-b302-b3df2a38e5d1}</Project>
       <Name>DAL</Name>
