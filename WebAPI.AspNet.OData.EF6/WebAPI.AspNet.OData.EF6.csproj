@@ -47,7 +47,7 @@
       <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper.AspNet.OData.EF6, Version=1.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.1.0.0-preview06\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
+      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.1.0.0\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper.Extensions.ExpressionMapping, Version=3.0.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.Extensions.ExpressionMapping.3.0.2\lib\net461\AutoMapper.Extensions.ExpressionMapping.dll</HintPath>
@@ -179,9 +179,9 @@
       <Project>{d926a5ac-b4dc-47a3-b302-b3df2a38e5d1}</Project>
       <Name>DAL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Domain.OData\Domain.OData.csproj">
-      <Project>{0df413a6-5334-4999-b368-126a6e91f922}</Project>
-      <Name>Domain.OData</Name>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{019fde90-72d1-4445-b88e-15754623e4e7}</Project>
+      <Name>Domain</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
