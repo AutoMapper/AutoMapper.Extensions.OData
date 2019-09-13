@@ -223,6 +223,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
+                    null,
                     HandleNullPropagationOption.False
                 );
             }
