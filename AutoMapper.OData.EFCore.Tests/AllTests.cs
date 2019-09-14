@@ -204,7 +204,34 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query) where TModel : class where TData : class
+        [Fact]
+        public async void Building_with_parameters_are_mapped()
+        {
+            string parameterValue = Guid.NewGuid().ToString();
+            var parameters = new Dictionary<string, object>
+            {
+                { "parameter", parameterValue}
+            };
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding", parameters));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Same(parameterValue, collection.First().Parameter);
+            }
+        }
+
+        [Fact]
+        public async void Building_without_parameters_arent_mapped()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Same("unknown", collection.First().Parameter);
+            }
+        }
+
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IDictionary<string, object> parameters = null) where TModel : class where TData : class
         {
             return await DoGet
             (
@@ -223,7 +250,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    null,
+                    parameters,
                     HandleNullPropagationOption.False
                 );
             }
