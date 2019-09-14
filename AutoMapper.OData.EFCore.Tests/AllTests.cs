@@ -212,7 +212,16 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 { "parameter", parameterValue}
             };
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding", parameters));
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding",
+                    opts => parameters.Keys
+                            .ToList()
+                            .ForEach(key => opts.Items[key] = parameters[key])
+                )
+            );
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -231,7 +240,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IDictionary<string, object> parameters = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, Action<IMappingOperationOptions<IEnumerable<TData>, IEnumerable<TModel>>> opts = null) where TModel : class where TData : class
         {
             return await DoGet
             (
@@ -250,8 +259,8 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    parameters,
-                    HandleNullPropagationOption.False
+                    HandleNullPropagationOption.False,
+                    opts
                 );
             }
         }
