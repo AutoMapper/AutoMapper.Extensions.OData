@@ -1,4 +1,5 @@
 ﻿using AutoMapper.AspNet.OData;
+using AutoMapper.OData.EFCore.Tests.Mappings;
 using DAL.EFCore;
 using Domain.OData;
 using Microsoft.AspNet.OData;
@@ -48,7 +49,8 @@ namespace AutoMapper.OData.EFCore.Tests
                 .AddSingleton<AutoMapper.IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(AllTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder(sp))
-                .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
+                .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()))
+                ;
 
             serviceProvider = services.BuildServiceProvider();
 
@@ -240,6 +242,42 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
+        [Fact]
+        public async void Building_with_parameters_are_mapped_queryable()
+        {
+            string parameterValue = Guid.NewGuid().ToString();
+            var parameters = new Dictionary<string, object>
+            {
+                { "parameter", parameterValue}
+            };
+            Test
+            (
+                await GetQuery<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding",
+                    opts => parameters.Keys
+                            .ToList()
+                            .ForEach(key => opts.Items[key] = parameters[key])
+                )
+            );
+
+            void Test(IQueryable<CoreBuilding> collection)
+            {
+                Assert.Same(parameterValue, collection.First().Parameter);
+            }
+        }
+
+        [Fact]
+        public async void Building_without_parameters_arent_mapped_queryable()
+        {
+            Test(await GetQuery<CoreBuilding, TBuilding>("/corebuilding"));
+
+            void Test(IQueryable<CoreBuilding> collection)
+            {
+                Assert.Same("unknown", collection.First().Parameter);
+            }
+        }
+
         private async Task<ICollection<TModel>> Get<TModel, TData>(string query, Action<IMappingOperationOptions<IEnumerable<TData>, IEnumerable<TModel>>> opts = null) where TModel : class where TData : class
         {
             return await DoGet
@@ -251,6 +289,31 @@ namespace AutoMapper.OData.EFCore.Tests
             async Task<ICollection<TModel>> DoGet(IMapper mapper, MyDbContext context)
             {
                 return await context.Set<TData>().GetAsync
+                (
+                    mapper,
+                    ODataHelpers.GetODataQueryOptions<TModel>
+                    (
+                        query,
+                        serviceProvider,
+                        serviceProvider.GetRequiredService<IRouteBuilder>()
+                    ),
+                    HandleNullPropagationOption.False,
+                    opts
+                );
+            }
+        }
+
+        private async Task<IQueryable<TModel>> GetQuery<TModel, TData>(string query, Action<IMappingOperationOptions<IEnumerable<TData>, IEnumerable<TModel>>> opts = null) where TModel : class where TData : class
+        {
+            return await DoGet
+            (
+                serviceProvider.GetRequiredService<IMapper>(),
+                serviceProvider.GetRequiredService<MyDbContext>()
+            );
+
+            async Task<IQueryable<TModel>> DoGet(IMapper mapper, MyDbContext context)
+            {
+                return await context.Set<TData>().GetQueryAsync
                 (
                     mapper,
                     ODataHelpers.GetODataQueryOptions<TModel>
