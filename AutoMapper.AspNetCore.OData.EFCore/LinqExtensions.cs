@@ -67,19 +67,6 @@ namespace AutoMapper.AspNet.OData
                 );
             }
 
-            //IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
-            //queryable = options.OrderBy.ApplyTo(queryable, new ODataQuerySettings());
-            //MethodCallExpression mce = (MethodCallExpression)queryable.Expression;
-
-            //mce = Expression.Call(typeof(Queryable), mce.Method.Name, new Type[] { typeof(T), mce.Arguments[1].GetReturnType() }, expression, mce.Arguments[1]);
-
-            //if (options.Skip != null)
-            //    mce = Expression.Call(typeof(Queryable), "Skip", new[] { typeof(T) }, mce, Expression.Constant(options.Skip.Value));
-            //if (options.Top != null)
-            //    mce = Expression.Call(typeof(Queryable), "Take", new[] { typeof(T) }, mce, Expression.Constant(options.Top.Value));
-
-            //return mce;
-
             return options.OrderBy.OrderByNodes.Aggregate(null, (MethodCallExpression mce, OrderByNode orderByNode) =>
             {
                 OrderByPropertyNode propertyNode = (OrderByPropertyNode)orderByNode;
