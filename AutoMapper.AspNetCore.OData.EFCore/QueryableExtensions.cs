@@ -41,7 +41,7 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
 
-            ICollection<TModel> collection = await query.GetAsync(mapper, filter, queryableExpression, includeExpressions);
+            ICollection<TModel> collection = await query.GetAsync(mapper, filter, queryableExpression, includeExpressions, options);
 
             return collection;
         }
@@ -53,7 +53,7 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
 
-            return await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions);
+            return await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions, options);
         }
 
         /// <summary>
@@ -83,11 +83,13 @@ namespace AutoMapper.AspNet.OData
         /// <param name="filter"></param>
         /// <param name="queryFunc"></param>
         /// <param name="includeProperties"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            ODataQueryOptions<TModel> options = null)
         {
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
@@ -96,6 +98,8 @@ namespace AutoMapper.AspNet.OData
 
             if (filter != null)
                 query = query.Where(f);
+
+            options?.AddCountOptionsResult(query);
 
             if (includes != null)
                 query = includes.Select(i => i.Compile()).Aggregate(query, (q, next) => q = next(q));
@@ -117,11 +121,13 @@ namespace AutoMapper.AspNet.OData
         /// <param name="filter"></param>
         /// <param name="queryFunc"></param>
         /// <param name="includeProperties"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            ODataQueryOptions<TModel> options = null)
         {
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
@@ -130,6 +136,8 @@ namespace AutoMapper.AspNet.OData
 
             if (filter != null)
                 query = query.Where(f);
+
+            options?.AddCountOptionsResult(query);
 
             if (includes != null)
                 query = includes.Select(i => i.Compile()).Aggregate(query, (q, next) => q = next(q));
