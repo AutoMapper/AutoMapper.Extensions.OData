@@ -41,9 +41,7 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
 
-            ICollection<TModel> collection = await query.GetAsync(mapper, filter, queryableExpression, includeExpressions, options);
-
-            return collection;
+            return await query.GetAsync(mapper, filter, queryableExpression, includeExpressions, options);
         }
 
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
