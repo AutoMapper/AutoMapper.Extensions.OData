@@ -22,7 +22,6 @@ public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQuer
         MyDbContext Context { get; set; }
 
         [HttpGet]
-        [EnableQuery(MaxExpansionDepth = 5)]
         public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
         {
             return Ok(await Context.BuildingSet.GetAsync(_mapper, options));
