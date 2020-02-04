@@ -151,7 +151,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_filter_eq_and_order_by()
+        public async void Building_expand_Builder_Tenant_filter_eq_and_order_by()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
 
@@ -204,7 +204,103 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query) where TModel : class where TData : class
+        [Fact]
+        public async void Building_expand_Builder_Tenant_expand_City_order_by_name()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.True(collection.Count == 4);
+                Assert.True(collection.First().Builder.City.Name == "Leeds");
+                Assert.True(collection.First().Name == "Two L2");
+            }
+        }
+
+        [Fact]
+        public async void Building_expand_Builder_Tenant_expand_City_order_by_name_then_by_identity()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.True(collection.Count == 4);
+                Assert.True(collection.First().Builder.City.Name == "Leeds");
+                Assert.True(collection.First().Name == "Two L2");
+            }
+        }
+
+        [Fact]
+        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.True(collection.Count == 4);
+                Assert.True(collection.First().Builder.City.Name == "London");
+                Assert.True(collection.First().Name == "Two L1");
+            }
+        }
+
+        [Fact]
+        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName_skip_3_take_1_with_count()
+        {
+            string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true",
+                    options
+                )
+            );
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(4, options.Request.ODataFeature().TotalCount);
+                Assert.True(collection.Count == 1);
+                Assert.True(collection.First().Builder.City.Name == "London");
+                Assert.True(collection.First().Name == "One L1");
+            }
+        }
+
+        [Fact]
+        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName_skip_3_take_1_no_count()
+        {
+            string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true",
+                    options
+                )
+            );
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Null(options.Request.ODataFeature().TotalCount);
+                Assert.True(collection.Count == 1);
+                Assert.True(collection.First().Builder.City.Name == "London");
+                Assert.True(collection.First().Name == "One L1");
+            }
+        }
+
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
         {
             return await DoGet
             (
@@ -217,7 +313,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 return await context.Set<TData>().GetAsync
                 (
                     mapper,
-                    ODataHelpers.GetODataQueryOptions<TModel>
+                    options ?? ODataHelpers.GetODataQueryOptions<TModel>
                     (
                         query,
                         serviceProvider,
