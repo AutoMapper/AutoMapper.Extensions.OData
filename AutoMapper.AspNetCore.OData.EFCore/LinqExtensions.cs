@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.OData.Query;
+﻿using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,7 @@ namespace AutoMapper.AspNet.OData
         /// <param name="options"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static MethodCallExpression GetOrderByMethod<T>(this ODataQueryOptions<T> options, Expression expression)
+        public static Expression GetOrderByMethod<T>(this ODataQueryOptions<T> options, Expression expression)
         {
             if (options.OrderBy == null && options.Top == null)
                 return null;
@@ -67,18 +68,33 @@ namespace AutoMapper.AspNet.OData
                 );
             }
 
-            return options.OrderBy.OrderByNodes.Aggregate(null, (MethodCallExpression mce, OrderByNode orderByNode) =>
+            return options.OrderBy.OrderByNodes.Aggregate(null, (Expression mce, OrderByNode orderByNode) =>
             {
                 OrderByPropertyNode propertyNode = (OrderByPropertyNode)orderByNode;
                 return mce == null
-                    ? expression.GetOrderByCall(propertyNode.Property.Name, orderByNode.Direction)
-                    : mce.GetThenByCall(propertyNode.Property.Name, orderByNode.Direction);
+                    ? expression.GetOrderByCall(propertyNode.GetPropertyPath(), orderByNode.Direction)
+                    : mce.GetThenByCall(propertyNode.GetPropertyPath(), orderByNode.Direction);
             })
             .GetSkipCall(options.Skip)
             .GetTakeCall(options.Top);
         }
 
-        public static MethodCallExpression GetSkipCall(this MethodCallExpression expression, SkipQueryOption skip)
+        private static string GetPropertyPath(this OrderByPropertyNode propertyNode)
+        {
+            return GetPropertyPath((SingleValuePropertyAccessNode)propertyNode.OrderByClause.Expression);
+            string GetPropertyPath(SingleValuePropertyAccessNode singleValuePropertyAccess)
+            {
+                switch (singleValuePropertyAccess.Source)
+                {
+                    case SingleNavigationNode navigationNode:
+                        return $"{string.Join(".", navigationNode.BindingPath.PathSegments)}.{propertyNode.Property.Name}";
+                    default:
+                        return propertyNode.Property.Name;
+                }
+            }
+        }
+
+        public static Expression GetSkipCall(this Expression expression, SkipQueryOption skip)
         {
             if (skip == null) return expression;
 
@@ -92,7 +108,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static MethodCallExpression GetTakeCall(this MethodCallExpression expression, TopQueryOption top)
+        public static Expression GetTakeCall(this Expression expression, TopQueryOption top)
         {
             if (top == null) return expression;
 
@@ -106,7 +122,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static MethodCallExpression GetOrderByCall(this Expression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
+        public static Expression GetOrderByCall(this Expression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
             MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
@@ -120,7 +136,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static MethodCallExpression GetThenByCall(this MethodCallExpression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
+        public static Expression GetThenByCall(this Expression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
             MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
@@ -139,13 +155,14 @@ namespace AutoMapper.AspNet.OData
 
         public static MemberInfo GetMemberInfoFromFullName(this Type type, string propertyFullName)
         {
-            if (propertyFullName.IndexOf('.') < 0)
+            int indexOfSeparator = propertyFullName.IndexOf('.');
+            if (indexOfSeparator < 0)
             {
                 return type.GetMemberInfo(propertyFullName);
             }
 
-            string propertyName = propertyFullName.Substring(0, propertyFullName.IndexOf('.'));
-            string childFullName = propertyFullName.Substring(propertyFullName.IndexOf('.') + 1);
+            string propertyName = propertyFullName.Substring(0, indexOfSeparator);
+            string childFullName = propertyFullName.Substring(indexOfSeparator + 1);
 
             return GetMemberInfoFromFullName(type.GetMemberInfo(propertyName).GetMemberType(), childFullName);
         }
@@ -209,11 +226,6 @@ namespace AutoMapper.AspNet.OData
             => exp.NodeType == ExpressionType.Quote
                 ? ((UnaryExpression)exp).Operand.Unquote()
                 : exp;
-
-        private static Type GetReturnType(this Expression exp)
-            => exp.NodeType == ExpressionType.Quote
-                ? (exp.Unquote() as LambdaExpression).ReturnType
-                : (exp as LambdaExpression).ReturnType;
 
         /// <summary>
         /// Creates a list of navigation expressions from the list of period delimited navigation properties.

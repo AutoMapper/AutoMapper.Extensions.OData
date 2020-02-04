@@ -21,7 +21,6 @@ namespace WebAPI.AspNetCore.OData.EF6.Controllers
         DAL.MyDbContext Repository { get; set; }
 
         [HttpGet]
-        [EnableQuery(MaxExpansionDepth = 5)]
         public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
         {
             return Ok(await Repository.BuildingSet.GetAsync(_mapper, options));
@@ -41,7 +40,6 @@ namespace WebAPI.AspNetCore.OData.EF6.Controllers
         DAL.MyDbContext Repository { get; set; }
 
         [HttpGet]
-        [EnableQuery(MaxExpansionDepth = 5)]
         public async Task<IActionResult> Get(ODataQueryOptions<OpsTenant> options)
         {
             return Ok(await Repository.MandatorSet.GetAsync(_mapper, options));
