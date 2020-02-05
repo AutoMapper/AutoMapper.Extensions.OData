@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNet.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>First Release.</PackageReleaseNotes>
+    <PackageReleaseNotes>1) Bug fix for OrderBy/ThenBy. 2) Included Count and SelectExpand handling without EnableQuery attribute.</PackageReleaseNotes>
     <PackageTags>linq expressions odata ef</PackageTags>
     <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <FileVersion>1.0.1.0</FileVersion>
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="3.0.2" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="3.0.6" />
     <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNet.OData" Version="7.2.1" />
   </ItemGroup>

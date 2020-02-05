@@ -40,9 +40,11 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, object>>[] includeExpressions = options.SelectExpand.GetIncludes().BuildIncludes<TModel>().ToArray();
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
+            Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
 
             options.AddExpandOptionsResult();
-            options.AddCountOptionsResult<TModel, TData>(query.LongCount);
+            if (options.Count?.Value == true)
+                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
 
             ICollection<TModel> collection = await query.GetAsync(mapper, filter, queryableExpression, includeExpressions);
 
@@ -64,9 +66,11 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, object>>[] includeExpressions = options.SelectExpand.GetIncludes().BuildIncludes<TModel>().ToArray();
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
+            Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
 
             options.AddExpandOptionsResult();
-            options.AddCountOptionsResult<TModel, TData>(query.LongCount);
+            if (options.Count?.Value == true)
+                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
 
             return await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions);
         }
@@ -171,7 +175,7 @@ namespace AutoMapper.AspNet.OData
         /// <param name="includeProperties"></param>
         /// <returns></returns>
         public static async Task<TReturn> QueryAsync<TModel, TData, TModelReturn, TDataReturn, TReturn>(this IQueryable<TData> query, IMapper mapper,
-            Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc = null,
+            Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
             IEnumerable<Expression<Func<TModel, object>>> includeProperties = null)
         {
             Func<IQueryable<TData>, TDataReturn> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, TDataReturn>>>(queryFunc).Compile();
@@ -184,5 +188,38 @@ namespace AutoMapper.AspNet.OData
 
             return typeof(TReturn) == typeof(TDataReturn) ? (TReturn)(object)result : mapper.Map<TDataReturn, TReturn>(result);
         }
+
+        /// <summary>
+        /// QueryAsync
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TData"></typeparam>
+        /// <typeparam name="TModelReturn"></typeparam>
+        /// <typeparam name="TDataReturn"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="mapper"></param>
+        /// <param name="queryFunc"></param>
+        /// <param name="includeProperties"></param>
+        /// <returns></returns>
+        public static async Task<TModelReturn> QueryAsync<TModel, TData, TModelReturn, TDataReturn>(this IQueryable<TData> query, IMapper mapper,
+            Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
+            IEnumerable<Expression<Func<TModel, object>>> includeProperties = null)
+            => await query.QueryAsync<TModel, TData, TModelReturn, TDataReturn, TModelReturn>(mapper, queryFunc, includeProperties);
+
+        /// <summary>
+        /// QueryAsync
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TData"></typeparam>
+        /// <typeparam name="TModelReturn"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="mapper"></param>
+        /// <param name="queryFunc"></param>
+        /// <param name="includeProperties"></param>
+        /// <returns></returns>
+        public static async Task<TModelReturn> QueryAsync<TModel, TData, TModelReturn>(this IQueryable<TData> query, IMapper mapper,
+            Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
+            IEnumerable<Expression<Func<TModel, object>>> includeProperties = null)
+            => await query.QueryAsync<TModel, TData, TModelReturn, TModelReturn, TModelReturn>(mapper, queryFunc, includeProperties);
     }
 }

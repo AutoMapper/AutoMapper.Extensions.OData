@@ -192,12 +192,27 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_filter_on_nested_nested_property()
+        public async void Building_expand_Builder_Tenant_expand_City_filter_on_nested_nested_property_with_count()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Builder/City/Name eq 'Leeds'"));
+            string query = "/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Builder/City/Name eq 'Leeds'&$count=true";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    query,
+                    options
+                )
+            );
 
             void Test(ICollection<CoreBuilding> collection)
             {
+                Assert.Equal(1, options.Request.ODataFeature().TotalCount);
                 Assert.True(collection.Count == 1);
                 Assert.True(collection.First().Builder.City.Name == "Leeds");
                 Assert.True(collection.First().Name == "Two L2");
@@ -257,7 +272,7 @@ namespace AutoMapper.OData.EFCore.Tests
             (
                 await Get<CoreBuilding, TBuilding>
                 (
-                    "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true",
+                    query,
                     options
                 )
             );
@@ -286,7 +301,7 @@ namespace AutoMapper.OData.EFCore.Tests
             (
                 await Get<CoreBuilding, TBuilding>
                 (
-                    "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true",
+                    query,
                     options
                 )
             );

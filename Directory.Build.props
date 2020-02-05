@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Authors>BlaiseD</Authors>
     <LangVersion>latest</LangVersion>
-    <VersionPrefix>1.0.1-preview01</VersionPrefix>
+    <VersionPrefix>1.0.1-preview02</VersionPrefix>
     <WarningsAsErrors>true</WarningsAsErrors>
     <NoWarn>$(NoWarn);1701;1702;1591</NoWarn>
   </PropertyGroup>

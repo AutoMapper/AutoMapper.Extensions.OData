@@ -30,6 +30,25 @@ namespace AutoMapper.AspNet.OData
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);
         }
 
+        public static Expression<Func<IQueryable<T>, long>> GetCountExpression<T>(Expression filter = null)
+        {
+            ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
+            return Expression.Lambda<Func<IQueryable<T>, long>>(GetLongCountMethod(param, filter), param);
+        }
+
+        private static Expression GetLongCountMethod(ParameterExpression param, Expression filter = null)
+        {
+            return Expression.Call
+            (
+                typeof(Queryable),
+                "LongCount",
+                new Type[] { param.GetUnderlyingElementType() },
+                filter == null 
+                    ? new Expression[] { param } 
+                    : new Expression[] { param, filter }
+            );
+        }
+
         /// <summary>
         /// Returns a lambda expresion for order and paging expressions
         /// </summary>
