@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="1.0.1-preview02" />
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="3.0.6" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="3.1.0-preview01" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
