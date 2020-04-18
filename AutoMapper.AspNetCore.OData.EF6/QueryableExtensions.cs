@@ -145,20 +145,18 @@ namespace AutoMapper.AspNet.OData
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
             Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
-            ICollection<Expression<Func<TData, object>>> includes = mapper.MapIncludesList<Expression<Func<TData, object>>>(includeProperties);
 
             if (filter != null)
                 query = query.Where(f);
 
-            if (includes != null)
-                query = includes.Aggregate(query, (q, next) => q.Include(next));
-
             return await Task.Run
             (
                 () => mappedQueryFunc != null
-                    ? mapper.ProjectTo<TModel>(mappedQueryFunc(query))
-                    : mapper.ProjectTo<TModel>(query)
+                    ? mapper.ProjectTo(mappedQueryFunc(query), null, GetIncludes())
+                    : mapper.ProjectTo(query, null, GetIncludes())
             );
+
+            Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? new Expression<Func<TModel, object>>[] { };
         }
 
         /// <summary>
