@@ -1,18 +1,12 @@
 ﻿using AutoMapper.AspNet.OData;
 using DAL.EFCore;
 using Domain.OData;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +49,12 @@ namespace AutoMapper.OData.EFCore.Tests
             MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
             context.Database.EnsureCreated();
             Seed_Database(context);
+        }
+
+        [Fact]
+        public void IsConfigurationValid()
+        {
+            serviceProvider.GetRequiredService<IConfigurationProvider>().AssertConfigurationIsValid();
         }
 
         [Fact]
@@ -154,6 +154,20 @@ namespace AutoMapper.OData.EFCore.Tests
         public async void Building_expand_Builder_Tenant_filter_eq_and_order_by()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.True(collection.Count == 1);
+                Assert.True(collection.First().Builder.Name == "Sam");
+                Assert.True(collection.First().Tenant.Name == "One");
+                Assert.True(collection.First().Name == "One L1");
+            }
+        }
+
+        [Fact]
+        public async void Building_expand_Builder_select_Name_expand_Tenant_filter_eq_and_order_by()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {

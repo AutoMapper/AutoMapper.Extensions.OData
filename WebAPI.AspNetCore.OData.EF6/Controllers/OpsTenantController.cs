@@ -23,7 +23,7 @@ namespace WebAPI.AspNetCore.OData.EF6.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
         {
-            return Ok(await Repository.BuildingSet.GetAsync(_mapper, options));
+            return Ok(await Repository.BuildingSet.GetQueryAsync(_mapper, options));
         }
     }
 
@@ -42,7 +42,7 @@ namespace WebAPI.AspNetCore.OData.EF6.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(ODataQueryOptions<OpsTenant> options)
         {
-            return Ok(await Repository.MandatorSet.GetAsync(_mapper, options));
+            return Ok(await Repository.MandatorSet.GetQueryAsync(_mapper, options));
         }
     }
 }

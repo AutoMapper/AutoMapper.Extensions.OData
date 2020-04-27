@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AutoMapper.Configuration.Internal;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -21,6 +23,29 @@ namespace AutoMapper.AspNet.OData
 
             return mInfo;
         }
+
+        public static MemberInfo[] GetSelectedMembers(this Type parentType, List<string> selects)
+        {
+            if (selects == null || !selects.Any())
+                return parentType.GetValueTypeMembers();
+
+            return selects.Select(select => parentType.GetMemberInfo(select)).ToArray();
+        }
+
+        private static MemberInfo[] GetValueTypeMembers(this Type parentType)
+        {
+            if (parentType.IsList())
+                return new MemberInfo[] { };
+
+            return parentType.GetMemberInfos().Where
+            (
+                info => (info.MemberType == MemberTypes.Field || info.MemberType == MemberTypes.Property)
+                && info.GetMemberType().IsLiteralType()
+            ).ToArray();
+        }
+
+        private static MemberInfo[] GetMemberInfos(this Type parentType) 
+            => parentType.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.IgnoreCase);
 
         public static bool IsList(this Type type)
             => type.IsArray || (type.IsGenericType && typeof(System.Collections.IEnumerable).IsAssignableFrom(type));
@@ -48,6 +73,9 @@ namespace AutoMapper.AspNet.OData
 
             return genericArguments[0];
         }
+
+        public static Type GetUnderlyingElementType(this Expression expression)
+            => expression.Type.GetUnderlyingElementType();
 
         /// <summary>
         /// Get Member Type
@@ -84,5 +112,49 @@ namespace AutoMapper.AspNet.OData
             Type delegateType = typeof(Func<,>).MakeGenericType(typeArgs);//Delegate type for the selector expression.  It takes a TSource and returns the sort property type
             return Expression.Lambda(delegateType, parent, param);//Resulting lambda expression for the selector.
         }
+
+        public static MemberInfo GetMemberInfoFromFullName(this Type type, string propertyFullName)
+        {
+            int indexOfSeparator = propertyFullName.IndexOf('.');
+            if (indexOfSeparator < 0)
+            {
+                return type.GetMemberInfo(propertyFullName);
+            }
+
+            string propertyName = propertyFullName.Substring(0, indexOfSeparator);
+            string childFullName = propertyFullName.Substring(indexOfSeparator + 1);
+
+            return GetMemberInfoFromFullName(type.GetMemberInfo(propertyName).GetMemberType(), childFullName);
+        }
+
+        public static bool IsLiteralType(this Type type)
+        {
+            if (PrimitiveHelper.IsNullableType(type))
+                type = Nullable.GetUnderlyingType(type);
+
+            return LiteralTypes.Contains(type);
+        }
+
+        private static HashSet<Type> LiteralTypes => new HashSet<Type>(_literalTypes);
+
+        private static Type[] _literalTypes => new Type[] {
+                typeof(bool),
+                typeof(DateTime),
+                typeof(TimeSpan),
+                typeof(Guid),
+                typeof(decimal),
+                typeof(byte),
+                typeof(short),
+                typeof(int),
+                typeof(long),
+                typeof(float),
+                typeof(double),
+                typeof(char),
+                typeof(sbyte),
+                typeof(ushort),
+                typeof(uint),
+                typeof(ulong),
+                typeof(string)
+            };
     }
 }

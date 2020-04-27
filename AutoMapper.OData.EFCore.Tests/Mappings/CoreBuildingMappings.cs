@@ -8,15 +8,14 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
         public CoreBuildingMappings()
         {
             CreateMap<TBuilding, CoreBuilding>()
-                .ForMember(d => d.Identity, o => o.MapFrom(s => s.Identity))
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.LongName))
-                .ForMember(d => d.Builder, o => o.ExplicitExpansion())
-                .ForMember(d => d.Tenant, o => { o.MapFrom(s => s.Mandator); o.ExplicitExpansion(); })
-                .ForAllOtherMembers(o => o.Ignore());
+                .ForMember(d => d.Tenant, o => o.MapFrom(s => s.Mandator))
+                .ForAllMembers(o => o.ExplicitExpansion());
 
             CreateMap<TBuilder, OpsBuilder>()
-                .ForMember(d => d.City, o => o.ExplicitExpansion());
-            CreateMap<TCity, OpsCity>();
+                .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<TCity, OpsCity>()
+                .ForAllMembers(o => o.ExplicitExpansion());
         }
     }
 }
