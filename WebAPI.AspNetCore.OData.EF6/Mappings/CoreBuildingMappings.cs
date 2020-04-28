@@ -13,14 +13,14 @@ namespace WebAPI.AspNetCore.OData.EF6.Mappings
         public CoreBuildingMappings()
         {
             CreateMap<TBuilding, CoreBuilding>()
-                .ForMember(d => d.Identity, o => o.MapFrom(s => s.Identity))
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.LongName))
-                .ForMember(d => d.Builder, o => o.MapFrom(s => s.Builder))
                 .ForMember(d => d.Tenant, o => o.MapFrom(s => s.Mandator))
-                .ForAllOtherMembers(o => o.Ignore());
+                .ForAllMembers(o => o.ExplicitExpansion());
 
-            CreateMap<TBuilder, OpsBuilder>();
-            CreateMap<TCity, OpsCity>();
+            CreateMap<TBuilder, OpsBuilder>()
+                .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<TCity, OpsCity>()
+                .ForAllMembers(o => o.ExplicitExpansion());
         }
     }
 }

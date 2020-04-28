@@ -57,12 +57,15 @@ namespace AutoMapper.AspNet.OData
         /// <returns></returns>
         public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options)
         {
-            if (options.OrderBy == null && options.Top == null)
+            if (options.OrderBy == null && options.Top == null && options.SelectExpand == null)
                 return null;
 
             ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
 
-            return Expression.Lambda<Func<IQueryable<T>, IQueryable<T>>>(GetOrderByMethod(options, param), param);
+            return Expression.Lambda<Func<IQueryable<T>, IQueryable<T>>>
+            (
+                options.GetOrderByMethod(param), param
+            );
         }
 
         /// <summary>
@@ -169,23 +172,6 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Type GetUnderlyingElementType(this Expression expression)
-            => expression.Type.GetUnderlyingElementType();
-
-        public static MemberInfo GetMemberInfoFromFullName(this Type type, string propertyFullName)
-        {
-            int indexOfSeparator = propertyFullName.IndexOf('.');
-            if (indexOfSeparator < 0)
-            {
-                return type.GetMemberInfo(propertyFullName);
-            }
-
-            string propertyName = propertyFullName.Substring(0, indexOfSeparator);
-            string childFullName = propertyFullName.Substring(indexOfSeparator + 1);
-
-            return GetMemberInfoFromFullName(type.GetMemberInfo(propertyName).GetMemberType(), childFullName);
-        }
-
         /// <summary>
         /// Get Selects
         /// </summary>
@@ -196,7 +182,15 @@ namespace AutoMapper.AspNet.OData
             if (clause == null)
                 return new List<string>();
 
-            return clause.SelectExpandClause.SelectedItems
+            return clause.SelectExpandClause.GetSelects();
+        }
+
+        private static List<string> GetSelects(this SelectExpandClause clause)
+        {
+            if (clause == null)
+                return new List<string>();
+
+            return clause.SelectedItems
                         .OfType<PathSelectItem>()
                         .Select(item => item.SelectedPath.FirstSegment.Identifier)//Only first segment is necessary because of the new syntax $expand=Builder($expand=City) vs $expand=Builder/City
                         .ToList();
@@ -209,7 +203,7 @@ namespace AutoMapper.AspNet.OData
         /// <returns></returns>
         public static List<string> GetIncludes(this SelectExpandQueryOption clause)
         {
-            if (clause == null)
+            if (clause?.SelectExpandClause == null)
                 return new List<string>();
 
             return clause.SelectExpandClause.SelectedItems.GetIncludes();
@@ -238,6 +232,62 @@ namespace AutoMapper.AspNet.OData
                 else
                     list.Add(path);
                 return list;
+            });
+        }
+
+        public static List<List<Expansion>> GetExpansions(this SelectExpandQueryOption clause)
+        {
+            if (clause?.SelectExpandClause == null)
+                return new List<List<Expansion>>();
+
+            return clause.SelectExpandClause.SelectedItems.GetExpansions(new HashSet<string>(clause.GetSelects()));
+        }
+
+        private static List<List<Expansion>> GetNestedExpansions(this ExpandedNavigationSelectItem node)
+        {
+            if (node == null)
+                return new List<List<Expansion>>();
+
+            return node.SelectAndExpand.SelectedItems.GetExpansions(new HashSet<string>(node.SelectAndExpand.GetSelects()));
+        }
+
+        private static bool ExpansionIsValid(this HashSet<string> siblingSelects, string expansion)
+        {
+            if (!siblingSelects.Any())
+                return true;
+
+            return siblingSelects.Contains(expansion);
+        }
+
+        private static List<List<Expansion>> GetExpansions(this IEnumerable<SelectItem> selectedItems, HashSet<string> selects)
+        {
+            if (selectedItems == null)
+                return new List<List<Expansion>>();
+
+            return selectedItems.OfType<ExpandedNavigationSelectItem>().Aggregate(new List<List<Expansion>>(), (listOfExpansionLists, next) =>
+            {
+                string path = next.PathToNavigationProperty.FirstSegment.Identifier;//Only first segment is necessary because of the new syntax $expand=Builder($expand=City) vs $expand=Builder/City
+
+                if (!selects.ExpansionIsValid(path))/*If selects are defined then check to make sure the expansion is one of them.*/
+                    return listOfExpansionLists;
+
+                Expansion exp = new Expansion { MemberName = path, Selects = next.SelectAndExpand.GetSelects() };
+                List<Expansion> li = new List<Expansion> { exp };
+
+                List<List<Expansion>> navigationItems = next.GetNestedExpansions().Select
+                (
+                    expansions =>
+                    {
+                        expansions.Insert(0, exp);
+                        return expansions;
+                    }
+                ).ToList();
+
+                if (navigationItems.Any())
+                    listOfExpansionLists.AddRange(navigationItems);
+                else
+                    listOfExpansionLists.Add(li);
+                return listOfExpansionLists;
             });
         }
 
@@ -270,7 +320,7 @@ namespace AutoMapper.AspNet.OData
             {
                 if (parentType.IsList())
                 {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GenericTypeArguments[0], parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
                     return Expression.Lambda
                     (
                         typeof(Func<,>).MakeGenericType(new[] { type, typeof(object) }),
@@ -298,12 +348,114 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
+        public static IEnumerable<Expression<Func<TSource, object>>> BuildIncludes<TSource>(this IEnumerable<List<Expansion>> includes, List<string> selects)
+            where TSource : class
+        {
+            return GetAllExpansions(new List<LambdaExpression>());
+
+            List<Expression<Func<TSource, object>>> GetAllExpansions(List<LambdaExpression> valueMemberSelectors)
+            {
+                string parameterName = "i";
+                Type parentType = typeof(TSource);
+                ParameterExpression param = Expression.Parameter(parentType, parameterName);
+
+                valueMemberSelectors.AddSelectors(parentType, parentType, selects, param, param);
+
+                return includes
+                    .Select(include => BuildSelectorExpression<TSource>(include, valueMemberSelectors))
+                    .ToList()
+                    .Concat(valueMemberSelectors.Select(selector => (Expression<Func<TSource, object>>)selector))
+                    .ToList();
+            }
+        }
+
+        private static Expression<Func<TSource, object>> BuildSelectorExpression<TSource>(List<Expansion> fullName, List<LambdaExpression> valueMemberSelectors, string parameterName = "i")
+            => (Expression<Func<TSource, object>>)BuildSelectorExpression(typeof(TSource), fullName, valueMemberSelectors, parameterName);
+
+        private static LambdaExpression BuildSelectorExpression(Type sourceType, List<Expansion> parts, List<LambdaExpression> valueMemberSelectors, string parameterName = "i")
+        {
+            ParameterExpression param = Expression.Parameter(sourceType, parameterName);
+            Type parentType = sourceType;
+            Expression parent = param;
+            Type delegateType = typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) });
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                if (parentType.IsList())
+                {
+                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), valueMemberSelectors, parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    return Expression.Lambda
+                    (
+                        delegateType,
+                        parent,
+                        param
+                    );
+                }
+                else
+                {
+                    MemberInfo mInfo = parentType.GetMemberInfo(parts[i].MemberName);
+                    parent = Expression.MakeMemberAccess(parent, mInfo);
+
+                    parentType = mInfo.GetMemberType();
+
+                    /*For each expansion, and selectors for every select: explicit expansion*/
+                    valueMemberSelectors.AddSelectors(sourceType, parentType, parts[i].Selects, param, parent);
+                }
+            }
+
+            if (parent.Type.IsValueType)//Convert value type expressions to object expressions otherwise
+                parent = Expression.Convert(parent, typeof(object));//Expression.Lambda below will throw an exception for value types
+
+            return Expression.Lambda
+            (
+                delegateType,
+                parent,
+                param
+            );
+        }
+
+        private static void AddSelectors(this List<LambdaExpression> valueMemberSelectors, Type sourceType, Type parentType, List<string> selects, ParameterExpression param, Expression parentBody)
+        {
+            Type delegateType = typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) });
+
+            valueMemberSelectors.AddRange
+            (
+                GetSelectors()
+                    .Select
+                    (
+                        selector => selector.Type.IsValueType
+                            ? Expression.Convert(selector, typeof(object))
+                            : selector
+                    )
+                    .Select(selector => Expression.Lambda(delegateType, selector, param))
+            );
+
+            IEnumerable<Expression> GetSelectors()
+            {
+                if (parentType.IsList())
+                {
+                    Type underlyingElementType = parentType.GetUnderlyingElementType();
+                    return underlyingElementType
+                        .GetSelectedMembers(selects)
+                        .Select(member => GetSelectExpression(new string[] { member.Name }, parentBody, underlyingElementType, param.Name));
+                }
+
+                return parentType
+                    .GetSelectedMembers(selects)
+                    .Select(member => Expression.MakeMemberAccess(parentBody, member));
+            }
+        }
+
         private static string ChildParameterName(this string currentParameterName)
         {
             string lastChar = currentParameterName.Substring(currentParameterName.Length - 1);
             if (short.TryParse(lastChar, out short lastCharShort))
             {
-                return string.Concat(currentParameterName.Substring(0, currentParameterName.Length - 1), (lastCharShort++).ToString(CultureInfo.CurrentCulture));
+                return string.Concat
+                (
+                    currentParameterName.Substring(0, currentParameterName.Length - 1), 
+                    (lastCharShort++).ToString(CultureInfo.CurrentCulture)
+                );
             }
             else
             {
@@ -320,5 +472,21 @@ namespace AutoMapper.AspNet.OData
                 parent,
                 BuildSelectorExpression(underlyingType, string.Join(".", parts), parameterName.ChildParameterName())//Join the remaining parts to create a full name
             );
+
+        private static Expression GetSelectExpression(IEnumerable<Expansion> expansions, Expression parent, Type underlyingType, List<LambdaExpression> valueMemberSelectors, string parameterName)//underlying type because paranet is a collection
+            => Expression.Call
+            (
+                typeof(Enumerable),//This is an Enumerable (not Queryable) select.  We are selecting includes for a member who is a collection
+                "Select",
+                new Type[] { underlyingType, typeof(object) },
+                parent,
+                BuildSelectorExpression(underlyingType, expansions.ToList(), valueMemberSelectors, parameterName.ChildParameterName())//Join the remaining parts to create a full name
+            );
+    }
+
+    public class Expansion
+    {
+        public string MemberName { get; set; }
+        public List<string> Selects { get; set; }
     }
 }

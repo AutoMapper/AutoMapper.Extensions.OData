@@ -13,10 +13,7 @@ namespace WebAPI.AspNet.OData.EF6.Mappings
         public OpsTenantMappings()
         {
             CreateMap<TMandator, OpsTenant>()
-                .ForMember(d => d.Identity, o => o.MapFrom(s => s.Identity))
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
-                .ForMember(d => d.Buildings, o => { o.MapFrom(s => s.Buildings); o.ExplicitExpansion(); })
-                .ForAllOtherMembers(o => o.Ignore());
+                .ForAllMembers(o => o.ExplicitExpansion());
         }
     }
 }
