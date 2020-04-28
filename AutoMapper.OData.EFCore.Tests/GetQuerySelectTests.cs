@@ -66,14 +66,16 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void OpsTenantExpandBuildingsFilterEqAndOrderBy()
+        public async void OpsTenantExpandBuildingsFilterEqAndOrderBy_FirstBuildingHasValues()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings.Count == 2);
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.NotNull(collection.First().Buildings.First().Name);
+                Assert.NotEqual(default, collection.First().Buildings.First().Identity);
                 Assert.Equal(default, collection.First().Identity);
                 Assert.Null(collection.First().Name);
             }

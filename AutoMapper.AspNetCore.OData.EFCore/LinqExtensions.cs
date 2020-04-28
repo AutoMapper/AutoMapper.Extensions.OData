@@ -320,7 +320,7 @@ namespace AutoMapper.AspNet.OData
             {
                 if (parentType.IsList())
                 {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GenericTypeArguments[0], parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
                     return Expression.Lambda
                     (
                         typeof(Func<,>).MakeGenericType(new[] { type, typeof(object) }),
@@ -383,7 +383,7 @@ namespace AutoMapper.AspNet.OData
             {
                 if (parentType.IsList())
                 {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GenericTypeArguments[0], valueMemberSelectors, parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), valueMemberSelectors, parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
                     return Expression.Lambda
                     (
                         delegateType,
@@ -420,17 +420,30 @@ namespace AutoMapper.AspNet.OData
 
             valueMemberSelectors.AddRange
             (
-                parentType
-                    .GetSelectedMembers(selects)
-                    .Select(member => Expression.MakeMemberAccess(parentBody, member))
+                GetSelectors()
                     .Select
                     (
                         selector => selector.Type.IsValueType
-                            ? (Expression)Expression.Convert(selector, typeof(object))
+                            ? Expression.Convert(selector, typeof(object))
                             : selector
                     )
                     .Select(selector => Expression.Lambda(delegateType, selector, param))
             );
+
+            IEnumerable<Expression> GetSelectors()
+            {
+                if (parentType.IsList())
+                {
+                    Type underlyingElementType = parentType.GetUnderlyingElementType();
+                    return underlyingElementType
+                        .GetSelectedMembers(selects)
+                        .Select(member => GetSelectExpression(new string[] { member.Name }, parentBody, underlyingElementType, param.Name));
+                }
+
+                return parentType
+                    .GetSelectedMembers(selects)
+                    .Select(member => Expression.MakeMemberAccess(parentBody, member));
+            }
         }
 
         private static string ChildParameterName(this string currentParameterName)
