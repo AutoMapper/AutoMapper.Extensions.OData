@@ -6,10 +6,10 @@
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>1) Bug fix for OrderBy/ThenBy. 2) Included Count and SelectExpand handling without EnableQuery attribute.</PackageReleaseNotes>
+    <PackageReleaseNotes>Support limiting queries to specified columns.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
-    <AssemblyVersion>1.0.2.1</AssemblyVersion>
-    <FileVersion>1.0.2.1</FileVersion>
+    <AssemblyVersion>1.0.2.2</AssemblyVersion>
+    <FileVersion>1.0.2.2</FileVersion>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

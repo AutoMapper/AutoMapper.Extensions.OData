@@ -378,12 +378,15 @@ namespace AutoMapper.AspNet.OData
             Type parentType = sourceType;
             Expression parent = param;
             Type delegateType = typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) });
+            List<LambdaExpression> childValueMemberSelectors = new List<LambdaExpression>();
+            string childSelectorParameterName = parameterName.ChildParameterName();
+            Type listElementType = null;
 
             for (int i = 0; i < parts.Count; i++)
             {
                 if (parentType.IsList())
                 {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), valueMemberSelectors, parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    parent = GetSelectExpression(parts.Skip(i), parent, listElementType, childValueMemberSelectors, childSelectorParameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
                     return Expression.Lambda
                     (
                         delegateType,
@@ -399,7 +402,32 @@ namespace AutoMapper.AspNet.OData
                     parentType = mInfo.GetMemberType();
 
                     /*For each expansion, and selectors for every select: explicit expansion*/
-                    valueMemberSelectors.AddSelectors(sourceType, parentType, parts[i].Selects, param, parent);
+                    if (parentType.IsList())
+                    {
+                        listElementType = parentType.GetUnderlyingElementType();
+                        ParameterExpression childParam = Expression.Parameter(listElementType, childSelectorParameterName);
+                        childValueMemberSelectors.AddSelectors(listElementType, listElementType, parts[i].Selects, childParam, childParam);
+                        childValueMemberSelectors.ForEach(selector =>
+                        {
+                            valueMemberSelectors.Add(Expression.Lambda
+                            (
+                                delegateType,
+                                Expression.Call
+                                (
+                                    typeof(Enumerable),
+                                    "Select",
+                                    new Type[] { listElementType, typeof(object) },
+                                    parent,
+                                    selector
+                                ),
+                                param
+                            ));
+                        });
+                    }
+                    else
+                    {
+                        valueMemberSelectors.AddSelectors(sourceType, parentType, parts[i].Selects, param, parent);
+                    }
                 }
             }
 
@@ -416,34 +444,30 @@ namespace AutoMapper.AspNet.OData
 
         private static void AddSelectors(this List<LambdaExpression> valueMemberSelectors, Type sourceType, Type parentType, List<string> selects, ParameterExpression param, Expression parentBody)
         {
-            Type delegateType = typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) });
+            if (parentType.IsList()) 
+                return;
 
             valueMemberSelectors.AddRange
             (
-                GetSelectors()
+                parentType
+                    .GetSelectedMembers(selects)
+                    .Select(member => Expression.MakeMemberAccess(parentBody, member))
                     .Select
                     (
                         selector => selector.Type.IsValueType
-                            ? Expression.Convert(selector, typeof(object))
+                            ? (Expression)Expression.Convert(selector, typeof(object))
                             : selector
                     )
-                    .Select(selector => Expression.Lambda(delegateType, selector, param))
+                    .Select
+                    (
+                        selector => Expression.Lambda
+                        (
+                            typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) }), 
+                            selector, 
+                            param
+                        )
+                    )
             );
-
-            IEnumerable<Expression> GetSelectors()
-            {
-                if (parentType.IsList())
-                {
-                    Type underlyingElementType = parentType.GetUnderlyingElementType();
-                    return underlyingElementType
-                        .GetSelectedMembers(selects)
-                        .Select(member => GetSelectExpression(new string[] { member.Name }, parentBody, underlyingElementType, param.Name));
-                }
-
-                return parentType
-                    .GetSelectedMembers(selects)
-                    .Select(member => Expression.MakeMemberAccess(parentBody, member));
-            }
         }
 
         private static string ChildParameterName(this string currentParameterName)
@@ -480,7 +504,7 @@ namespace AutoMapper.AspNet.OData
                 "Select",
                 new Type[] { underlyingType, typeof(object) },
                 parent,
-                BuildSelectorExpression(underlyingType, expansions.ToList(), valueMemberSelectors, parameterName.ChildParameterName())//Join the remaining parts to create a full name
+                BuildSelectorExpression(underlyingType, expansions.ToList(), valueMemberSelectors, parameterName)//Join the remaining parts to create a full name
             );
     }
 

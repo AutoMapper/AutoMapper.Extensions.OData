@@ -135,7 +135,22 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        [Fact(Skip = "Project to fails to expand")]
+        [Fact]//Similar to test below but works if $select=Buildings is added to the query
+        public async void OpsTenant_expand_Buildings_SelectNameAndBuilder_expand_Builder_expand_City_filter_ne_and_order_by()
+        {
+            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.True(collection.Count == 1);
+                Assert.True(collection.First().Buildings.Count == 2);
+                Assert.True(collection.First().Buildings.First().Builder != null);
+                Assert.True(collection.First().Buildings.First().Builder.City != null);
+                Assert.True(collection.First().Name == "Two");
+            }
+        }
+
+        [Fact(Skip = "ProjectTo does not load expanded child collections. #3379")]
         public async void OpsTenant_expand_Buildings_expand_Builder_expand_City_filter_ne_and_order_by()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
