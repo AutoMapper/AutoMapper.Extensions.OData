@@ -380,13 +380,13 @@ namespace AutoMapper.AspNet.OData
             Type delegateType = typeof(Func<,>).MakeGenericType(new[] { sourceType, typeof(object) });
             List<LambdaExpression> childValueMemberSelectors = new List<LambdaExpression>();
             string childSelectorParameterName = parameterName.ChildParameterName();
-            Type listElementType;
+            Type listElementType = null;
 
             for (int i = 0; i < parts.Count; i++)
             {
                 if (parentType.IsList())
                 {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), childValueMemberSelectors, childSelectorParameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
+                    parent = GetSelectExpression(parts.Skip(i), parent, listElementType, childValueMemberSelectors, childSelectorParameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
                     return Expression.Lambda
                     (
                         delegateType,
