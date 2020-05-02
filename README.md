@@ -24,13 +24,13 @@ public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQuer
         [HttpGet]
         public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
         {
-            return Ok(await Context.BuildingSet.GetAsync(_mapper, options));
+            return Ok(await Context.BuildingSet.GetQueryAsync(_mapper, options));
         }
     }
 ```
 
 <br><br>
-## Do not use the EnableQuery Attribute
+### Do not use the EnableQuery Attribute
 Using `EnableQuery` with `AutoMapper.Extensions.OData` will result in some operations being applied more than once e.g. in the [tests](https://github.com/AutoMapper/AutoMapper.Extensions.OData/blob/5b4a9c8bef4c408268603e4c2186ca65b930559c/AutoMapper.OData.EFCore.Tests/AllTests.cs#L342),
 if `TMandator` has a total of two records then **without** `EnableQuery` applied to the controller action, the OData query `http://localhost:16324/opstenant?$skip=1&$top=1&$orderby=Name` will return one record as expected. However **with** `EnableQuery` applied
 no records will be returned because the skip operation has been applied twice.
