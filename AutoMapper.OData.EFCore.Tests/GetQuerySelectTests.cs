@@ -39,8 +39,8 @@ namespace AutoMapper.OData.EFCore.Tests
                     },
                     ServiceLifetime.Transient
                 )
-                .AddSingleton<AutoMapper.IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService))
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 
@@ -48,7 +48,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
             context.Database.EnsureCreated();
-            Seed_Database(context);
+            SeedDatabase(context);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        static void Seed_Database(MyDbContext context)
+        static void SeedDatabase(MyDbContext context)
         {
             context.City.Add(new TCity { Name = "London" });
             context.City.Add(new TCity { Name = "Leeds" });

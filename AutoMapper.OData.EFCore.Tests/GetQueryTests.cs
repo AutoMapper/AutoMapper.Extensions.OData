@@ -39,8 +39,8 @@ namespace AutoMapper.OData.EFCore.Tests
                     },
                     ServiceLifetime.Transient
                 )
-                .AddSingleton<AutoMapper.IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService))
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 
@@ -48,7 +48,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
             context.Database.EnsureCreated();
-            Seed_Database(context);
+            SeedDatabase(context);
         }
 
         [Fact]
@@ -58,170 +58,170 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void OpsTenant_expand_Buildings_filter_eq_and_order_by()
+        public async void OpsTenantExpandBuildingsFilterEqAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings.Count == 2);
-                Assert.True(collection.First().Name == "One");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("One", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void OpsTenant_expand_Buildings_filter_ne_and_order_by()
+        public async void OpsTenantExpandBuildingsFilterNeAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings.Count == 2);
-                Assert.True(collection.First().Name == "Two");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("Two", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void OpsTenant_filter_eq_no_expand()
+        public async void OpsTenantFilterEqNoExpand()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=Name eq 'One'"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings == null);
-                Assert.True(collection.First().Name == "One");
+                Assert.Equal(1, collection.Count);
+                Assert.Null(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void OpsTenant_expand_Buildings_no_filter_and_order_by()
+        public async void OpsTenantExpandBuildingsNoFilterAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 2);
-                Assert.True(collection.First().Buildings.Count == 2);
-                Assert.True(collection.First().Name == "Two");
+                Assert.Equal(2, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("Two", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void OpsTenant_no_expand_no_filter_and_order_by()
+        public async void OpsTenantNoExpandNoFilterAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 2);
-                Assert.True(collection.First().Buildings == null);
-                Assert.True(collection.First().Name == "Two");
+                Assert.Equal(2, collection.Count);
+                Assert.Null(collection.First().Buildings);
+                Assert.Equal("Two", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void OpsTenant_no_expand_filter_eq_and_order_by()
+        public async void OpsTenantNoExpandFilterEqAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$filter=Name eq 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings == null);
-                Assert.True(collection.First().Name == "One");
+                Assert.Equal(1, collection.Count);
+                Assert.Null(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
             }
         }
 
         [Fact]//Similar to test below but works if $select=Buildings is added to the query
-        public async void OpsTenant_expand_Buildings_SelectNameAndBuilder_expand_Builder_expand_City_filter_ne_and_order_by()
+        public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings.Count == 2);
-                Assert.True(collection.First().Buildings.First().Builder != null);
-                Assert.True(collection.First().Buildings.First().Builder.City != null);
-                Assert.True(collection.First().Name == "Two");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.NotNull(collection.First().Buildings.First().Builder);
+                Assert.NotNull(collection.First().Buildings.First().Builder.City);
+                Assert.Equal("Two", collection.First().Name);
             }
         }
 
         [Fact(Skip = "ProjectTo does not load expanded child collections. #3379")]
-        public async void OpsTenant_expand_Buildings_expand_Builder_expand_City_filter_ne_and_order_by()
+        public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Buildings.Count == 2);
-                Assert.True(collection.First().Buildings.First().Builder != null);
-                Assert.True(collection.First().Buildings.First().Builder.City != null);
-                Assert.True(collection.First().Name == "Two");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.NotNull(collection.First().Buildings.First().Builder);
+                Assert.NotNull(collection.First().Buildings.First().Builder.City);
+                Assert.Equal("Two", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_filter_eq_and_order_by()
+        public async void BuildingExpandBuilderTenantFilterEqAndOrderBy()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Builder.Name == "Sam");
-                Assert.True(collection.First().Tenant.Name == "One");
-                Assert.True(collection.First().Name == "One L1");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal("One", collection.First().Tenant.Name);
+                Assert.Equal("One L1", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_select_Name_expand_Tenant_filter_eq_and_order_by()
+        public async void BuildingExpandBuilderSelectNameExpandTenantFilterEqAndOrderBy()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Builder.Name == "Sam");
-                Assert.True(collection.First().Tenant.Name == "One");
-                Assert.True(collection.First().Name == "One L1");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal("One", collection.First().Tenant.Name);
+                Assert.Equal("One L1", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_filter_on_nested_property_and_order_by()
+        public async void BuildingExpandBuilderTenantFilterOnNestedPropertyAndOrderBy()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Builder/Name eq 'Sam'&$orderby=Name asc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 2);
-                Assert.True(collection.First().Builder.Name == "Sam");
-                Assert.True(collection.First().Tenant.Name == "One");
-                Assert.True(collection.First().Name == "One L1");
+                Assert.Equal(2, collection.Count);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal("One", collection.First().Tenant.Name);
+                Assert.Equal("One L1", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_filter_on_property_and_order_by()
+        public async void BuildingExpandBuilderTenantExpandCityFilterOnPropertyAndOrderBy()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Name ne 'One L2'&$orderby=Name desc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 3);
-                Assert.True(collection.First().Builder.City != null);
-                Assert.True(collection.First().Name != "One L2");
+                Assert.Equal(3, collection.Count);
+                Assert.NotNull(collection.First().Builder.City);
+                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_filter_on_nested_nested_property_with_count()
+        public async void BuildingExpandBuilderTenantExpandCityFilterOnNestedNestedPropertyWithCount()
         {
             string query = "/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Builder/City/Name eq 'Leeds'&$count=true";
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
@@ -242,53 +242,53 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, options.Request.ODataFeature().TotalCount);
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Builder.City.Name == "Leeds");
-                Assert.True(collection.First().Name == "Two L2");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("Leeds", collection.First().Builder.City.Name);
+                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_order_by_name()
+        public async void BuildingExpandBuilderTenantExpandCityOrderByName()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 4);
-                Assert.True(collection.First().Builder.City.Name == "Leeds");
-                Assert.True(collection.First().Name == "Two L2");
+                Assert.Equal(4, collection.Count);
+                Assert.Equal("Leeds", collection.First().Builder.City.Name);
+                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_order_by_name_then_by_identity()
+        public async void BuildingExpandBuilderTenantExpandCityOrderByNameThenByIdentity()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 4);
-                Assert.True(collection.First().Builder.City.Name == "Leeds");
-                Assert.True(collection.First().Name == "Two L2");
+                Assert.Equal(4, collection.Count);
+                Assert.Equal("Leeds", collection.First().Builder.City.Name);
+                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName()
+        public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderName()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.True(collection.Count == 4);
-                Assert.True(collection.First().Builder.City.Name == "London");
-                Assert.True(collection.First().Name == "Two L1");
+                Assert.Equal(4, collection.Count);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal("Two L1", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName_skip_3_take_1_with_count()
+        public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1WithCount()
         {
             string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true";
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
@@ -309,14 +309,14 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(4, options.Request.ODataFeature().TotalCount);
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Builder.City.Name == "London");
-                Assert.True(collection.First().Name == "One L1");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal("One L1", collection.First().Name);
             }
         }
 
         [Fact]
-        public async void Building_expand_Builder_Tenant_expand_City_order_by_builderName_skip_3_take_1_no_count()
+        public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1NoCount()
         {
             string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity";
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
@@ -338,9 +338,9 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Null(options.Request.ODataFeature().TotalCount);
-                Assert.True(collection.Count == 1);
-                Assert.True(collection.First().Builder.City.Name == "London");
-                Assert.True(collection.First().Name == "One L1");
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal("One L1", collection.First().Name);
             }
         }
 
@@ -371,7 +371,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        static void Seed_Database(MyDbContext context)
+        static void SeedDatabase(MyDbContext context)
         {
             context.City.Add(new TCity { Name = "London" });
             context.City.Add(new TCity { Name = "Leeds" });

@@ -132,7 +132,7 @@ namespace AutoMapper.AspNet.OData
             if (PrimitiveHelper.IsNullableType(type))
                 type = Nullable.GetUnderlyingType(type);
 
-            return LiteralTypes.Contains(type);
+            return LiteralTypes.Contains(type) || typeof(Enum).IsAssignableFrom(type);
         }
 
         private static HashSet<Type> LiteralTypes => new HashSet<Type>(_literalTypes);
