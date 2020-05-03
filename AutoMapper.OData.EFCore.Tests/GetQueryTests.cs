@@ -146,6 +146,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
+                Assert.NotEqual(default, collection.First().Buildings.First().Builder.City.Name);
                 Assert.Equal("Two", collection.First().Name);
             }
         }
