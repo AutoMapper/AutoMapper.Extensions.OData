@@ -389,17 +389,21 @@ namespace AutoMapper.AspNet.OData
             {
                 if (parentType.IsList())
                 {
+                    Expression selectExpression = GetSelectExpression
+                    (
+                        parts.Skip(i),
+                        parent,
+                        listElementType,
+                        childValueMemberSelectors,
+                        childSelectorParameterName
+                    );
+
+                    AddChildSeelctors();
+
                     return Expression.Lambda
                     (
                         delegateType,
-                        GetSelectExpression
-                        (
-                            parts.Skip(i), 
-                            parent, 
-                            listElementType, 
-                            childValueMemberSelectors, 
-                            childSelectorParameterName
-                        ),
+                        selectExpression,
                         param
                     );
                 }
@@ -407,31 +411,13 @@ namespace AutoMapper.AspNet.OData
                 {
                     MemberInfo mInfo = parentType.GetMemberInfo(parts[i].MemberName);
                     parent = Expression.MakeMemberAccess(parent, mInfo);
-
                     parentType = mInfo.GetMemberType();
 
-                    /*For each expansion, and selectors for every select: explicit expansion*/
                     if (parentType.IsList())
                     {
                         listElementType = parentType.GetUnderlyingElementType();
                         ParameterExpression childParam = Expression.Parameter(listElementType, childSelectorParameterName);
                         childValueMemberSelectors.AddSelectors(listElementType, listElementType, parts[i].Selects, childParam, childParam);
-                        childValueMemberSelectors.ForEach(selector =>
-                        {
-                            valueMemberSelectors.Add(Expression.Lambda
-                            (
-                                delegateType,
-                                Expression.Call
-                                (
-                                    typeof(Enumerable),
-                                    "Select",
-                                    new Type[] { listElementType, typeof(object) },
-                                    parent,
-                                    selector
-                                ),
-                                param
-                            ));
-                        });
                     }
                     else
                     {
@@ -440,8 +426,7 @@ namespace AutoMapper.AspNet.OData
                 }
             }
 
-            if (parent.Type.IsValueType)//Convert value type expressions to object expressions otherwise
-                parent = Expression.Convert(parent, typeof(object));//Expression.Lambda below will throw an exception for value types
+            AddChildSeelctors();
 
             return Expression.Lambda
             (
@@ -449,6 +434,26 @@ namespace AutoMapper.AspNet.OData
                 parent,
                 param
             );
+
+            void AddChildSeelctors()
+            {
+                childValueMemberSelectors.ForEach(selector =>
+                {
+                    valueMemberSelectors.Add(Expression.Lambda
+                    (
+                        delegateType,
+                        Expression.Call
+                        (
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { listElementType, typeof(object) },
+                            parent,
+                            selector
+                        ),
+                        param
+                    ));
+                });
+            }
         }
 
         private static void AddSelectors(this List<LambdaExpression> valueMemberSelectors, Type sourceType, Type parentType, List<string> selects, ParameterExpression param, Expression parentBody)
