@@ -1,6 +1,13 @@
 # AutoMapper.Extensions.OData
 Creates LINQ expressions from ODataQueryOptions and executes the query.
 
+## NuGet Package Downloads
+
+[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNetCore.OData.EFCore?label=AutoMapper.AspNetCore.OData.EFCore)](https://www.nuget.org/packages/AutoMapper.AspNetCore.OData.EFCore/)  
+[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNetCore.OData.EF6?label=AutoMapper.AspNetCore.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNetCore.OData.EF6/)  
+[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNet.OData.EF6?label=AutoMapper.AspNet.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNet.OData.EF6/)  
+
+## Usage
 To use, call the Get or GetAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
 
 ```c#
