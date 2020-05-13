@@ -8,7 +8,7 @@ Creates LINQ expressions from ODataQueryOptions and executes the query.
 [![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNet.OData.EF6?label=AutoMapper.AspNet.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNet.OData.EF6/)  
 
 ## Usage
-To use, call the Get or GetAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
+To use, call the GetQueryAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
 
 ```c#
 public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options);
