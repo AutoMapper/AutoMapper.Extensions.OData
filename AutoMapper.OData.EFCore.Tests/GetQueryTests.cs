@@ -345,6 +345,17 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
+        [Fact]
+        public async void BuildingSelectName_WithoutOrder_WithoutTop()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$select=Name"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(4, collection.Count);
+            }
+        }
+
         private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
         {
             return 
