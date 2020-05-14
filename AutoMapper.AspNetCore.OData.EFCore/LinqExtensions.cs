@@ -57,7 +57,7 @@ namespace AutoMapper.AspNet.OData
         /// <returns></returns>
         public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options)
         {
-            if (options.OrderBy == null && options.Top == null && options.SelectExpand == null)
+            if (options.OrderBy == null && options.Top == null)
                 return null;
 
             ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
