@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="1.0.3" />
+    <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="1.0.4-preview02" />
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.2.1" />

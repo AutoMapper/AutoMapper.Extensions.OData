@@ -6,10 +6,10 @@
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Support limiting queries to specified columns.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixes Issue# 29, ArgumentNullException: "Value cannot be null." and Issue# 30, InvalidOperationException on "Get" for EF 6 (expanding literal types).</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
