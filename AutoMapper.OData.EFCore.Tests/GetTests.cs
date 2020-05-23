@@ -78,7 +78,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
-                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two", collection.First().Name);
             }
         }
@@ -104,7 +104,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two", collection.First().Name);
             }
         }
@@ -143,7 +143,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
-                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
                 Assert.Equal("Two", collection.First().Name);
@@ -185,9 +185,9 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(3, collection.Count);
+                Assert.Equal(4, collection.Count);
                 Assert.NotNull(collection.First().Builder.City);
-                Assert.Equal("Two L2", collection.First().Name);
+                Assert.Equal("Two L3", collection.First().Name);
             }
         }
 
@@ -212,10 +212,9 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, options.Request.ODataFeature().TotalCount);
-                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, options.Request.ODataFeature().TotalCount);
+                Assert.Equal(2, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
-                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
@@ -226,9 +225,8 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(4, collection.Count);
+                Assert.Equal(5, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
-                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
@@ -239,9 +237,8 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(4, collection.Count);
+                Assert.Equal(5, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
-                Assert.Equal("Two L2", collection.First().Name);
             }
         }
 
@@ -252,7 +249,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(4, collection.Count);
+                Assert.Equal(5, collection.Count);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("Two L1", collection.First().Name);
             }
@@ -261,7 +258,7 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1WithCount()
         {
-            string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true";
+            string query = "/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true";
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
@@ -279,7 +276,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(4, options.Request.ODataFeature().TotalCount);
+                Assert.Equal(5, options.Request.ODataFeature().TotalCount);
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
@@ -289,7 +286,7 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1NoCount()
         {
-            string query = "/corebuilding?$skip=3&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity";
+            string query = "/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity";
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
@@ -322,7 +319,48 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(4, collection.Count);
+                Assert.Equal(5, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void OpsTenantOrderByCountOfReference()
+        {
+            Test(await Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.NotNull(collection.First().Buildings);
+                Assert.Equal("Two", collection.First().Name);
+                Assert.Equal(3, collection.First().Buildings.Count);
+                Assert.Equal(2, collection.Last().Buildings.Count);
+            }
+        }
+
+        [Fact]
+        public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(5, collection.Count);
+                Assert.NotNull(collection.First().Tenant.Buildings);
+                Assert.Equal(3, collection.First().Tenant.Buildings.Count);
+                Assert.Equal(2, collection.Last().Tenant.Buildings.Count);
+            }
+        }
+
+        [Fact]
+        public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Builder($expand=City)&$orderby=Builder/City/Name desc"));
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(5, collection.Count);
+                Assert.NotNull(collection.First().Builder.City);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal("Leeds", collection.Last().Builder.City.Name);
             }
         }
 
@@ -380,7 +418,8 @@ namespace AutoMapper.OData.EFCore.Tests
                 Buildings = new List<TBuilding>
                 {
                     new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L1", BuilderId = builders.First(b => b.Name == "John").Id  },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L2", BuilderId = builders.First(b => b.Name == "Mark").Id  }
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L2", BuilderId = builders.First(b => b.Name == "Mark").Id  },
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L3", BuilderId = builders.First(b => b.Name == "Mark").Id  }
                 }
             });
             context.SaveChanges();
