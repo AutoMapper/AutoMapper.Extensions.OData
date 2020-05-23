@@ -90,15 +90,69 @@ namespace AutoMapper.AspNet.OData
                 );
             }
 
+            const string OrderBy = "OrderBy";
+            const string OrderByDescending = "OrderByDescending";
+            const string ThenBy = "ThenBy";
+            const string ThenByDescending = "ThenByDescending";
+
             return options.OrderBy.OrderByNodes.Aggregate(null, (Expression mce, OrderByNode orderByNode) =>
             {
-                OrderByPropertyNode propertyNode = (OrderByPropertyNode)orderByNode;
-                return mce == null
-                    ? expression.GetOrderByCall(propertyNode.GetPropertyPath(), orderByNode.Direction)
-                    : mce.GetThenByCall(propertyNode.GetPropertyPath(), orderByNode.Direction);
+                switch (orderByNode)
+                {
+                    case OrderByCountNode countNode:
+                        return mce == null
+                           ? expression.GetOrderByCountCall
+                                (
+                                    countNode.GetPropertyPath(),
+                                    orderByNode.Direction == OrderByDirection.Ascending
+                                        ? OrderBy
+                                        : OrderByDescending
+                                )
+                            : mce.GetOrderByCountCall
+                                (
+                                    countNode.GetPropertyPath(),
+                                    orderByNode.Direction == OrderByDirection.Ascending
+                                        ? ThenBy
+                                        : ThenByDescending
+                                );
+                    default:
+                        OrderByPropertyNode propertyNode = (OrderByPropertyNode)orderByNode;
+                        return mce == null
+                            ? expression.GetOrderByCall
+                                (
+                                    propertyNode.GetPropertyPath(),
+                                    orderByNode.Direction == OrderByDirection.Ascending 
+                                        ? OrderBy
+                                        : OrderByDescending
+                                )
+                            : mce.GetOrderByCall
+                                (
+                                    propertyNode.GetPropertyPath(), 
+                                    orderByNode.Direction == OrderByDirection.Ascending 
+                                        ? ThenBy
+                                        : ThenByDescending
+                                );
+                }
             })
             .GetSkipCall(options.Skip)
             .GetTakeCall(options.Top);
+        }
+
+        private static string GetPropertyPath(this OrderByCountNode countNode)
+        {
+            return GetPropertyPath((CountNode)countNode.OrderByClause.Expression);
+            string GetPropertyPath(CountNode countNode)
+            {
+                switch (countNode.Source)
+                {
+                    case CollectionNavigationNode navigationNode:
+                        return string.Join(".", navigationNode.NavigationSource.Path.PathSegments.Skip(1));
+                    case null:
+                        throw new ArgumentNullException(nameof(countNode.Source));
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(countNode.Source));
+                }
+            }
         }
 
         private static string GetPropertyPath(this OrderByPropertyNode propertyNode)
@@ -109,7 +163,7 @@ namespace AutoMapper.AspNet.OData
                 switch (singleValuePropertyAccess.Source)
                 {
                     case SingleNavigationNode navigationNode:
-                        return $"{string.Join(".", navigationNode.BindingPath.PathSegments)}.{propertyNode.Property.Name}";
+                        return $"{string.Join(".", navigationNode.NavigationSource.Path.PathSegments.Skip(1))}.{propertyNode.Property.Name}";
                     default:
                         return propertyNode.Property.Name;
                 }
@@ -144,28 +198,60 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Expression GetOrderByCall(this Expression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
+        private static Expression MakeSelector(this Expression expression, string memberFullName)
+            => memberFullName.Split('.')
+                .Aggregate
+                (
+                    expression,
+                    (ex, next) => Expression.MakeMemberAccess
+                    (
+                        ex,
+                        ex.Type.GetMemberInfo(next)
+                    )
+                );
+
+        private static MethodCallExpression GetEnumerableCountCall(this Expression expression, params Expression[] args)
+            => Expression.Call
+            (
+                typeof(Enumerable),
+                "Count",
+                new Type[] { expression.GetUnderlyingElementType() },
+                new Expression[] { expression }.Concat(args).ToArray()
+            );
+
+        public static LambdaExpression MakeLambdaExpression(this ParameterExpression param, Expression body)
+        {
+            Type[] typeArgs = new[] { param.Type, body.Type };//Generic arguments e.g. T1 and T2 MethodName<T1, T2>(method arguments)
+            Type delegateType = typeof(Func<,>).MakeGenericType(typeArgs);//Delegate type for the selector expression.  It takes a TSource and returns the sort property type
+            return Expression.Lambda(delegateType, body, param);//Resulting lambda expression for the selector.
+        }
+
+        public static Expression GetOrderByCountCall(this Expression expression, string memberFullName, string methodName, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
-            MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
+            ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
+            Expression countSelector = param.MakeSelector(memberFullName).GetEnumerableCountCall();
             return Expression.Call
             (
                 typeof(Queryable),
-                sortDirection == OrderByDirection.Ascending ? "OrderBy" : "OrderByDescending",
-                new Type[] { sourceType, memberInfo.GetMemberType() },
+                methodName,
+                new Type[] { sourceType, countSelector.Type },
                 expression,
-                memberFullName.GetTypedSelector(sourceType, selectorParameterName)
+                param.MakeLambdaExpression
+                (
+                    countSelector
+                )
             );
         }
 
-        public static Expression GetThenByCall(this Expression expression, string memberFullName, OrderByDirection sortDirection, string selectorParameterName = "a")
+        public static Expression GetOrderByCall(this Expression expression, string memberFullName, string methodName, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
             MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
             return Expression.Call
             (
                 typeof(Queryable),
-                sortDirection == OrderByDirection.Ascending ? "ThenBy" : "ThenByDescending",
+                methodName,
                 new Type[] { sourceType, memberInfo.GetMemberType() },
                 expression,
                 memberFullName.GetTypedSelector(sourceType, selectorParameterName)
