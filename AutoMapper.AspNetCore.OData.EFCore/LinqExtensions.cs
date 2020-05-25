@@ -146,7 +146,7 @@ namespace AutoMapper.AspNet.OData
                 switch (countNode.Source)
                 {
                     case CollectionNavigationNode navigationNode:
-                        return string.Join(".", navigationNode.NavigationSource.Path.PathSegments.Skip(1));
+                        return string.Join(".", new List<string>().GetReferencePath(navigationNode));
                     case null:
                         throw new ArgumentNullException(nameof(countNode.Source));
                     default:
@@ -163,10 +163,38 @@ namespace AutoMapper.AspNet.OData
                 switch (singleValuePropertyAccess.Source)
                 {
                     case SingleNavigationNode navigationNode:
-                        return $"{string.Join(".", navigationNode.NavigationSource.Path.PathSegments.Skip(1))}.{propertyNode.Property.Name}";
+                        return $"{string.Join(".", new List<string>().GetReferencePath(navigationNode))}.{propertyNode.Property.Name}";
                     default:
                         return propertyNode.Property.Name;
                 }
+            }
+        }
+
+        private static List<string> GetReferencePath(this List<string> list, SingleNavigationNode navigationNode)
+        {
+            switch (navigationNode.Source)
+            {
+                case SingleNavigationNode sourceNode:
+                    list.GetReferencePath(sourceNode);
+                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    return list;
+                default:
+                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    return list;
+            }
+        }
+
+        private static List<string> GetReferencePath(this List<string> list, CollectionNavigationNode navigationNode)
+        {
+            switch (navigationNode.Source)
+            {
+                case SingleNavigationNode sourceNode:
+                    list.GetReferencePath(sourceNode);
+                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    return list;
+                default:
+                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    return list;
             }
         }
 
