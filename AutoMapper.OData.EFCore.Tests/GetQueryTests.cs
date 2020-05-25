@@ -159,7 +159,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
-                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
                 Assert.Equal("Two", collection.First().Name);
