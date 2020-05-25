@@ -46,6 +46,9 @@
     <Reference Include="AutoMapper, Version=9.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
+    <Reference Include="AutoMapper.AspNet.OData.EF6, Version=1.0.5.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.1.0.5\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
+    </Reference>
     <Reference Include="AutoMapper.Extensions.ExpressionMapping, Version=3.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.Extensions.ExpressionMapping.3.1.0\lib\net461\AutoMapper.Extensions.ExpressionMapping.dll</HintPath>
     </Reference>
