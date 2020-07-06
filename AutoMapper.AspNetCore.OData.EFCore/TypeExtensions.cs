@@ -1,4 +1,4 @@
-﻿using AutoMapper.Configuration.Internal;
+﻿using AutoMapper.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,7 +129,7 @@ namespace AutoMapper.AspNet.OData
 
         public static bool IsLiteralType(this Type type)
         {
-            if (PrimitiveHelper.IsNullableType(type))
+            if (type.IsNullableType())
                 type = Nullable.GetUnderlyingType(type);
 
             return LiteralTypes.Contains(type) || typeof(Enum).IsAssignableFrom(type);

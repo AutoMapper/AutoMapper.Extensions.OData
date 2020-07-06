@@ -151,7 +151,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        [Fact(Skip = "ProjectTo does not load expanded child collections. #3379")]
+        [Fact]
         public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
