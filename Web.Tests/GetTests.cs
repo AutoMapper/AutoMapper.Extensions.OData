@@ -146,7 +146,7 @@ namespace Web.Tests
             }
         }
 
-        [Theory(Skip = "ProjectTo does not load expanded child collections. #3379")]
+        [Theory]
         [InlineData("16324")]
         [InlineData("19583")]
         [InlineData("18664")]
