@@ -338,18 +338,18 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        [Fact]
-        public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
-        {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
-            void Test(ICollection<CoreBuilding> collection)
-            {
-                Assert.Equal(5, collection.Count);
-                Assert.NotNull(collection.First().Tenant.Buildings);
-                Assert.Equal(3, collection.First().Tenant.Buildings.Count);
-                Assert.Equal(2, collection.Last().Tenant.Buildings.Count);
-            }
-        }
+        //[Fact]
+        //public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
+        //{
+        //    Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
+        //    void Test(ICollection<CoreBuilding> collection)
+        //    {
+        //        Assert.Equal(5, collection.Count);
+        //        Assert.NotNull(collection.First().Tenant.Buildings);
+        //        Assert.Equal(3, collection.First().Tenant.Buildings.Count);
+        //        Assert.Equal(2, collection.Last().Tenant.Buildings.Count);
+        //    }
+        //}
 
         [Fact]
         public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference()
