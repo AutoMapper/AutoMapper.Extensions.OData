@@ -13,5 +13,5 @@ if ($Env:REPO_OWNER -ne "AutoMapper") {
     Write-Host "${scriptName}: Only creates packages on AutoMapper repositories."
 } else {
     dotnet pack $PROJECT_PATH -c Release -o .\artifacts --no-build
-#    dotnet nuget push $NUGET_PACKAGE_PATH --skip-duplicate --source $Env:DEPLOY_PACKAGE_URL --api-key $Env:DEPLOY_PACKAGE_API_KEY
+    dotnet nuget push $NUGET_PACKAGE_PATH --skip-duplicate --source $Env:DEPLOY_PACKAGE_URL --api-key $Env:DEPLOY_PACKAGE_API_KEY
 }
