@@ -1,4 +1,6 @@
 ﻿using AutoMapper.AspNet.OData;
+using AutoMapper.OData.EFCore.Tests.Data;
+using AutoMapper.OData.EFCore.Tests.Model;
 using DAL.EFCore;
 using Domain.OData;
 using Microsoft.AspNet.OData.Extensions;
@@ -41,7 +43,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 )
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
-                .AddTransient<IApplicationBuilder>(sp => new Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder(sp))
+                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 
             serviceProvider = services.BuildServiceProvider();
@@ -391,6 +393,190 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.NotNull(collection.First().Builder.City);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("Leeds", collection.Last().Builder.City.Name);
+            }
+        }
+
+        private IQueryable<Category> GetCategories()
+         => new Category[]
+            {
+                new Category
+                {
+                    CategoryID = 1,
+                    CategoryName = "CategoryOne",
+                    Products = new Product[]
+                    {
+                        new Product
+                        {
+                            ProductID = 1,
+                            ProductName = "ProductOne",
+                            AlternateAddresses = new Address[]
+                            {
+                                new Address { AddressID = 1, City = "CityOne" },
+                                new Address { AddressID = 2, City = "CityTwo"  },
+                            }
+                        },
+                        new Product
+                        {
+                            ProductID = 2,
+                            ProductName = "ProductTwo",
+                            AlternateAddresses = new Address[0]
+                        }
+                    }
+                },
+                new Category
+                {
+                    CategoryID = 2,
+                    CategoryName = "CategoryTwo",
+                    Products =  new Product[]
+                    {
+                        new Product
+                        {
+                            AlternateAddresses = new Address[0]
+                        }
+                    }
+                }
+            }.AsQueryable();
+
+        [Fact]
+        public async void FilteringOnRoot_AndChildCollection_WithMatches()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne')&$filter=CategoryName eq 'CategoryOne'",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Single(collection);
+                Assert.Single(collection.First().Products);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_AndChildCollection_WithNoMatches()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Equal(2, collection.First().Products.Count);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_AndChildCollection_WithNoMatches_SortRootAndChildCollection()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal("CategoryOne", collection.First().CategoryName);
+                Assert.Equal("ProductTwo", collection.First().Products.First().ProductName);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_ChildCollection_AndChildCollectionOfChildCollection_WithMatches()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne';$expand=AlternateAddresses($filter=City eq 'CityOne'))&$filter=CategoryName eq 'CategoryOne'",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Single(collection);
+                Assert.Single(collection.First().Products);
+                Assert.Single(collection.First().Products.First().AlternateAddresses);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_ChildCollection_AndChildCollectionOfChildCollection_WithNoMatches()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_ChildCollection_AndChildCollectionOfChildCollection_WithNoMatches_SortRoot_AndChildCollection_AndChildCollectionOfChildCollection()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc))&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal("CategoryOne", collection.First().CategoryName);
+                Assert.Equal("ProductOne", collection.First().Products.First().ProductName);
+                Assert.Equal("CityTwo", collection.First().Products.First().AlternateAddresses.First().City);
+            }
+        }
+
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
+        {
+            return
+            (
+                await DoGet
+                (
+                    serviceProvider.GetRequiredService<IMapper>()
+                )
+            ).ToList();
+
+            async Task<IQueryable<TModel>> DoGet(IMapper mapper)
+            {
+                return await dataQueryable.GetQueryAsync
+                (
+                    mapper,
+                    options ?? ODataHelpers.GetODataQueryOptions<TModel>
+                    (
+                        query,
+                        serviceProvider,
+                        serviceProvider.GetRequiredService<IRouteBuilder>()
+                    ),
+                    HandleNullPropagationOption.False
+                );
             }
         }
 

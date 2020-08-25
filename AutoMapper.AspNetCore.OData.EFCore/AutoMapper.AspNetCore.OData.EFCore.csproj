@@ -19,12 +19,16 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.0,5.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
     <PackageReference Include="MinVer" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\.NetStandardGit\LogicBuilder\LogicBuilder.DataComponents\LogicBuilder.Expressions.Utils\LogicBuilder.Expressions.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

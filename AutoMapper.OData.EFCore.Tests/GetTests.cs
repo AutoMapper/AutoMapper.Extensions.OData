@@ -8,7 +8,6 @@ using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,7 +46,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 )
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
-                .AddTransient<IApplicationBuilder>(sp => new Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder(sp))
+                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 
             serviceProvider = services.BuildServiceProvider();
@@ -439,19 +438,28 @@ namespace AutoMapper.OData.EFCore.Tests
 
             routeBuilder.EnableDependencyInjection();
 
-            Uri uri = new Uri(BASEADDRESS + queryString);
-
             return new ODataQueryOptions<T>
             (
                 new ODataQueryContext(model, typeof(T), path),
-                new DefaultHttpRequest(new DefaultHttpContext() { RequestServices = serviceProvider })
-                {
-                    Method = "GET",
-                    Host = new HostString(uri.Host, uri.Port),
-                    Path = uri.LocalPath,
-                    QueryString = new QueryString(uri.Query)
-                }
+                BuildRequest
+                (
+                    new DefaultHttpContext()
+                    {
+                        RequestServices = serviceProvider
+                    }.Request,
+                    new Uri(BASEADDRESS + queryString)
+                )
             );
+
+            static HttpRequest BuildRequest(HttpRequest request, Uri uri)
+            {
+                request.Method = "GET";
+                request.Host = new HostString(uri.Host, uri.Port);
+                request.Path = uri.LocalPath;
+                request.QueryString = new QueryString(uri.Query);
+
+                return request;
+            }
 
         }
 

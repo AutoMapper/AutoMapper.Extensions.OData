@@ -1,0 +1,777 @@
+﻿using LogicBuilder.Expressions.Utils;
+using LogicBuilder.Expressions.Utils.FilterBuilder;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Arithmetic;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Cacnonical;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Conversions;
+using LogicBuilder.Expressions.Utils.FilterBuilder.DateTimeOperators;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Lambda;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Logical;
+using LogicBuilder.Expressions.Utils.FilterBuilder.Operand;
+using LogicBuilder.Expressions.Utils.FilterBuilder.StringOperators;
+using Microsoft.OData;
+using Microsoft.OData.Edm;
+using Microsoft.OData.UriParser;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
+
+namespace AutoMapper.AspNet.OData
+{
+    public class FilterHelper
+    {
+        public FilterHelper(IDictionary<string, ParameterExpression> parameters, Type underlyingElementType)
+        {
+            this.parameters = parameters;
+            parameterTypes.Push(underlyingElementType);
+        }
+
+        private readonly IDictionary<string, ParameterExpression> parameters;
+        private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
+        private readonly Stack<Type> parameterTypes = new Stack<Type>();
+
+        public FilterPart GetFilterPart(QueryNode queryNode)
+            => queryNode switch
+            {
+                SingleValueNode singleValueNode => GetFilterPart(singleValueNode),
+                CollectionNode collectionNode => GetFilterPart(collectionNode),
+                _ => throw new ArgumentException(nameof(queryNode)),
+            };
+
+        public FilterPart GetFilterPart(SingleValueNode singleValueNode)
+        {
+            return singleValueNode.Kind switch
+            {
+                QueryNodeKind.All => GetAllNodeFilterPart((AllNode)singleValueNode),
+                QueryNodeKind.Any => GetAnyNodeFilterPart((AnyNode)singleValueNode),
+                QueryNodeKind.BinaryOperator => GetBinaryOperatorFilterPart((BinaryOperatorNode)singleValueNode),
+                QueryNodeKind.Constant => GetConstantOperandFilterPart((ConstantNode)singleValueNode),
+                QueryNodeKind.Convert => GetConvertOperandFilterPart((ConvertNode)singleValueNode),
+                QueryNodeKind.In => GetInFilterPart((InNode)singleValueNode),
+                QueryNodeKind.NonResourceRangeVariableReference => GetNonResourceRangeVariableReferenceNodeFilterPart((NonResourceRangeVariableReferenceNode)singleValueNode),
+                QueryNodeKind.ResourceRangeVariableReference => GetResourceRangeVariableReferenceNodeFilterPart((ResourceRangeVariableReferenceNode)singleValueNode),
+                QueryNodeKind.SingleComplexNode => GetSingleComplexNodeFilterPart((SingleComplexNode)singleValueNode),
+                QueryNodeKind.SingleNavigationNode => GetSingleNavigationNodeFilterPart((SingleNavigationNode)singleValueNode),
+                QueryNodeKind.SingleResourceCast => GetSingleResourceCastFilterPart((SingleResourceCastNode)singleValueNode),
+                QueryNodeKind.SingleResourceFunctionCall => GetSingleResourceFunctionCallNodeFilterPart((SingleResourceFunctionCallNode)singleValueNode),
+                QueryNodeKind.SingleValueFunctionCall => GetSingleValueFunctionCallNodeFilterPart((SingleValueFunctionCallNode)singleValueNode),
+                QueryNodeKind.SingleValueOpenPropertyAccess => GetSingleValueOpenPropertyAccessFilterPart((SingleValueOpenPropertyAccessNode)singleValueNode),
+                QueryNodeKind.SingleValuePropertyAccess => GetSingleValuePropertyAccessFilterPart((SingleValuePropertyAccessNode)singleValueNode),
+                QueryNodeKind.UnaryOperator => GetUnaryOperatorNodeFilterPart((UnaryOperatorNode)singleValueNode),
+                _ => throw new ArgumentException($"Unsupported {singleValueNode.Kind.GetType().Name} value: {singleValueNode.Kind}"),
+            };
+        }
+
+        private FilterPart GetSingleValueOpenPropertyAccessFilterPart(SingleValueOpenPropertyAccessNode singleValueNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        private FilterPart GetSingleComplexNodeFilterPart(SingleComplexNode singleComplexNode)
+        {
+            string propertyName = singleComplexNode.Property.Name;
+
+            return DoGet
+            (
+                GetClrType(singleComplexNode.Source.TypeReference).GetMemberInfo(propertyName).GetMemberType(),
+                GetClrType(singleComplexNode.TypeReference)
+            );
+
+            FilterPart DoGet(Type memberType, Type fromEdmType)
+            {
+                if (ShouldConvertTypes(memberType, fromEdmType, singleComplexNode))
+                {
+                    return ConvertNonStandardTypes
+                    (
+                        memberType,
+                        fromEdmType,
+                        new MemberSelector
+                        (
+                            parameters,
+                            propertyName,
+                            GetFilterPart(singleComplexNode.Source)
+                        )
+                    );
+                }
+
+                return new MemberSelector
+                (
+                    parameters,
+                    propertyName,
+                    GetFilterPart(singleComplexNode.Source)
+                );
+            }
+        }
+
+        private FilterPart GetSingleResourceCastFilterPart(SingleResourceCastNode singleResourceCastNode)
+            => new CastOperator
+            (
+                this.parameters,
+                GetFilterPart(singleResourceCastNode.Source),
+                GetClrType(singleResourceCastNode.TypeReference)
+            );
+
+        private FilterPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
+            => new ParameterOperator
+            (
+                parameters,
+                nonResourceRangeVariableReferenceNode.RangeVariable.Name
+            );
+
+        private FilterPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
+            => new ParameterOperator
+            (
+                parameters,
+                resourceRangeVariableReferenceNode.RangeVariable.Name
+            );
+
+        private bool IsTrueConstantExpression(SingleValueNode node)
+        {
+            if (node.Kind != QueryNodeKind.Constant)
+                return false;
+
+            return ValueIsTrue((ConstantNode)node);
+
+            bool ValueIsTrue(ConstantNode constantNode)
+            {
+                if (constantNode.Value == null)
+                    return false;
+
+                Type constantType = GetClrType(constantNode.TypeReference).ToNullableUnderlyingType();
+                if (constantType != typeof(bool) && constantType != typeof(bool?))
+                    return false;
+
+                return (bool)constantNode.Value;
+            }
+        }
+
+        private FilterPart GetAnyNodeFilterPart(AnyNode anyNode)
+            => GetLamnbdaNodeFilterPart<AnyOperator>(anyNode);
+
+        private FilterPart GetAllNodeFilterPart(AllNode allNode)
+            => GetLamnbdaNodeFilterPart<AllOperator>(allNode);
+
+        private T CreateLambdaNodeFilterPartInstance<T>(params object[] args) where T : FilterPart
+           => (T)Activator.CreateInstance(typeof(T), args);
+
+        private FilterPart GetLamnbdaNodeFilterPart<T>(LambdaNode lambdaNode) where T : FilterPart
+        {
+            if (lambdaNode.Body == null || IsTrueConstantExpression(lambdaNode.Body))
+                return CreateLambdaNodeFilterPartInstance<T>(parameters, GetFilterPart(lambdaNode.Source));
+
+            //Creating filter part for method call expression with a filter
+            //e.g. $it.Property.ChildCollection.Any(c => c.Active);
+            return CreateLambdaNodeFilterPartInstance<T>
+            (
+                parameters,
+                GetFilterPart(lambdaNode.Source), //source =$it.Property.ChildCollection
+                GetFilterPart(lambdaNode.Body), //body = c.Active.
+                lambdaNode.CurrentRangeVariable.Name//current range variable name is c
+            );
+        }
+
+        private FilterPart GetSingleResourceFunctionCallNodeFilterPart(SingleResourceFunctionCallNode singleResourceFunctionCallNode)
+        {
+            return GetFunctionCallFilterPart(singleResourceFunctionCallNode.Parameters.ToList());
+
+            FilterPart GetFunctionCallFilterPart(List<QueryNode> arguments)
+            {
+                return singleResourceFunctionCallNode.Name switch
+                {
+                    "cast" => GetCastResourceFilterPart(arguments),
+                    _ => throw new ArgumentException($"Unsupported SingleResourceFunctionCall value: {singleResourceFunctionCallNode.Name}"),
+                };
+            }
+        }
+
+        private FilterPart GetSingleValueFunctionCallNodeFilterPart(SingleValueFunctionCallNode singleValueFunctionCallNode)
+        {
+            return GetFunctionCallFilterPart(singleValueFunctionCallNode.Parameters.ToList());
+
+            FilterPart GetFunctionCallFilterPart(List<QueryNode> arguments)
+                => singleValueFunctionCallNode.Name switch
+                {
+                    "cast" => GetCastFilterPart(arguments),
+                    "ceiling" => new CeilingOperator(parameters, GetFilterPart(arguments[0])),
+                    "concat" => new ConcatOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "contains" => new ContainsOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "date" => GetFilterPart(arguments[0]), //new DateOperator(parameters, GetFilterPart(arguments[0])),
+                                                           //EF does not support Date/TimeOfDay selectors
+                    "day" => new DayOperator(parameters, GetFilterPart(arguments[0])),
+                    "endswith" => new EndsWithOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "floor" => new FloorOperator(parameters, GetFilterPart(arguments[0])),
+                    "fractionalseconds" => new FractionalSecondsOperator(parameters, GetFilterPart(arguments[0])),
+                    "hour" => new HourOperator(parameters, GetFilterPart(arguments[0])),
+                    "indexof" => new IndexOfOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "isof" => GetIsOdFilterPart(arguments),
+                    "length" => new LengthOperator(parameters, GetFilterPart(arguments[0])),
+                    "minute" => new MinuteOperator(parameters, GetFilterPart(arguments[0])),
+                    "month" => new MonthOperator(parameters, GetFilterPart(arguments[0])),
+                    "now" => new NowDateTimeOperator(parameters),
+                    "round" => new RoundOperator(parameters, GetFilterPart(arguments[0])),
+                    "second" => new SecondOperator(parameters, GetFilterPart(arguments[0])),
+                    "startswith" => new StartsWithOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "substring" => new SubstringOperator
+                    (
+                        parameters,
+                        GetFilterPart(arguments[0]),//initial string
+                        arguments.Skip(1).Select(arg => GetFilterPart(arg)).ToArray()//starting index or (starting and ending indexes)
+                    ),
+                    "time" => GetFilterPart(arguments[0]), //new TimeOperator(parameters, GetFilterPart(arguments[0])),
+                                                           //EF does not support Date/TimeOfDay selectors
+                    "tolower" => new TolowerOperator(parameters, GetFilterPart(arguments[0])),
+                    "toupper" => new ToUpperOperator(parameters, GetFilterPart(arguments[0])),
+                    "trim" => new TrimOperator(parameters, GetFilterPart(arguments[0])),
+                    "year" => new YearOperator(parameters, GetFilterPart(arguments[0])),
+                    _ => GetCustomMehodFilterPart(singleValueFunctionCallNode.Name, arguments.OfType<SingleValueNode>().ToArray()),
+                };
+        }
+
+        private FilterPart GetIsOdFilterPart(List<QueryNode> arguments)
+        {
+            if (!(arguments[0] is SingleValueNode sourceNode))
+                throw new ArgumentException("Expected SingleValueNode for source node.");
+
+            if (!(arguments[1] is ConstantNode typeNode))
+                throw new ArgumentException("Expected ConstantNode for type node.");
+
+            return IsOf(GetCastType(typeNode));
+
+            FilterPart IsOf(Type conversionType)
+                => new IsOfOperator(parameters, GetFilterPart(sourceNode), conversionType);
+        }
+
+        private FilterPart GetCastResourceFilterPart(List<QueryNode> arguments)
+        {
+            if (!(arguments[0] is SingleValueNode sourceNode))
+                throw new ArgumentException("Expected SingleValueNode for source node.");
+
+            if (!(arguments[1] is ConstantNode typeNode))
+                throw new ArgumentException("Expected ConstantNode for type node.");
+
+            return Convert
+            (
+                GetClrType(sourceNode.TypeReference),
+                GetCastType(typeNode)
+            );
+
+            FilterPart Convert(Type operandType, Type conversionType)
+            {
+                if (OperandIsNullConstant(sourceNode) || operandType == conversionType)
+                    return GetFilterPart(sourceNode);
+
+                if (!(operandType.IsAssignableFrom(conversionType) || conversionType.IsAssignableFrom(operandType)))
+                    return new ConstantOperand(parameters, null);
+
+                if (ShouldConvertTypes(operandType, conversionType, sourceNode))
+                {
+
+                    return new CastOperator
+                    (
+                        this.parameters,
+                        GetFilterPart(sourceNode),
+                        conversionType
+                    );
+                }
+
+                return GetFilterPart(sourceNode);
+            }
+        }
+
+        private FilterPart GetCastFilterPart(List<QueryNode> arguments)
+        {
+            if (!(arguments[0] is SingleValueNode sourceNode))
+                throw new ArgumentException("Expected SingleValueNode for source node.");
+
+            if (!(arguments[1] is ConstantNode typeNode))
+                throw new ArgumentException("Expected ConstantNode for type node.");
+
+            return Convert
+            (
+                GetClrType(sourceNode.TypeReference),
+                GetCastType(typeNode)
+            );
+
+            FilterPart Convert(Type operandType, Type conversionType)
+            {
+                if (OperandIsNullConstant(sourceNode) || operandType == conversionType)
+                    return GetFilterPart(sourceNode);
+
+                if (ShouldConvertTypes(operandType, conversionType, sourceNode))
+                {
+                    if ((!typeNode.TypeReference.IsPrimitive() && !typeNode.TypeReference.IsEnum())
+                        || (!operandType.IsLiteralType() && !operandType.ToNullableUnderlyingType().IsEnum))
+                        return new ConstantOperand(parameters, null);
+
+                    if (conversionType == typeof(string))
+                        return new ConvertToStringOperator(parameters, GetFilterPart(sourceNode));
+
+                    if (conversionType.IsEnum)
+                    {
+                        if (!(sourceNode is ConstantNode enumSourceNode))
+                        {
+                            if (GetClrType(sourceNode.TypeReference) == typeof(string))
+                                return new ConstantOperand(parameters, null);
+
+                            throw new ArgumentException("Expected ConstantNode for enum source node.");
+                        }
+
+                        return new ConvertToEnumOperator
+                        (
+                            parameters,
+                            conversionType,
+                            GetConstantNodeValue(enumSourceNode, conversionType)
+                        );
+                    }
+
+                    return new ConvertOperand
+                    (
+                        this.parameters,
+                        conversionType,
+                        GetFilterPart(sourceNode)
+                    );
+                }
+
+                return GetFilterPart(sourceNode);
+            }
+        }
+
+        private Type GetCastType(ConstantNode constantNode)
+            => TypeExtensions.GetClrType((string)constantNode.Value, false, typesCache);
+
+        private FilterPart GetCustomMehodFilterPart(string functionName, SingleValueNode[] arguments)
+        {
+            MethodInfo methodInfo = CustomMethodCache.GetCachedCustomMethod(functionName, arguments.Select(p => GetClrType(p.TypeReference)));
+            if (methodInfo == null)
+                throw new NotImplementedException($"Unsupported SingleValueFunctionCall name - value: {functionName}");
+
+            return new CustomMethodOperator
+            (
+                parameters,
+                methodInfo,
+                arguments.Select(arg => GetFilterPart(arg)).ToArray()
+            );
+        }
+
+        private FilterPart GetUnaryOperatorNodeFilterPart(UnaryOperatorNode unaryOperatorNode)
+            => unaryOperatorNode.OperatorKind switch
+            {
+                UnaryOperatorKind.Negate => new NegateOperator(parameters, GetFilterPart(unaryOperatorNode.Operand)),
+                UnaryOperatorKind.Not => new NotOperator(parameters, GetFilterPart(unaryOperatorNode.Operand)),
+                _ => throw new ArgumentException($"Unsupported {unaryOperatorNode.OperatorKind.GetType().Name} value: {unaryOperatorNode.OperatorKind}"),
+            };
+
+        private FilterPart GetConvertOperandFilterPart(ConvertNode covertNode)
+        {
+            return Convert
+            (
+                covertNode.Source.TypeReference == null
+                ? typeof(object)
+                : GetClrType(covertNode.Source.TypeReference),
+                GetClrType(covertNode.TypeReference)
+            );
+
+
+            FilterPart Convert(Type operandType, Type conversionType)
+            {
+                if (ShouldConvertTypes(operandType, conversionType, covertNode.Source))
+                {
+                    return new ConvertOperand
+                    (
+                        this.parameters,
+                        conversionType,
+                        GetFilterPart(covertNode.Source)
+                    );
+                }
+
+                return GetFilterPart(covertNode.Source);
+            }
+        }
+
+        private static bool ShouldConvertTypes(Type original, Type conversion, SingleValueNode operand)
+                => original != conversion
+                    && !ConvertingUnderlyingTypeToNullable(original, conversion)
+                    && !BothTypesDateTimeRelated(original, conversion)
+                    && !OperandIsNullConstant(operand);
+
+        private static bool ConvertingUnderlyingTypeToNullable(Type original, Type conversion)
+            => conversion.IsNullableType() && Nullable.GetUnderlyingType(conversion) == original;
+
+        private static bool BothTypesDateRelated(Type leftType, Type rightType)
+        {
+            leftType = leftType.ToNullableUnderlyingType();
+            rightType = rightType.ToNullableUnderlyingType();
+
+            return Constants.DateRelatedTypes.Contains(leftType) && Constants.DateRelatedTypes.Contains(rightType);
+        }
+
+        private static bool BothTypesDateTimeRelated(Type original, Type conversion)
+        {
+            original = original.ToNullableUnderlyingType();
+            conversion = conversion.ToNullableUnderlyingType();
+
+            return Constants.DateTimeRelatedTypes.Contains(original) && Constants.DateTimeRelatedTypes.Contains(conversion);
+        }
+
+        private static bool OperandIsNullConstant(QueryNode operand)
+        {
+            if (operand is ConvertNode converMode)
+                return OperandIsNullConstant(converMode.Source);
+
+            if (operand is SingleValueFunctionCallNode singleValueFunctionCallNode
+                && singleValueFunctionCallNode.Name == "cast")
+                return OperandIsNullConstant(singleValueFunctionCallNode.Parameters.First());
+
+            return operand.Kind == QueryNodeKind.Constant && ((ConstantNode)operand).Value == null;
+        }
+
+        public FilterPart GetFilterPart(CollectionNode collectionNode)
+        {
+            return collectionNode.Kind switch
+            {
+                QueryNodeKind.CollectionConstant => GetCollectionConstantFilterPart((CollectionConstantNode)collectionNode),
+                QueryNodeKind.CollectionNavigationNode => GetCollectionNavigationNodeFilterPart((CollectionNavigationNode)collectionNode),
+                QueryNodeKind.CollectionPropertyAccess => GetCollectionPropertyAccessNodeFilterPart((CollectionPropertyAccessNode)collectionNode),
+                QueryNodeKind.CollectionComplexNode => GetCollectionComplexNodeFilterPart((CollectionComplexNode)collectionNode),
+                QueryNodeKind.CollectionResourceCast => GetCollectionResourceCastFilterPart((CollectionResourceCastNode)collectionNode),
+                _ => throw new ArgumentException($"Unsupported {collectionNode.Kind.GetType().Name} value: {collectionNode.Kind}"),
+            };
+        }
+
+        private FilterPart GetCollectionResourceCastFilterPart(CollectionResourceCastNode collectionResourceCastNode)
+            => new CollectionCastOperator
+            (
+                parameters,
+                GetFilterPart(collectionResourceCastNode.Source),
+                GetClrType(collectionResourceCastNode.ItemType)
+            );
+
+        private FilterPart GetCollectionComplexNodeFilterPart(CollectionComplexNode collectionComplexNode)
+            => new MemberSelector
+            (
+                parameters,
+                collectionComplexNode.Property.Name,
+                GetFilterPart(collectionComplexNode.Source)
+            );
+
+        private FilterPart GetCollectionPropertyAccessNodeFilterPart(CollectionPropertyAccessNode collectionPropertyAccessNode)
+            => new MemberSelector
+            (
+                parameters,
+                collectionPropertyAccessNode.Property.Name,
+                GetFilterPart(collectionPropertyAccessNode.Source)
+            );
+
+        private FilterPart GetCollectionNavigationNodeFilterPart(CollectionNavigationNode collectionNavigationNode)
+            => new MemberSelector
+            (
+                parameters,
+                collectionNavigationNode.NavigationProperty.Name,
+                GetFilterPart(collectionNavigationNode.Source)
+            );
+
+        private FilterPart GetCollectionConstantFilterPart(CollectionConstantNode collectionNode)
+        {
+            Type elemenType = GetClrType(collectionNode.ItemType);
+
+            return new CollectionConstantOperand
+            (
+                parameters,
+                elemenType,
+                GetCollectionParameter(elemenType.ToNullableUnderlyingType())
+            );
+
+            ICollection<object> GetCollectionParameter(Type underlyingType)
+            {
+                if (!underlyingType.IsEnum)
+                    return collectionNode.Collection.Select(item => item.Value).ToList();
+
+                return collectionNode.Collection.Select
+                (
+                    item => GetConstantNodeValue(item, underlyingType)
+                ).ToList();
+            }
+        }
+
+        private static object GetConstantNodeValue(ConstantNode constantNode, Type enumType)
+            => constantNode.Value is ODataEnumValue oDataEnum
+                ? GetEnumValue(oDataEnum, enumType)
+                : constantNode.Value;
+
+        private static object GetEnumValue(ODataEnumValue oDataEnum, Type enumType)
+                => !(oDataEnum.Value ?? "").TryParseEnum(enumType, out object result) ? null : result;
+
+        private Type GetClrType(IEdmTypeReference typeReference)
+            => TypeExtensions.GetClrType(typeReference, typesCache);
+
+        private FilterPart GetSingleValuePropertyAccessFilterPart(SingleValuePropertyAccessNode singleValuePropertyAccesNode)
+        {
+            Type parentType = GetClrType(singleValuePropertyAccesNode.Source.TypeReference);
+            string propertyName = singleValuePropertyAccesNode.Property.Name;
+
+            return DoGet
+            (
+                parentType.GetMemberInfo(propertyName).GetMemberType(),
+                GetClrType(singleValuePropertyAccesNode.TypeReference)
+            );
+
+            FilterPart DoGet(Type memberType, Type fromEdmType)
+            {
+                if (ShouldConvertTypes(memberType, fromEdmType, singleValuePropertyAccesNode))
+                {
+                    return ConvertNonStandardTypes
+                    (
+                        memberType,
+                        fromEdmType,
+                        new MemberSelector
+                        (
+                            parameters,
+                            propertyName,
+                            GetFilterPart(singleValuePropertyAccesNode.Source)
+                        )
+                    );
+                }
+
+                return new MemberSelector
+                (
+                    parameters,
+                    propertyName,
+                    GetFilterPart(singleValuePropertyAccesNode.Source)
+                );
+            }
+        }
+
+        private FilterPart GetSingleNavigationNodeFilterPart(SingleNavigationNode singleNavigationNode)
+            => new MemberSelector
+            (
+                parameters,
+                singleNavigationNode.NavigationProperty.Name,
+                GetFilterPart(singleNavigationNode.Source)
+            );
+
+        private FilterPart ConvertNonStandardTypes(Type sourceType, Type fromEdmType, FilterPart sourceFilterPart)
+        {
+            return DoConvert(sourceType.ToNullableUnderlyingType());
+            FilterPart DoConvert(Type sourceUnderlyingType)
+            {
+                if (fromEdmType == typeof(string))
+                {
+                    return sourceUnderlyingType.FullName switch
+                    {
+                        "System.Char[]" => new ConvertCharArrayToStringOperator(parameters, GetSourceFilterPart(sourceUnderlyingType)),
+                        _ => new ConvertToStringOperator(parameters, GetSourceFilterPart(sourceUnderlyingType)),
+                    };
+                }
+
+                return new ConvertOperand
+                (
+                    parameters,
+                    fromEdmType,
+                    GetSourceFilterPart(sourceUnderlyingType)
+                );
+            }
+
+            FilterPart GetSourceFilterPart(Type sourceUnderlyingType)
+            {
+                switch (sourceUnderlyingType.FullName)
+                {
+                    case "System.UInt16":
+                    case "System.UInt32":
+                    case "System.UInt64":
+                    case "System.Char":
+                        return sourceUnderlyingType == sourceType
+                                ? sourceFilterPart
+                                : new ConvertToNullableUnderlyingValueOperator(parameters, sourceFilterPart);
+                    default:
+                        return sourceFilterPart;
+                }
+            }
+        }
+
+        public FilterPart GetBinaryOperatorFilterPart(BinaryOperatorNode binaryOperatorNode)
+        {
+            var left = GetFilterPart(binaryOperatorNode.Left);
+            var right = GetFilterPart(binaryOperatorNode.Right);
+
+            if (ShouldConvertToNumericDate(binaryOperatorNode))
+            {
+                left = new ConvertToNumericDate(parameters, left);
+                right = new ConvertToNumericDate(parameters, right);
+            }
+
+            if (ShouldConvertToNumericTime(binaryOperatorNode))
+            {
+                left = new ConvertToNumericTime(parameters, left);
+                right = new ConvertToNumericTime(parameters, right);
+            }
+
+            switch (binaryOperatorNode.OperatorKind)
+            {
+                case BinaryOperatorKind.Or:
+                    return new OrBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.And:
+                    return new AndBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Equal:
+                    return new EqualsBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.NotEqual:
+                    return new NotEqualsBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.GreaterThan:
+                    return new GreaterThanBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.GreaterThanOrEqual:
+                    return new GreaterThanOrEqualsBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.LessThan:
+                    return new LessThanBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.LessThanOrEqual:
+                    return new LessThanOrEqualsBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Add:
+                    return new AddBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Subtract:
+                    return new SubtractBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Multiply:
+                    return new MultiplyBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Divide:
+                    return new DivideBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Modulo:
+                    return new ModuloBinaryOperator
+                    (
+                        this.parameters,
+                        left,
+                        right
+                    );
+                case BinaryOperatorKind.Has:
+                    if (binaryOperatorNode.Right is ConstantNode constantNode
+                        && constantNode.Value is Microsoft.OData.ODataEnumValue oDataEnum)
+                    {
+                        return new HasOperator
+                        (
+                            this.parameters,
+                            left,
+                            new ConstantOperand
+                            (
+                                this.parameters,
+                                typeof(string),
+                                oDataEnum.Value
+                            )
+                        );
+                    }
+
+                    throw new ArgumentException($"Unsupported RHS {binaryOperatorNode.Right.Kind.GetType().Name} operand type for  BinaryOperatorKind.Has. Value: {binaryOperatorNode.Right.Kind}");
+                default:
+                    throw new ArgumentException($"Unsupported {binaryOperatorNode.OperatorKind.GetType().Name} value: {binaryOperatorNode.OperatorKind}");
+            }
+        }
+
+        private bool ShouldConvertToNumericDate(BinaryOperatorNode binaryOperatorNode)
+        {
+            if (OperandIsNullConstant(binaryOperatorNode.Left) || OperandIsNullConstant(binaryOperatorNode.Right))
+                return false;
+
+            return ShouldConvert
+            (
+                GetClrType(binaryOperatorNode.Left.TypeReference).ToNullableUnderlyingType(),
+                GetClrType(binaryOperatorNode.Right.TypeReference).ToNullableUnderlyingType()
+            );
+
+            static bool ShouldConvert(Type leftType, Type rightType)
+                => BothTypesDateRelated(leftType, rightType) && (leftType == typeof(Date) || rightType == typeof(Date));
+        }
+
+        private bool ShouldConvertToNumericTime(BinaryOperatorNode binaryOperatorNode)
+        {
+            if (OperandIsNullConstant(binaryOperatorNode.Left) || OperandIsNullConstant(binaryOperatorNode.Right))
+                return false;
+
+            return ShouldConvert
+            (
+                GetClrType(binaryOperatorNode.Left.TypeReference).ToNullableUnderlyingType(),
+                GetClrType(binaryOperatorNode.Right.TypeReference).ToNullableUnderlyingType()
+            );
+
+            static bool ShouldConvert(Type leftType, Type rightType)
+                => BothTypesDateTimeRelated(leftType, rightType) && (leftType == typeof(TimeOfDay) || rightType == typeof(TimeOfDay));
+        }
+
+        public FilterPart GetConstantOperandFilterPart(ConstantNode constantNode)
+        {
+            return GetFilterPart(constantNode.Value == null ? typeof(object) : GetClrType(constantNode.TypeReference));
+
+            FilterPart GetFilterPart(Type constantType)
+                => new ConstantOperand
+                (
+                    this.parameters,
+                    constantType,
+                    GetConstantNodeValue(constantNode, constantType)
+                );
+        }
+
+        public FilterPart GetInFilterPart(InNode inNode)
+            => new InOperator
+            (
+                this.parameters,
+                GetFilterPart(inNode.Left),
+                GetFilterPart(inNode.Right)
+            );
+    }
+}
