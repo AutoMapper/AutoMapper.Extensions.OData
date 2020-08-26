@@ -1,4 +1,4 @@
-﻿using FilterBuilder.Tests.Data;
+﻿using ExpressionBuilder.Tests.Data;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FilterBuilder.Tests
+namespace ExpressionBuilder.Tests
 {
     public static class ODataHelpers
     {

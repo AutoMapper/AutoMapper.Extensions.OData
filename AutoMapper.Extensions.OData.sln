@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Tests", "Web.Tests\Web.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogicBuilder.Expressions.Utils", "..\..\..\..\.NetStandardGit\LogicBuilder\LogicBuilder.DataComponents\LogicBuilder.Expressions.Utils\LogicBuilder.Expressions.Utils.csproj", "{0892C178-468F-4105-B9C6-8967D9803E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilterBuilder.Tests", "FilterBuilder.Tests\FilterBuilder.Tests.csproj", "{64E80DBD-A61B-42A0-A0DB-4F36921EB83B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpressionBuilder.Tests", "ExpressionBuilder.Tests\ExpressionBuilder.Tests.csproj", "{64E80DBD-A61B-42A0-A0DB-4F36921EB83B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

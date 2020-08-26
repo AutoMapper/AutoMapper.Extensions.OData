@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace FilterBuilder.Tests
+namespace ExpressionBuilder.Tests
 {
     public class ExpressionStringBuilder : ExpressionVisitor
     {

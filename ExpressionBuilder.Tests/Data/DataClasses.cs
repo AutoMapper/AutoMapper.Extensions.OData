@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace FilterBuilder.Tests.Data
+namespace ExpressionBuilder.Tests.Data
 {
     public class Product
     {

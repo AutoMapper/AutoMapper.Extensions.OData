@@ -1,7 +1,6 @@
 ﻿//Adapted from Microsoft.AspNet.OData.Test.Query.Expressions.FilterBinderTests
 using AutoMapper.AspNet.OData;
-using FilterBuilder.Tests.Data;
-using LogicBuilder.Expressions.Utils;
+using ExpressionBuilder.Tests.Data;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -17,7 +16,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Xunit;
 
-namespace FilterBuilder.Tests
+namespace ExpressionBuilder.Tests
 {
     public class FilterTests
     {
@@ -1831,7 +1830,7 @@ namespace FilterBuilder.Tests
             var values = (IList<SimpleEnum>)constant.Value;
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[FilterBuilder.Tests.Data.SimpleEnum].Contains($it.SimpleEnumProp)");
+            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[ExpressionBuilder.Tests.Data.SimpleEnum].Contains($it.SimpleEnumProp)");
             Assert.Equal(new[] { SimpleEnum.First, SimpleEnum.Second }, values);
         }
 
@@ -1842,7 +1841,7 @@ namespace FilterBuilder.Tests
             var exception = Assert.Throws<ODataException>(() => GetFilter<DataTypes>("SimpleEnumProp in ('First', null)"));
             Assert.Equal
             (
-                "A null value was found with the expected type 'FilterBuilder.Tests.Data.SimpleEnum[Nullable=False]'. The expected type 'FilterBuilder.Tests.Data.SimpleEnum[Nullable=False]' does not allow null values.",
+                "A null value was found with the expected type 'ExpressionBuilder.Tests.Data.SimpleEnum[Nullable=False]'. The expected type 'ExpressionBuilder.Tests.Data.SimpleEnum[Nullable=False]' does not allow null values.",
                 exception.Message
             );
         }
@@ -1856,7 +1855,7 @@ namespace FilterBuilder.Tests
             var values = (IList<SimpleEnum?>)constant.Value;
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[System.Nullable`1[FilterBuilder.Tests.Data.SimpleEnum]].Contains($it.NullableSimpleEnumProp)");
+            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[System.Nullable`1[ExpressionBuilder.Tests.Data.SimpleEnum]].Contains($it.NullableSimpleEnumProp)");
             Assert.Equal(new SimpleEnum?[] { SimpleEnum.First, SimpleEnum.Second }, values);
         }
 
@@ -1869,7 +1868,7 @@ namespace FilterBuilder.Tests
             var values = (IList<SimpleEnum?>)constant.Value;
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[System.Nullable`1[FilterBuilder.Tests.Data.SimpleEnum]].Contains($it.NullableSimpleEnumProp)");
+            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[System.Nullable`1[ExpressionBuilder.Tests.Data.SimpleEnum]].Contains($it.NullableSimpleEnumProp)");
             Assert.Equal(new SimpleEnum?[] { SimpleEnum.First, null }, values);
         }
 
@@ -1949,7 +1948,7 @@ namespace FilterBuilder.Tests
         public void NSCast_OnEnumerableEntityCollection_GeneratesExpression_WithOfTypeOnEnumerable()
         {
             //act
-            var filter = GetFilter<Product>("Category/EnumerableProducts/FilterBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
+            var filter = GetFilter<Product>("Category/EnumerableProducts/ExpressionBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
 
             //assert
             AssertFilterStringIsCorrect(filter, "$it => $it.Category.EnumerableProducts.OfType().Any(p => (p.ProductName == \"ProductName\"))");
@@ -1959,7 +1958,7 @@ namespace FilterBuilder.Tests
         public void NSCast_OnQueryableEntityCollection_GeneratesExpression_WithOfTypeOnQueryable()
         {
             //act
-            var filter = GetFilter<Product>("Category/QueryableProducts/FilterBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
+            var filter = GetFilter<Product>("Category/QueryableProducts/ExpressionBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
 
             //assert
             AssertFilterStringIsCorrect(filter, "$it => $it.Category.QueryableProducts.OfType().Any(p => (p.ProductName == \"ProductName\"))");
@@ -1969,7 +1968,7 @@ namespace FilterBuilder.Tests
         public void NSCast_OnEntityCollection_CanAccessDerivedInstanceProperty()
         {
             //act
-            var filter = GetFilter<Product>("Category/Products/FilterBuilder.Tests.Data.DerivedProduct/any(p: p/DerivedProductName eq 'DerivedProductName')");
+            var filter = GetFilter<Product>("Category/Products/ExpressionBuilder.Tests.Data.DerivedProduct/any(p: p/DerivedProductName eq 'DerivedProductName')");
             bool result1 = RunFilter(filter, new Product { Category = new Category { Products = new Product[] { new DerivedProduct { DerivedProductName = "DerivedProductName" } } } });
             bool result2 = RunFilter(filter, new Product { Category = new Category { Products = new Product[] { new DerivedProduct { DerivedProductName = "NotDerivedProductName" } } } });
 
@@ -1982,17 +1981,17 @@ namespace FilterBuilder.Tests
         public void NSCast_OnSingleEntity_GeneratesExpression_WithAsOperator()
         {
             //act
-            var filter = GetFilter<Product>("FilterBuilder.Tests.Data.Product/ProductName eq 'ProductName'");
+            var filter = GetFilter<Product>("ExpressionBuilder.Tests.Data.Product/ProductName eq 'ProductName'");
 
             //assert
             AssertFilterStringIsCorrect(filter, "$it => (($it As Product).ProductName == \"ProductName\")");
         }
 
         [Theory]
-        [InlineData("FilterBuilder.Tests.Data.Product/ProductName eq 'ProductName'")]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/DerivedProductName eq 'DerivedProductName'")]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/Category/CategoryID eq 123")]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/Category/FilterBuilder.Tests.Data.DerivedCategory/CategoryID eq 123")]
+        [InlineData("ExpressionBuilder.Tests.Data.Product/ProductName eq 'ProductName'")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/DerivedProductName eq 'DerivedProductName'")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/Category/CategoryID eq 123")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/Category/ExpressionBuilder.Tests.Data.DerivedCategory/CategoryID eq 123")]
         public void Inheritance_WithDerivedInstance(string filterString)
         {
             //act
@@ -2004,9 +2003,9 @@ namespace FilterBuilder.Tests
         }
 
         [Theory]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/DerivedProductName eq 'ProductName'")]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/Category/CategoryID eq 123")]
-        [InlineData("FilterBuilder.Tests.Data.DerivedProduct/Category/FilterBuilder.Tests.Data.DerivedCategory/CategoryID eq 123")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/DerivedProductName eq 'ProductName'")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/Category/CategoryID eq 123")]
+        [InlineData("ExpressionBuilder.Tests.Data.DerivedProduct/Category/ExpressionBuilder.Tests.Data.DerivedCategory/CategoryID eq 123")]
         public void Inheritance_WithBaseInstance(string filterString)
         {
             //act
@@ -2021,10 +2020,10 @@ namespace FilterBuilder.Tests
         public void CastToNonDerivedType_Throws()
         {
             //assert
-            var exception = Assert.Throws<ODataException>(() => GetFilter<Product>("FilterBuilder.Tests.Data.DerivedCategory/CategoryID eq 123"));
+            var exception = Assert.Throws<ODataException>(() => GetFilter<Product>("ExpressionBuilder.Tests.Data.DerivedCategory/CategoryID eq 123"));
             Assert.Equal
             (
-                "Encountered invalid type cast. 'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'.",
+                "Encountered invalid type cast. 'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'.",
                 exception.Message
             );
         }
@@ -2073,8 +2072,8 @@ namespace FilterBuilder.Tests
         [InlineData("cast(null,Edm.String) ne '123'", "$it => (null != \"123\")")]
         [InlineData("cast(null,Edm.DateTimeOffset) eq 2001-01-01T12:00:00.000+08:00", "$it => (null == Convert(01/01/2001 12:00:00 +08:00))")]
         [InlineData("cast(null,Edm.Duration) eq duration'P8DT23H59M59.9999S'", "$it => (null == Convert(8.23:59:59.9999000))")]
-        [InlineData("cast(null,'FilterBuilder.Tests.Data.SimpleEnum') eq null", "$it => (null == null)")]
-        [InlineData("cast(null,'FilterBuilder.Tests.Data.FlagsEnum') eq null", "$it => (null == null)")]
+        [InlineData("cast(null,'ExpressionBuilder.Tests.Data.SimpleEnum') eq null", "$it => (null == null)")]
+        [InlineData("cast(null,'ExpressionBuilder.Tests.Data.FlagsEnum') eq null", "$it => (null == null)")]
         [InlineData("cast(IntProp,Edm.String) eq '123'", "$it => ($it.IntProp.ToString() == \"123\")")]
         [InlineData("cast(LongProp,Edm.String) eq '123'", "$it => ($it.LongProp.ToString() == \"123\")")]
         [InlineData("cast(SingleProp,Edm.String) eq '123'", "$it => ($it.SingleProp.ToString() == \"123\")")]
@@ -2103,9 +2102,9 @@ namespace FilterBuilder.Tests
         [InlineData("cast(IntProp,Edm.Int64) eq 123", "$it => (Convert($it.IntProp) == 123)")]
         [InlineData("cast(NullableLongProp,Edm.Double) eq 1.23", "$it => (Convert($it.NullableLongProp) == 1.23)")]
         [InlineData("cast(2147483647,Edm.Int16) ne null", "$it => (Convert(Convert(2147483647)) != null)")]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum'1',Edm.String) eq '1'", "$it => (Convert(Second).ToString() == \"1\")")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum'1',Edm.String) eq '1'", "$it => (Convert(Second).ToString() == \"1\")")]
         [InlineData("cast(cast(cast(IntProp,Edm.Int64),Edm.Int16),Edm.String) eq '123'", "$it => (Convert(Convert($it.IntProp)).ToString() == \"123\")")]
-        [InlineData("cast('123',FilterBuilder.Tests.Data.SimpleEnum) ne null", "$it => (Convert(123) != null)")]
+        [InlineData("cast('123',ExpressionBuilder.Tests.Data.SimpleEnum) ne null", "$it => (Convert(123) != null)")]
         public void CastMethod_Succeeds(string filterString, string expectedResult)
         {
             //act
@@ -2128,7 +2127,7 @@ namespace FilterBuilder.Tests
 
         [Theory]
         [InlineData("cast(NoSuchProperty,Edm.Int32) ne null",
-            "Could not find a property named 'NoSuchProperty' on type 'FilterBuilder.Tests.Data.DataTypes'.")]
+            "Could not find a property named 'NoSuchProperty' on type 'ExpressionBuilder.Tests.Data.DataTypes'.")]
         public void Cast_UndefinedSource_ThrowsODataException(string filterString, string errorMessage)
         {
             //assert
@@ -2206,36 +2205,36 @@ namespace FilterBuilder.Tests
         }
 
         [Theory]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.FlagsEnum) ne null")]
-        [InlineData("cast(0,FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(0,FilterBuilder.Tests.Data.FlagsEnum) ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum'0',FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.FlagsEnum'0',FilterBuilder.Tests.Data.FlagsEnum) ne null")]
-        [InlineData("cast(SimpleEnumProp,FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(FlagsEnumProp,FilterBuilder.Tests.Data.FlagsEnum) ne null")]
-        [InlineData("cast(NullableSimpleEnumProp,FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(IntProp,FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(DateTimeOffsetProp,FilterBuilder.Tests.Data.SimpleEnum) ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum'1',Edm.Int32) eq 1")]
-        [InlineData("cast(FilterBuilder.Tests.Data.FlagsEnum'1',Edm.Int32) eq 1")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.FlagsEnum) ne null")]
+        [InlineData("cast(0,ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(0,ExpressionBuilder.Tests.Data.FlagsEnum) ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum'0',ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.FlagsEnum'0',ExpressionBuilder.Tests.Data.FlagsEnum) ne null")]
+        [InlineData("cast(SimpleEnumProp,ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(FlagsEnumProp,ExpressionBuilder.Tests.Data.FlagsEnum) ne null")]
+        [InlineData("cast(NullableSimpleEnumProp,ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(IntProp,ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(DateTimeOffsetProp,ExpressionBuilder.Tests.Data.SimpleEnum) ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum'1',Edm.Int32) eq 1")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.FlagsEnum'1',Edm.Int32) eq 1")]
         [InlineData("cast(SimpleEnumProp,Edm.Int32) eq 123")]
         [InlineData("cast(FlagsEnumProp,Edm.Int32) eq 123")]
         [InlineData("cast(NullableSimpleEnumProp,Edm.Guid) ne null")]
 
-        [InlineData("cast('FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast('FilterBuilder.Tests.Data.FlagsEnum') ne null")]
-        [InlineData("cast(0,'FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(0,'FilterBuilder.Tests.Data.FlagsEnum') ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum'0','FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.FlagsEnum'0','FilterBuilder.Tests.Data.FlagsEnum') ne null")]
-        [InlineData("cast(SimpleEnumProp,'FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(FlagsEnumProp,'FilterBuilder.Tests.Data.FlagsEnum') ne null")]
-        [InlineData("cast(NullableSimpleEnumProp,'FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(IntProp,'FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(DateTimeOffsetProp,'FilterBuilder.Tests.Data.SimpleEnum') ne null")]
-        [InlineData("cast(FilterBuilder.Tests.Data.SimpleEnum'1','Edm.Int32') eq 1")]
-        [InlineData("cast(FilterBuilder.Tests.Data.FlagsEnum'1','Edm.Int32') eq 1")]
+        [InlineData("cast('ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast('ExpressionBuilder.Tests.Data.FlagsEnum') ne null")]
+        [InlineData("cast(0,'ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(0,'ExpressionBuilder.Tests.Data.FlagsEnum') ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum'0','ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.FlagsEnum'0','ExpressionBuilder.Tests.Data.FlagsEnum') ne null")]
+        [InlineData("cast(SimpleEnumProp,'ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(FlagsEnumProp,'ExpressionBuilder.Tests.Data.FlagsEnum') ne null")]
+        [InlineData("cast(NullableSimpleEnumProp,'ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(IntProp,'ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(DateTimeOffsetProp,'ExpressionBuilder.Tests.Data.SimpleEnum') ne null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.SimpleEnum'1','Edm.Int32') eq 1")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.FlagsEnum'1','Edm.Int32') eq 1")]
         [InlineData("cast(SimpleEnumProp,'Edm.Int32') eq 123")]
         [InlineData("cast(FlagsEnumProp,'Edm.Int32') eq 123")]
         [InlineData("cast(NullableSimpleEnumProp,'Edm.Guid') ne null")]
@@ -2261,8 +2260,8 @@ namespace FilterBuilder.Tests
         [InlineData("cast($it,Edm.String) eq null")]
         [InlineData("cast(ComplexProp,Edm.Double) eq null")]
         [InlineData("cast(ComplexProp,Edm.String) eq null")]
-        [InlineData("cast(StringProp,FilterBuilder.Tests.Data.SimpleEnum) eq null")]
-        [InlineData("cast(StringProp,FilterBuilder.Tests.Data.FlagsEnum) eq null")]
+        [InlineData("cast(StringProp,ExpressionBuilder.Tests.Data.SimpleEnum) eq null")]
+        [InlineData("cast(StringProp,ExpressionBuilder.Tests.Data.FlagsEnum) eq null")]
         public void Cast_UnsupportedTarget_ReturnsNull(string filterString)
         {
             //act
@@ -2284,10 +2283,10 @@ namespace FilterBuilder.Tests
         }
 
         [Theory]
-        [InlineData("cast(null,FilterBuilder.Tests.Data.Address) ne null",
+        [InlineData("cast(null,ExpressionBuilder.Tests.Data.Address) ne null",
             "Encountered invalid type cast. " +
-            "'FilterBuilder.Tests.Data.Address' is not assignable from 'FilterBuilder.Tests.Data.DataTypes'.")]
-        [InlineData("cast(null,FilterBuilder.Tests.Data.DataTypes) ne null",
+            "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.DataTypes'.")]
+        [InlineData("cast(null,ExpressionBuilder.Tests.Data.DataTypes) ne null",
             "Cast or IsOf Function must have a type in its arguments.")]
         public void Cast_NonPrimitiveTarget_ThrowsODataException(string filterString, string expectErrorMessage)
         {
@@ -2302,10 +2301,10 @@ namespace FilterBuilder.Tests
 
         [Theory]
         [InlineData("cast(null,'Edm.Int32') ne null")]
-        [InlineData("cast(StringProp,'FilterBuilder.Tests.Data.SimpleEnum') eq null")]
+        [InlineData("cast(StringProp,'ExpressionBuilder.Tests.Data.SimpleEnum') eq null")]
         [InlineData("cast(IntProp,'Edm.String') eq '123'")]
-        [InlineData("cast('FilterBuilder.Tests.Data.DataTypes') eq null")]
-        [InlineData("cast($it,'FilterBuilder.Tests.Data.DataTypes') eq null")]
+        [InlineData("cast('ExpressionBuilder.Tests.Data.DataTypes') eq null")]
+        [InlineData("cast($it,'ExpressionBuilder.Tests.Data.DataTypes') eq null")]
         public void SingleQuotesOnTypeNameOfCast_WorksForNow(string filterString)
         {
             //act
@@ -2319,12 +2318,12 @@ namespace FilterBuilder.Tests
         public void SingleQuotesOnEnumTypeNameOfCast_WorksForNow()
         {
             //act
-            FilterClause filterClause = ODataHelpers.GetFilterClause<DataTypes>("cast(StringProp,'FilterBuilder.Tests.Data.SimpleEnum') eq null", serviceProvider);
+            FilterClause filterClause = ODataHelpers.GetFilterClause<DataTypes>("cast(StringProp,'ExpressionBuilder.Tests.Data.SimpleEnum') eq null", serviceProvider);
 
             //assert
             var castNode = Assert.IsType<SingleValueFunctionCallNode>(((BinaryOperatorNode)filterClause.Expression).Left);
             Assert.Equal("cast", castNode.Name);
-            Assert.Equal("FilterBuilder.Tests.Data.SimpleEnum", ((ConstantNode)castNode.Parameters.Last()).Value);
+            Assert.Equal("ExpressionBuilder.Tests.Data.SimpleEnum", ((ConstantNode)castNode.Parameters.Last()).Value);
         }
 
         public static IEnumerable<object[]> CastToQuotedPrimitiveType
@@ -2428,10 +2427,10 @@ namespace FilterBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "cast(FilterBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast(null, FilterBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast('', FilterBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast(SupplierAddress, FilterBuilder.Tests.Data.Address) eq null" },
+                    new [] { "cast(ExpressionBuilder.Tests.Data.Address) eq null" },
+                    new [] { "cast(null, ExpressionBuilder.Tests.Data.Address) eq null" },
+                    new [] { "cast('', ExpressionBuilder.Tests.Data.Address) eq null" },
+                    new [] { "cast(SupplierAddress, ExpressionBuilder.Tests.Data.Address) eq null" },
                 };
             }
         }
@@ -2443,7 +2442,7 @@ namespace FilterBuilder.Tests
             //arrange
             var expectedErrorMessage =
                 "Encountered invalid type cast. " +
-                "'FilterBuilder.Tests.Data.Address' is not assignable from 'FilterBuilder.Tests.Data.Product'.";
+                "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.Product'.";
 
             //assert
             var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
@@ -2460,10 +2459,10 @@ namespace FilterBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "cast('FilterBuilder.Tests.Data.Address') eq null" },
-                    new [] { "cast(null, 'FilterBuilder.Tests.Data.Address') eq null" },
-                    new [] { "cast('', 'FilterBuilder.Tests.Data.Address') eq null" },
-                    new [] { "cast(SupplierAddress, 'FilterBuilder.Tests.Data.Address') ne null" },
+                    new [] { "cast('ExpressionBuilder.Tests.Data.Address') eq null" },
+                    new [] { "cast(null, 'ExpressionBuilder.Tests.Data.Address') eq null" },
+                    new [] { "cast('', 'ExpressionBuilder.Tests.Data.Address') eq null" },
+                    new [] { "cast(SupplierAddress, 'ExpressionBuilder.Tests.Data.Address') ne null" },
                 };
             }
         }
@@ -2493,18 +2492,18 @@ namespace FilterBuilder.Tests
                 return new List<object[]>
                 {
                     new [] {
-                        "cast(FilterBuilder.Tests.Data.DerivedProduct)/DerivedProductName eq null",
+                        "cast(ExpressionBuilder.Tests.Data.DerivedProduct)/DerivedProductName eq null",
                         "Cast or IsOf Function must have a type in its arguments."
                     },
                     new [] {
-                        "cast(null, FilterBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
+                        "cast(null, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                     new [] {
-                        "cast(Category, FilterBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
+                        "cast(Category, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                 };
             }
@@ -2524,8 +2523,8 @@ namespace FilterBuilder.Tests
         }
 
         [Theory]
-        [InlineData("cast('FilterBuilder.Tests.Data.DerivedProduct')/DerivedProductName eq null", "$it => (($it As DerivedProduct).DerivedProductName == null)")]
-        [InlineData("cast(Category,'FilterBuilder.Tests.Data.DerivedCategory')/DerivedCategoryName eq null", "$it => (($it.Category As DerivedCategory).DerivedCategoryName == null)")]
+        [InlineData("cast('ExpressionBuilder.Tests.Data.DerivedProduct')/DerivedProductName eq null", "$it => (($it As DerivedProduct).DerivedProductName == null)")]
+        [InlineData("cast(Category,'ExpressionBuilder.Tests.Data.DerivedCategory')/DerivedCategoryName eq null", "$it => (($it.Category As DerivedCategory).DerivedCategoryName == null)")]
         public void CastToQuotedEntityOrComplexType_DerivedProductName(string filterString, string expectedExpression)
         {
             //act
@@ -2539,11 +2538,11 @@ namespace FilterBuilder.Tests
         #region 'isof' in query option
         [Theory]
         [InlineData("isof(Edm.Int16)", "$it => IIF(($it Is System.Int16), True, False)")]
-        [InlineData("isof('FilterBuilder.Tests.Data.Product')", "$it => IIF(($it Is FilterBuilder.Tests.Data.Product), True, False)")]
+        [InlineData("isof('ExpressionBuilder.Tests.Data.Product')", "$it => IIF(($it Is ExpressionBuilder.Tests.Data.Product), True, False)")]
         [InlineData("isof(ProductName,Edm.String)", "$it => IIF(($it.ProductName Is System.String), True, False)")]
-        [InlineData("isof(Category,'FilterBuilder.Tests.Data.Category')", "$it => IIF(($it.Category Is FilterBuilder.Tests.Data.Category), True, False)")]
-        [InlineData("isof(Category,'FilterBuilder.Tests.Data.DerivedCategory')", "$it => IIF(($it.Category Is FilterBuilder.Tests.Data.DerivedCategory), True, False)")]
-        [InlineData("isof(Ranking, 'FilterBuilder.Tests.Data.SimpleEnum')", "$it => IIF(($it.Ranking Is FilterBuilder.Tests.Data.SimpleEnum), True, False)")]
+        [InlineData("isof(Category,'ExpressionBuilder.Tests.Data.Category')", "$it => IIF(($it.Category Is ExpressionBuilder.Tests.Data.Category), True, False)")]
+        [InlineData("isof(Category,'ExpressionBuilder.Tests.Data.DerivedCategory')", "$it => IIF(($it.Category Is ExpressionBuilder.Tests.Data.DerivedCategory), True, False)")]
+        [InlineData("isof(Ranking, 'ExpressionBuilder.Tests.Data.SimpleEnum')", "$it => IIF(($it.Ranking Is ExpressionBuilder.Tests.Data.SimpleEnum), True, False)")]
         public void IsofMethod_Succeeds(string filterString, string expectedExpression)
         {
             //act
@@ -2569,7 +2568,7 @@ namespace FilterBuilder.Tests
 
         [Theory]
         [InlineData("isof(NoSuchProperty,Edm.Int32)",
-            "Could not find a property named 'NoSuchProperty' on type 'FilterBuilder.Tests.Data.DataTypes'.")]
+            "Could not find a property named 'NoSuchProperty' on type 'ExpressionBuilder.Tests.Data.DataTypes'.")]
         public void IsOfUndefinedSource_ThrowsODataException(string filterString, string errorMessage)
         {
             //assert
@@ -2597,11 +2596,11 @@ namespace FilterBuilder.Tests
         [InlineData("isof(null,Edm.Single)")]
         [InlineData("isof(null,Edm.Stream)")]
         [InlineData("isof(null,Edm.String)")]
-        [InlineData("isof(null,FilterBuilder.Tests.Data.SimpleEnum)")]
-        [InlineData("isof(null,FilterBuilder.Tests.Data.FlagsEnum)")]
+        [InlineData("isof(null,ExpressionBuilder.Tests.Data.SimpleEnum)")]
+        [InlineData("isof(null,ExpressionBuilder.Tests.Data.FlagsEnum)")]
 
         [InlineData("isof(ByteArrayProp,Edm.Binary)")] // ByteArrayProp == null
-        [InlineData("isof(IntProp,FilterBuilder.Tests.Data.SimpleEnum)")]
+        [InlineData("isof(IntProp,ExpressionBuilder.Tests.Data.SimpleEnum)")]
         [InlineData("isof(NullableShortProp,'Edm.Int16')")] // NullableShortProp == null
 
         [InlineData("isof('Edm.Binary')")]
@@ -2619,8 +2618,8 @@ namespace FilterBuilder.Tests
         [InlineData("isof('Edm.Single')")]
         [InlineData("isof('Edm.Stream')")]
         [InlineData("isof('Edm.String')")]
-        [InlineData("isof('FilterBuilder.Tests.Data.SimpleEnum')")]
-        [InlineData("isof('FilterBuilder.Tests.Data.FlagsEnum')")]
+        [InlineData("isof('ExpressionBuilder.Tests.Data.SimpleEnum')")]
+        [InlineData("isof('ExpressionBuilder.Tests.Data.FlagsEnum')")]
 
         [InlineData("isof(23,'Edm.Byte')")]
         [InlineData("isof(23,'Edm.Decimal')")]
@@ -2630,8 +2629,8 @@ namespace FilterBuilder.Tests
         [InlineData("isof(23,'Edm.SByte')")]
         [InlineData("isof(23,'Edm.Single')")]
         [InlineData("isof('hello','Edm.Stream')")]
-        [InlineData("isof(0,'FilterBuilder.Tests.Data.FlagsEnum')")]
-        [InlineData("isof(0,'FilterBuilder.Tests.Data.SimpleEnum')")]
+        [InlineData("isof(0,'ExpressionBuilder.Tests.Data.FlagsEnum')")]
+        [InlineData("isof(0,'ExpressionBuilder.Tests.Data.SimpleEnum')")]
 
         [InlineData("isof('2001-01-01T12:00:00.000+08:00','Edm.DateTimeOffset')")] // source is string
         [InlineData("isof('00000000-0000-0000-0000-000000000000','Edm.Guid')")] // source is string
@@ -2642,8 +2641,8 @@ namespace FilterBuilder.Tests
         [InlineData("isof('OData','Edm.Binary')")]
         [InlineData("isof('PT12H','Edm.Duration')")]
         [InlineData("isof(23,'Edm.String')")]
-        [InlineData("isof('0','FilterBuilder.Tests.Data.FlagsEnum')")]
-        [InlineData("isof('0','FilterBuilder.Tests.Data.SimpleEnum')")]
+        [InlineData("isof('0','ExpressionBuilder.Tests.Data.FlagsEnum')")]
+        [InlineData("isof('0','ExpressionBuilder.Tests.Data.SimpleEnum')")]
         public void IsOfPrimitiveType_Succeeds_WithFalse(string filterString)
         {
             //arrange
@@ -2733,11 +2732,11 @@ namespace FilterBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "isof(FilterBuilder.Tests.Data.Address)" },
-                    new [] { "isof(null,FilterBuilder.Tests.Data.Address)" },
-                    new [] { "isof(null, FilterBuilder.Tests.Data.Address)" },
-                    new [] { "isof(SupplierAddress,FilterBuilder.Tests.Data.Address)" },
-                    new [] { "isof(SupplierAddress, FilterBuilder.Tests.Data.Address)" },
+                    new [] { "isof(ExpressionBuilder.Tests.Data.Address)" },
+                    new [] { "isof(null,ExpressionBuilder.Tests.Data.Address)" },
+                    new [] { "isof(null, ExpressionBuilder.Tests.Data.Address)" },
+                    new [] { "isof(SupplierAddress,ExpressionBuilder.Tests.Data.Address)" },
+                    new [] { "isof(SupplierAddress, ExpressionBuilder.Tests.Data.Address)" },
                 };
             }
         }
@@ -2749,7 +2748,7 @@ namespace FilterBuilder.Tests
             //arrange
             var expectedMessage =
                 "Encountered invalid type cast. " +
-                "'FilterBuilder.Tests.Data.Address' is not assignable from 'FilterBuilder.Tests.Data.Product'.";
+                "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.Product'.";
 
             //assert
             var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
@@ -2767,28 +2766,28 @@ namespace FilterBuilder.Tests
                 return new List<object[]>
                 {
                     new [] {
-                        "isof(FilterBuilder.Tests.Data.DerivedProduct)",
+                        "isof(ExpressionBuilder.Tests.Data.DerivedProduct)",
                         "Cast or IsOf Function must have a type in its arguments."
                     },
                     new [] {
-                        "isof(null,FilterBuilder.Tests.Data.DerivedCategory)",
+                        "isof(null,ExpressionBuilder.Tests.Data.DerivedCategory)",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                     new [] {
-                        "isof(null, FilterBuilder.Tests.Data.DerivedCategory)",
+                        "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                     new [] {
-                        "isof(Category,FilterBuilder.Tests.Data.DerivedCategory)",
+                        "isof(Category,ExpressionBuilder.Tests.Data.DerivedCategory)",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                     new [] {
-                        "isof(Category, FilterBuilder.Tests.Data.DerivedCategory)",
+                        "isof(Category, ExpressionBuilder.Tests.Data.DerivedCategory)",
                         "Encountered invalid type cast. " +
-                        "'FilterBuilder.Tests.Data.DerivedCategory' is not assignable from 'FilterBuilder.Tests.Data.Product'."
+                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
                     },
                 };
             }
@@ -2813,11 +2812,11 @@ namespace FilterBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "isof('FilterBuilder.Tests.Data.DerivedProduct')" },
-                    new [] { "isof(SupplierAddress,'FilterBuilder.Tests.Data.Address')" },
-                    new [] { "isof(SupplierAddress, 'FilterBuilder.Tests.Data.Address')" },
-                    new [] { "isof(Category,'FilterBuilder.Tests.Data.DerivedCategory')" },
-                    new [] { "isof(Category, 'FilterBuilder.Tests.Data.DerivedCategory')" },
+                    new [] { "isof('ExpressionBuilder.Tests.Data.DerivedProduct')" },
+                    new [] { "isof(SupplierAddress,'ExpressionBuilder.Tests.Data.Address')" },
+                    new [] { "isof(SupplierAddress, 'ExpressionBuilder.Tests.Data.Address')" },
+                    new [] { "isof(Category,'ExpressionBuilder.Tests.Data.DerivedCategory')" },
+                    new [] { "isof(Category, 'ExpressionBuilder.Tests.Data.DerivedCategory')" },
                 };
             }
         }
@@ -2842,10 +2841,10 @@ namespace FilterBuilder.Tests
         }
 
         [Theory]
-        [InlineData("isof(null,'FilterBuilder.Tests.Data.Address')")]
-        [InlineData("isof(null, 'FilterBuilder.Tests.Data.Address')")]
-        [InlineData("isof(null,'FilterBuilder.Tests.Data.DerivedCategory')")]
-        [InlineData("isof(null, 'FilterBuilder.Tests.Data.DerivedCategory')")]
+        [InlineData("isof(null,'ExpressionBuilder.Tests.Data.Address')")]
+        [InlineData("isof(null, 'ExpressionBuilder.Tests.Data.Address')")]
+        [InlineData("isof(null,'ExpressionBuilder.Tests.Data.DerivedCategory')")]
+        [InlineData("isof(null, 'ExpressionBuilder.Tests.Data.DerivedCategory')")]
         public void IsOfQuotedNonPrimitiveTypeWithNull_Succeeds_WithFalse(string filterString)
         {
             //arrange
@@ -2876,7 +2875,7 @@ namespace FilterBuilder.Tests
         [InlineData("DateTimeOffsetProp eq @p", "2001-01-01T12:00:00.000+08:00", "$it => ($it.DateTimeOffsetProp == 01/01/2001 12:00:00 +08:00)")]
         [InlineData("TimeSpanProp eq @p", "duration'P8DT23H59M59.9999S'", "$it => ($it.TimeSpanProp == 8.23:59:59.9999000)")]
         [InlineData("GuidProp eq @p", "00000000-0000-0000-0000-000000000000", "$it => ($it.GuidProp == 00000000-0000-0000-0000-000000000000)")]
-        [InlineData("SimpleEnumProp eq @p", "FilterBuilder.Tests.Data.SimpleEnum'First'", "$it => ($it.SimpleEnumProp == First)")]
+        [InlineData("SimpleEnumProp eq @p", "ExpressionBuilder.Tests.Data.SimpleEnum'First'", "$it => ($it.SimpleEnumProp == First)")]
         // Parameter alias value is null.
         [InlineData("NullableIntProp eq @p", "null", "$it => ($it.NullableIntProp == null)")]
         [InlineData("NullableBoolProp eq @p", "null", "$it => ($it.NullableBoolProp == null)")]
@@ -2898,7 +2897,7 @@ namespace FilterBuilder.Tests
         [InlineData("@p eq 2001-01-01T12:00:00.000+08:00", "DateTimeOffsetProp", "$it => ($it.DateTimeOffsetProp == 01/01/2001 12:00:00 +08:00)")]
         [InlineData("@p eq duration'P8DT23H59M59.9999S'", "TimeSpanProp", "$it => ($it.TimeSpanProp == 8.23:59:59.9999000)")]
         [InlineData("@p eq 00000000-0000-0000-0000-000000000000", "GuidProp", "$it => ($it.GuidProp == 00000000-0000-0000-0000-000000000000)")]
-        [InlineData("@p eq FilterBuilder.Tests.Data.SimpleEnum'First'", "SimpleEnumProp", "$it => ($it.SimpleEnumProp == First)")]
+        [InlineData("@p eq ExpressionBuilder.Tests.Data.SimpleEnum'First'", "SimpleEnumProp", "$it => ($it.SimpleEnumProp == First)")]
         // Parameter alias value has built-in functions.
         [InlineData("@p eq 'abc'", "substring(StringProp,5)", "$it => ($it.StringProp.Substring(5) == \"abc\")")]
         [InlineData("2 eq @p", "IntProp add 1", "$it => (2 == ($it.IntProp + 1))")]
@@ -3118,7 +3117,7 @@ namespace FilterBuilder.Tests
             var filter = GetFilter<DataTypes>("SimpleEnumProp in ('First', 'Second')");
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[FilterBuilder.Tests.Data.SimpleEnum].Contains($it.SimpleEnumProp)");
+            AssertFilterStringIsCorrect(filter, "$it => System.Collections.Generic.List`1[ExpressionBuilder.Tests.Data.SimpleEnum].Contains($it.SimpleEnumProp)");
         }
         #endregion parameter alias for filter query option
 
