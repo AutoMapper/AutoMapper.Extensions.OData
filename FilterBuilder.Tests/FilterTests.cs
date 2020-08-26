@@ -3151,7 +3151,7 @@ namespace FilterBuilder.Tests
         private void AssertFilterStringIsCorrect(Expression expression, string expected)
         {
             string resultExpression = ExpressionStringBuilder.ToString(expression);
-            Assert.True(expected == resultExpression, String.Format("Expected expression '{0}' but the deserializer produced '{1}'", expected, resultExpression));
+            Assert.True(expected == resultExpression, string.Format("Expected expression '{0}' but the deserializer produced '{1}'", expected, resultExpression));
         }
 
         private bool RunFilter<TModel>(Expression<Func<TModel, bool>> filter, TModel instance)

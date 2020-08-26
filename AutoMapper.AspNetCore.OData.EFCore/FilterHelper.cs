@@ -32,7 +32,7 @@ namespace AutoMapper.AspNet.OData
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
         private readonly Stack<Type> parameterTypes = new Stack<Type>();
 
-        public FilterPart GetFilterPart(QueryNode queryNode)
+        public IExpressionPart GetFilterPart(QueryNode queryNode)
             => queryNode switch
             {
                 SingleValueNode singleValueNode => GetFilterPart(singleValueNode),
@@ -40,7 +40,7 @@ namespace AutoMapper.AspNet.OData
                 _ => throw new ArgumentException(nameof(queryNode)),
             };
 
-        public FilterPart GetFilterPart(SingleValueNode singleValueNode)
+        public IExpressionPart GetFilterPart(SingleValueNode singleValueNode)
         {
             return singleValueNode.Kind switch
             {
@@ -64,12 +64,12 @@ namespace AutoMapper.AspNet.OData
             };
         }
 
-        private FilterPart GetSingleValueOpenPropertyAccessFilterPart(SingleValueOpenPropertyAccessNode singleValueNode)
+        private IExpressionPart GetSingleValueOpenPropertyAccessFilterPart(SingleValueOpenPropertyAccessNode singleValueNode)
         {
             throw new NotImplementedException();
         }
 
-        private FilterPart GetSingleComplexNodeFilterPart(SingleComplexNode singleComplexNode)
+        private IExpressionPart GetSingleComplexNodeFilterPart(SingleComplexNode singleComplexNode)
         {
             string propertyName = singleComplexNode.Property.Name;
 
@@ -79,7 +79,7 @@ namespace AutoMapper.AspNet.OData
                 GetClrType(singleComplexNode.TypeReference)
             );
 
-            FilterPart DoGet(Type memberType, Type fromEdmType)
+            IExpressionPart DoGet(Type memberType, Type fromEdmType)
             {
                 if (ShouldConvertTypes(memberType, fromEdmType, singleComplexNode))
                 {
@@ -103,21 +103,21 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private FilterPart GetSingleResourceCastFilterPart(SingleResourceCastNode singleResourceCastNode)
+        private IExpressionPart GetSingleResourceCastFilterPart(SingleResourceCastNode singleResourceCastNode)
             => new CastOperator
             (
                 GetFilterPart(singleResourceCastNode.Source),
                 GetClrType(singleResourceCastNode.TypeReference)
             );
 
-        private FilterPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
+        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
             => new ParameterOperator
             (
                 parameters,
                 nonResourceRangeVariableReferenceNode.RangeVariable.Name
             );
 
-        private FilterPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
+        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
             => new ParameterOperator
             (
                 parameters,
@@ -144,7 +144,7 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private FilterPart GetAnyNodeFilterPart(AnyNode anyNode)
+        private IExpressionPart GetAnyNodeFilterPart(AnyNode anyNode)
         {
             if (anyNode.Body == null || IsTrueConstantExpression(anyNode.Body))
                 return new AnyOperator(GetFilterPart(anyNode.Source));
@@ -164,7 +164,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        private FilterPart GetAllNodeFilterPart(AllNode allNode)
+        private IExpressionPart GetAllNodeFilterPart(AllNode allNode)
         {
             if (allNode.Body == null || IsTrueConstantExpression(allNode.Body))
                 return new AllOperator(GetFilterPart(allNode.Source));
@@ -184,11 +184,11 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        private FilterPart GetSingleResourceFunctionCallNodeFilterPart(SingleResourceFunctionCallNode singleResourceFunctionCallNode)
+        private IExpressionPart GetSingleResourceFunctionCallNodeFilterPart(SingleResourceFunctionCallNode singleResourceFunctionCallNode)
         {
             return GetFunctionCallFilterPart(singleResourceFunctionCallNode.Parameters.ToList());
 
-            FilterPart GetFunctionCallFilterPart(List<QueryNode> arguments)
+            IExpressionPart GetFunctionCallFilterPart(List<QueryNode> arguments)
             {
                 return singleResourceFunctionCallNode.Name switch
                 {
@@ -198,11 +198,11 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private FilterPart GetSingleValueFunctionCallNodeFilterPart(SingleValueFunctionCallNode singleValueFunctionCallNode)
+        private IExpressionPart GetSingleValueFunctionCallNodeFilterPart(SingleValueFunctionCallNode singleValueFunctionCallNode)
         {
             return GetFunctionCallFilterPart(singleValueFunctionCallNode.Parameters.ToList());
 
-            FilterPart GetFunctionCallFilterPart(List<QueryNode> arguments)
+            IExpressionPart GetFunctionCallFilterPart(List<QueryNode> arguments)
                 => singleValueFunctionCallNode.Name switch
                 {
                     "cast" => GetCastFilterPart(arguments),
@@ -240,7 +240,7 @@ namespace AutoMapper.AspNet.OData
                 };
         }
 
-        private FilterPart GetIsOdFilterPart(List<QueryNode> arguments)
+        private IExpressionPart GetIsOdFilterPart(List<QueryNode> arguments)
         {
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
@@ -250,11 +250,11 @@ namespace AutoMapper.AspNet.OData
 
             return IsOf(GetCastType(typeNode));
 
-            FilterPart IsOf(Type conversionType)
+            IExpressionPart IsOf(Type conversionType)
                 => new IsOfOperator(GetFilterPart(sourceNode), conversionType);
         }
 
-        private FilterPart GetCastResourceFilterPart(List<QueryNode> arguments)
+        private IExpressionPart GetCastResourceFilterPart(List<QueryNode> arguments)
         {
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
@@ -268,7 +268,7 @@ namespace AutoMapper.AspNet.OData
                 GetCastType(typeNode)
             );
 
-            FilterPart Convert(Type operandType, Type conversionType)
+            IExpressionPart Convert(Type operandType, Type conversionType)
             {
                 if (OperandIsNullConstant(sourceNode) || operandType == conversionType)
                     return GetFilterPart(sourceNode);
@@ -290,7 +290,7 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private FilterPart GetCastFilterPart(List<QueryNode> arguments)
+        private IExpressionPart GetCastFilterPart(List<QueryNode> arguments)
         {
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
@@ -304,7 +304,7 @@ namespace AutoMapper.AspNet.OData
                 GetCastType(typeNode)
             );
 
-            FilterPart Convert(Type operandType, Type conversionType)
+            IExpressionPart Convert(Type operandType, Type conversionType)
             {
                 if (OperandIsNullConstant(sourceNode) || operandType == conversionType)
                     return GetFilterPart(sourceNode);
@@ -349,7 +349,7 @@ namespace AutoMapper.AspNet.OData
         private Type GetCastType(ConstantNode constantNode)
             => TypeExtensions.GetClrType((string)constantNode.Value, false, typesCache);
 
-        private FilterPart GetCustomMehodFilterPart(string functionName, SingleValueNode[] arguments)
+        private IExpressionPart GetCustomMehodFilterPart(string functionName, SingleValueNode[] arguments)
         {
             MethodInfo methodInfo = CustomMethodCache.GetCachedCustomMethod(functionName, arguments.Select(p => GetClrType(p.TypeReference)));
             if (methodInfo == null)
@@ -362,7 +362,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        private FilterPart GetUnaryOperatorNodeFilterPart(UnaryOperatorNode unaryOperatorNode)
+        private IExpressionPart GetUnaryOperatorNodeFilterPart(UnaryOperatorNode unaryOperatorNode)
             => unaryOperatorNode.OperatorKind switch
             {
                 UnaryOperatorKind.Negate => new NegateOperator(GetFilterPart(unaryOperatorNode.Operand)),
@@ -370,7 +370,7 @@ namespace AutoMapper.AspNet.OData
                 _ => throw new ArgumentException($"Unsupported {unaryOperatorNode.OperatorKind.GetType().Name} value: {unaryOperatorNode.OperatorKind}"),
             };
 
-        private FilterPart GetConvertOperandFilterPart(ConvertNode covertNode)
+        private IExpressionPart GetConvertOperandFilterPart(ConvertNode covertNode)
         {
             return Convert
             (
@@ -381,7 +381,7 @@ namespace AutoMapper.AspNet.OData
             );
 
 
-            FilterPart Convert(Type operandType, Type conversionType)
+            IExpressionPart Convert(Type operandType, Type conversionType)
             {
                 if (ShouldConvertTypes(operandType, conversionType, covertNode.Source))
                 {
@@ -433,7 +433,7 @@ namespace AutoMapper.AspNet.OData
             return operand.Kind == QueryNodeKind.Constant && ((ConstantNode)operand).Value == null;
         }
 
-        public FilterPart GetFilterPart(CollectionNode collectionNode)
+        public IExpressionPart GetFilterPart(CollectionNode collectionNode)
         {
             return collectionNode.Kind switch
             {
@@ -446,35 +446,35 @@ namespace AutoMapper.AspNet.OData
             };
         }
 
-        private FilterPart GetCollectionResourceCastFilterPart(CollectionResourceCastNode collectionResourceCastNode)
+        private IExpressionPart GetCollectionResourceCastFilterPart(CollectionResourceCastNode collectionResourceCastNode)
             => new CollectionCastOperator
             (
                 GetFilterPart(collectionResourceCastNode.Source),
                 GetClrType(collectionResourceCastNode.ItemType)
             );
 
-        private FilterPart GetCollectionComplexNodeFilterPart(CollectionComplexNode collectionComplexNode)
+        private IExpressionPart GetCollectionComplexNodeFilterPart(CollectionComplexNode collectionComplexNode)
             => new MemberSelector
             (
                 collectionComplexNode.Property.Name,
                 GetFilterPart(collectionComplexNode.Source)
             );
 
-        private FilterPart GetCollectionPropertyAccessNodeFilterPart(CollectionPropertyAccessNode collectionPropertyAccessNode)
+        private IExpressionPart GetCollectionPropertyAccessNodeFilterPart(CollectionPropertyAccessNode collectionPropertyAccessNode)
             => new MemberSelector
             (
                 collectionPropertyAccessNode.Property.Name,
                 GetFilterPart(collectionPropertyAccessNode.Source)
             );
 
-        private FilterPart GetCollectionNavigationNodeFilterPart(CollectionNavigationNode collectionNavigationNode)
+        private IExpressionPart GetCollectionNavigationNodeFilterPart(CollectionNavigationNode collectionNavigationNode)
             => new MemberSelector
             (
                 collectionNavigationNode.NavigationProperty.Name,
                 GetFilterPart(collectionNavigationNode.Source)
             );
 
-        private FilterPart GetCollectionConstantFilterPart(CollectionConstantNode collectionNode)
+        private IExpressionPart GetCollectionConstantFilterPart(CollectionConstantNode collectionNode)
         {
             Type elemenType = GetClrType(collectionNode.ItemType);
 
@@ -507,7 +507,7 @@ namespace AutoMapper.AspNet.OData
         private Type GetClrType(IEdmTypeReference typeReference)
             => TypeExtensions.GetClrType(typeReference, typesCache);
 
-        private FilterPart GetSingleValuePropertyAccessFilterPart(SingleValuePropertyAccessNode singleValuePropertyAccesNode)
+        private IExpressionPart GetSingleValuePropertyAccessFilterPart(SingleValuePropertyAccessNode singleValuePropertyAccesNode)
         {
             Type parentType = GetClrType(singleValuePropertyAccesNode.Source.TypeReference);
             string propertyName = singleValuePropertyAccesNode.Property.Name;
@@ -518,7 +518,7 @@ namespace AutoMapper.AspNet.OData
                 GetClrType(singleValuePropertyAccesNode.TypeReference)
             );
 
-            FilterPart DoGet(Type memberType, Type fromEdmType)
+            IExpressionPart DoGet(Type memberType, Type fromEdmType)
             {
                 if (ShouldConvertTypes(memberType, fromEdmType, singleValuePropertyAccesNode))
                 {
@@ -542,17 +542,17 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private FilterPart GetSingleNavigationNodeFilterPart(SingleNavigationNode singleNavigationNode)
+        private IExpressionPart GetSingleNavigationNodeFilterPart(SingleNavigationNode singleNavigationNode)
             => new MemberSelector
             (
                 singleNavigationNode.NavigationProperty.Name,
                 GetFilterPart(singleNavigationNode.Source)
             );
 
-        private FilterPart ConvertNonStandardTypes(Type sourceType, Type fromEdmType, FilterPart sourceFilterPart)
+        private IExpressionPart ConvertNonStandardTypes(Type sourceType, Type fromEdmType, IExpressionPart sourceFilterPart)
         {
             return DoConvert(sourceType.ToNullableUnderlyingType());
-            FilterPart DoConvert(Type sourceUnderlyingType)
+            IExpressionPart DoConvert(Type sourceUnderlyingType)
             {
                 if (fromEdmType == typeof(string))
                 {
@@ -570,7 +570,7 @@ namespace AutoMapper.AspNet.OData
                 );
             }
 
-            FilterPart GetSourceFilterPart(Type sourceUnderlyingType)
+            IExpressionPart GetSourceFilterPart(Type sourceUnderlyingType)
             {
                 switch (sourceUnderlyingType.FullName)
                 {
@@ -587,7 +587,7 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        public FilterPart GetBinaryOperatorFilterPart(BinaryOperatorNode binaryOperatorNode)
+        public IExpressionPart GetBinaryOperatorFilterPart(BinaryOperatorNode binaryOperatorNode)
         {
             var left = GetFilterPart(binaryOperatorNode.Left);
             var right = GetFilterPart(binaryOperatorNode.Right);
@@ -735,11 +735,11 @@ namespace AutoMapper.AspNet.OData
                 => BothTypesDateTimeRelated(leftType, rightType) && (leftType == typeof(TimeOfDay) || rightType == typeof(TimeOfDay));
         }
 
-        public FilterPart GetConstantOperandFilterPart(ConstantNode constantNode)
+        public IExpressionPart GetConstantOperandFilterPart(ConstantNode constantNode)
         {
             return GetFilterPart(constantNode.Value == null ? typeof(object) : GetClrType(constantNode.TypeReference));
 
-            FilterPart GetFilterPart(Type constantType)
+            IExpressionPart GetFilterPart(Type constantType)
                 => new ConstantOperand
                 (
                     constantType,
@@ -747,7 +747,7 @@ namespace AutoMapper.AspNet.OData
                 );
         }
 
-        public FilterPart GetInFilterPart(InNode inNode)
+        public IExpressionPart GetInFilterPart(InNode inNode)
             => new InOperator
             (
                 GetFilterPart(inNode.Left),
