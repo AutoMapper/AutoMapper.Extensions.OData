@@ -467,16 +467,20 @@ namespace AutoMapper.AspNet.OData
         }
 
         public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type)
-            => new FilterHelper
+        {
+            IDictionary<string, ParameterExpression> parameters = new Dictionary<string, ParameterExpression>
+            {
+                [filterClause.RangeVariable.Name] = Expression.Parameter(type, filterClause.RangeVariable.Name)
+            };
+
+            return new FilterHelper
             (
-                new Dictionary<string, ParameterExpression>
-                {
-                    [filterClause.RangeVariable.Name] = Expression.Parameter(type, filterClause.RangeVariable.Name)
-                },
+                parameters,
                 type
             )
             .GetFilterPart(filterClause.Expression)
-            .GetFilter(filterClause.RangeVariable.Name);
+            .GetFilter(parameters[filterClause.RangeVariable.Name]);
+        }
 
         private static Expression Unquote(this Expression exp)
             => exp.NodeType == ExpressionType.Quote

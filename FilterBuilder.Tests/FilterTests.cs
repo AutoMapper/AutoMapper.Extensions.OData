@@ -3173,16 +3173,7 @@ namespace FilterBuilder.Tests
             => ODataHelpers.GetFilterClause<TModel>(queryOptions, serviceProvider, useFilterOption);
 
         private Expression<Func<TModel, bool>> GetFilterExpression<TModel>(FilterClause filterClause) where TModel : class
-            => new FilterHelper
-            (
-                new Dictionary<string, ParameterExpression>
-                {
-                    [filterClause.RangeVariable.Name] = Expression.Parameter(typeof(TModel), filterClause.RangeVariable.Name)
-                },
-                typeof(TModel)
-            )
-            .GetFilterPart(filterClause.Expression)
-            .GetFilter<TModel>(filterClause.RangeVariable.Name);
+            => (Expression<Func<TModel, bool>>)filterClause.GetFilterExpression(typeof(TModel));
     }
 
     public static class StringExtender

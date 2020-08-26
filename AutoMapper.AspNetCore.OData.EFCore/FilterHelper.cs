@@ -89,7 +89,6 @@ namespace AutoMapper.AspNet.OData
                         fromEdmType,
                         new MemberSelector
                         (
-                            parameters,
                             propertyName,
                             GetFilterPart(singleComplexNode.Source)
                         )
@@ -98,7 +97,6 @@ namespace AutoMapper.AspNet.OData
 
                 return new MemberSelector
                 (
-                    parameters,
                     propertyName,
                     GetFilterPart(singleComplexNode.Source)
                 );
@@ -108,7 +106,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetSingleResourceCastFilterPart(SingleResourceCastNode singleResourceCastNode)
             => new CastOperator
             (
-                this.parameters,
                 GetFilterPart(singleResourceCastNode.Source),
                 GetClrType(singleResourceCastNode.TypeReference)
             );
@@ -150,13 +147,12 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetAnyNodeFilterPart(AnyNode anyNode)
         {
             if (anyNode.Body == null || IsTrueConstantExpression(anyNode.Body))
-                return new AnyOperator(parameters, GetFilterPart(anyNode.Source));
+                return new AnyOperator(GetFilterPart(anyNode.Source));
 
             //Creating filter part for method call expression with a filter
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
             return new AnyOperator
             (
-                parameters,
                 GetFilterPart(anyNode.Source), //source =$it.Property.ChildCollection
                 new FilterLambdaOperator
                 (
@@ -171,13 +167,12 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetAllNodeFilterPart(AllNode allNode)
         {
             if (allNode.Body == null || IsTrueConstantExpression(allNode.Body))
-                return new AllOperator(parameters, GetFilterPart(allNode.Source));
+                return new AllOperator(GetFilterPart(allNode.Source));
 
             //Creating filter part for method call expression with a filter
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
             return new AllOperator
             (
-                parameters,
                 GetFilterPart(allNode.Source), //source =$it.Property.ChildCollection
                 new FilterLambdaOperator
                 (
@@ -211,37 +206,36 @@ namespace AutoMapper.AspNet.OData
                 => singleValueFunctionCallNode.Name switch
                 {
                     "cast" => GetCastFilterPart(arguments),
-                    "ceiling" => new CeilingOperator(parameters, GetFilterPart(arguments[0])),
-                    "concat" => new ConcatOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
-                    "contains" => new ContainsOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "ceiling" => new CeilingOperator(GetFilterPart(arguments[0])),
+                    "concat" => new ConcatOperator(GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "contains" => new ContainsOperator(GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
                     "date" => GetFilterPart(arguments[0]), //new DateOperator(parameters, GetFilterPart(arguments[0])),
                                                            //EF does not support Date/TimeOfDay selectors
-                    "day" => new DayOperator(parameters, GetFilterPart(arguments[0])),
-                    "endswith" => new EndsWithOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
-                    "floor" => new FloorOperator(parameters, GetFilterPart(arguments[0])),
-                    "fractionalseconds" => new FractionalSecondsOperator(parameters, GetFilterPart(arguments[0])),
-                    "hour" => new HourOperator(parameters, GetFilterPart(arguments[0])),
-                    "indexof" => new IndexOfOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "day" => new DayOperator(GetFilterPart(arguments[0])),
+                    "endswith" => new EndsWithOperator(GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "floor" => new FloorOperator(GetFilterPart(arguments[0])),
+                    "fractionalseconds" => new FractionalSecondsOperator(GetFilterPart(arguments[0])),
+                    "hour" => new HourOperator(GetFilterPart(arguments[0])),
+                    "indexof" => new IndexOfOperator(GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
                     "isof" => GetIsOdFilterPart(arguments),
-                    "length" => new LengthOperator(parameters, GetFilterPart(arguments[0])),
-                    "minute" => new MinuteOperator(parameters, GetFilterPart(arguments[0])),
-                    "month" => new MonthOperator(parameters, GetFilterPart(arguments[0])),
-                    "now" => new NowDateTimeOperator(parameters),
-                    "round" => new RoundOperator(parameters, GetFilterPart(arguments[0])),
-                    "second" => new SecondOperator(parameters, GetFilterPart(arguments[0])),
-                    "startswith" => new StartsWithOperator(parameters, GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
+                    "length" => new LengthOperator(GetFilterPart(arguments[0])),
+                    "minute" => new MinuteOperator(GetFilterPart(arguments[0])),
+                    "month" => new MonthOperator(GetFilterPart(arguments[0])),
+                    "now" => new NowDateTimeOperator(),
+                    "round" => new RoundOperator(GetFilterPart(arguments[0])),
+                    "second" => new SecondOperator(GetFilterPart(arguments[0])),
+                    "startswith" => new StartsWithOperator(GetFilterPart(arguments[0]), GetFilterPart(arguments[1])),
                     "substring" => new SubstringOperator
                     (
-                        parameters,
                         GetFilterPart(arguments[0]),//initial string
                         arguments.Skip(1).Select(arg => GetFilterPart(arg)).ToArray()//starting index or (starting and ending indexes)
                     ),
                     "time" => GetFilterPart(arguments[0]), //new TimeOperator(parameters, GetFilterPart(arguments[0])),
                                                            //EF does not support Date/TimeOfDay selectors
-                    "tolower" => new TolowerOperator(parameters, GetFilterPart(arguments[0])),
-                    "toupper" => new ToUpperOperator(parameters, GetFilterPart(arguments[0])),
-                    "trim" => new TrimOperator(parameters, GetFilterPart(arguments[0])),
-                    "year" => new YearOperator(parameters, GetFilterPart(arguments[0])),
+                    "tolower" => new TolowerOperator(GetFilterPart(arguments[0])),
+                    "toupper" => new ToUpperOperator(GetFilterPart(arguments[0])),
+                    "trim" => new TrimOperator(GetFilterPart(arguments[0])),
+                    "year" => new YearOperator(GetFilterPart(arguments[0])),
                     _ => GetCustomMehodFilterPart(singleValueFunctionCallNode.Name, arguments.OfType<SingleValueNode>().ToArray()),
                 };
         }
@@ -257,7 +251,7 @@ namespace AutoMapper.AspNet.OData
             return IsOf(GetCastType(typeNode));
 
             FilterPart IsOf(Type conversionType)
-                => new IsOfOperator(parameters, GetFilterPart(sourceNode), conversionType);
+                => new IsOfOperator(GetFilterPart(sourceNode), conversionType);
         }
 
         private FilterPart GetCastResourceFilterPart(List<QueryNode> arguments)
@@ -280,14 +274,13 @@ namespace AutoMapper.AspNet.OData
                     return GetFilterPart(sourceNode);
 
                 if (!(operandType.IsAssignableFrom(conversionType) || conversionType.IsAssignableFrom(operandType)))
-                    return new ConstantOperand(parameters, null);
+                    return new ConstantOperand(null);
 
                 if (ShouldConvertTypes(operandType, conversionType, sourceNode))
                 {
 
                     return new CastOperator
                     (
-                        this.parameters,
                         GetFilterPart(sourceNode),
                         conversionType
                     );
@@ -320,24 +313,23 @@ namespace AutoMapper.AspNet.OData
                 {
                     if ((!typeNode.TypeReference.IsPrimitive() && !typeNode.TypeReference.IsEnum())
                         || (!operandType.IsLiteralType() && !operandType.ToNullableUnderlyingType().IsEnum))
-                        return new ConstantOperand(parameters, null);
+                        return new ConstantOperand(null);
 
                     if (conversionType == typeof(string))
-                        return new ConvertToStringOperator(parameters, GetFilterPart(sourceNode));
+                        return new ConvertToStringOperator( GetFilterPart(sourceNode));
 
                     if (conversionType.IsEnum)
                     {
                         if (!(sourceNode is ConstantNode enumSourceNode))
                         {
                             if (GetClrType(sourceNode.TypeReference) == typeof(string))
-                                return new ConstantOperand(parameters, null);
+                                return new ConstantOperand(null);
 
                             throw new ArgumentException("Expected ConstantNode for enum source node.");
                         }
 
                         return new ConvertToEnumOperator
                         (
-                            parameters,
                             conversionType,
                             GetConstantNodeValue(enumSourceNode, conversionType)
                         );
@@ -345,7 +337,6 @@ namespace AutoMapper.AspNet.OData
 
                     return new ConvertOperand
                     (
-                        this.parameters,
                         conversionType,
                         GetFilterPart(sourceNode)
                     );
@@ -366,7 +357,6 @@ namespace AutoMapper.AspNet.OData
 
             return new CustomMethodOperator
             (
-                parameters,
                 methodInfo,
                 arguments.Select(arg => GetFilterPart(arg)).ToArray()
             );
@@ -375,8 +365,8 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetUnaryOperatorNodeFilterPart(UnaryOperatorNode unaryOperatorNode)
             => unaryOperatorNode.OperatorKind switch
             {
-                UnaryOperatorKind.Negate => new NegateOperator(parameters, GetFilterPart(unaryOperatorNode.Operand)),
-                UnaryOperatorKind.Not => new NotOperator(parameters, GetFilterPart(unaryOperatorNode.Operand)),
+                UnaryOperatorKind.Negate => new NegateOperator(GetFilterPart(unaryOperatorNode.Operand)),
+                UnaryOperatorKind.Not => new NotOperator(GetFilterPart(unaryOperatorNode.Operand)),
                 _ => throw new ArgumentException($"Unsupported {unaryOperatorNode.OperatorKind.GetType().Name} value: {unaryOperatorNode.OperatorKind}"),
             };
 
@@ -397,7 +387,6 @@ namespace AutoMapper.AspNet.OData
                 {
                     return new ConvertOperand
                     (
-                        this.parameters,
                         conversionType,
                         GetFilterPart(covertNode.Source)
                     );
@@ -460,7 +449,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetCollectionResourceCastFilterPart(CollectionResourceCastNode collectionResourceCastNode)
             => new CollectionCastOperator
             (
-                parameters,
                 GetFilterPart(collectionResourceCastNode.Source),
                 GetClrType(collectionResourceCastNode.ItemType)
             );
@@ -468,7 +456,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetCollectionComplexNodeFilterPart(CollectionComplexNode collectionComplexNode)
             => new MemberSelector
             (
-                parameters,
                 collectionComplexNode.Property.Name,
                 GetFilterPart(collectionComplexNode.Source)
             );
@@ -476,7 +463,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetCollectionPropertyAccessNodeFilterPart(CollectionPropertyAccessNode collectionPropertyAccessNode)
             => new MemberSelector
             (
-                parameters,
                 collectionPropertyAccessNode.Property.Name,
                 GetFilterPart(collectionPropertyAccessNode.Source)
             );
@@ -484,7 +470,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetCollectionNavigationNodeFilterPart(CollectionNavigationNode collectionNavigationNode)
             => new MemberSelector
             (
-                parameters,
                 collectionNavigationNode.NavigationProperty.Name,
                 GetFilterPart(collectionNavigationNode.Source)
             );
@@ -495,7 +480,6 @@ namespace AutoMapper.AspNet.OData
 
             return new CollectionConstantOperand
             (
-                parameters,
                 elemenType,
                 GetCollectionParameter(elemenType.ToNullableUnderlyingType())
             );
@@ -544,7 +528,6 @@ namespace AutoMapper.AspNet.OData
                         fromEdmType,
                         new MemberSelector
                         (
-                            parameters,
                             propertyName,
                             GetFilterPart(singleValuePropertyAccesNode.Source)
                         )
@@ -553,7 +536,6 @@ namespace AutoMapper.AspNet.OData
 
                 return new MemberSelector
                 (
-                    parameters,
                     propertyName,
                     GetFilterPart(singleValuePropertyAccesNode.Source)
                 );
@@ -563,7 +545,6 @@ namespace AutoMapper.AspNet.OData
         private FilterPart GetSingleNavigationNodeFilterPart(SingleNavigationNode singleNavigationNode)
             => new MemberSelector
             (
-                parameters,
                 singleNavigationNode.NavigationProperty.Name,
                 GetFilterPart(singleNavigationNode.Source)
             );
@@ -577,14 +558,13 @@ namespace AutoMapper.AspNet.OData
                 {
                     return sourceUnderlyingType.FullName switch
                     {
-                        "System.Char[]" => new ConvertCharArrayToStringOperator(parameters, GetSourceFilterPart(sourceUnderlyingType)),
-                        _ => new ConvertToStringOperator(parameters, GetSourceFilterPart(sourceUnderlyingType)),
+                        "System.Char[]" => new ConvertCharArrayToStringOperator(GetSourceFilterPart(sourceUnderlyingType)),
+                        _ => new ConvertToStringOperator(GetSourceFilterPart(sourceUnderlyingType)),
                     };
                 }
 
                 return new ConvertOperand
                 (
-                    parameters,
                     fromEdmType,
                     GetSourceFilterPart(sourceUnderlyingType)
                 );
@@ -600,7 +580,7 @@ namespace AutoMapper.AspNet.OData
                     case "System.Char":
                         return sourceUnderlyingType == sourceType
                                 ? sourceFilterPart
-                                : new ConvertToNullableUnderlyingValueOperator(parameters, sourceFilterPart);
+                                : new ConvertToNullableUnderlyingValueOperator(sourceFilterPart);
                     default:
                         return sourceFilterPart;
                 }
@@ -614,14 +594,14 @@ namespace AutoMapper.AspNet.OData
 
             if (ShouldConvertToNumericDate(binaryOperatorNode))
             {
-                left = new ConvertToNumericDate(parameters, left);
-                right = new ConvertToNumericDate(parameters, right);
+                left = new ConvertToNumericDate(left);
+                right = new ConvertToNumericDate(right);
             }
 
             if (ShouldConvertToNumericTime(binaryOperatorNode))
             {
-                left = new ConvertToNumericTime(parameters, left);
-                right = new ConvertToNumericTime(parameters, right);
+                left = new ConvertToNumericTime(left);
+                right = new ConvertToNumericTime(right);
             }
 
             switch (binaryOperatorNode.OperatorKind)
@@ -629,91 +609,78 @@ namespace AutoMapper.AspNet.OData
                 case BinaryOperatorKind.Or:
                     return new OrBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.And:
                     return new AndBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Equal:
                     return new EqualsBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.NotEqual:
                     return new NotEqualsBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.GreaterThan:
                     return new GreaterThanBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.GreaterThanOrEqual:
                     return new GreaterThanOrEqualsBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.LessThan:
                     return new LessThanBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.LessThanOrEqual:
                     return new LessThanOrEqualsBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Add:
                     return new AddBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Subtract:
                     return new SubtractBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Multiply:
                     return new MultiplyBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Divide:
                     return new DivideBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
                 case BinaryOperatorKind.Modulo:
                     return new ModuloBinaryOperator
                     (
-                        this.parameters,
                         left,
                         right
                     );
@@ -723,11 +690,9 @@ namespace AutoMapper.AspNet.OData
                     {
                         return new HasOperator
                         (
-                            this.parameters,
                             left,
                             new ConstantOperand
                             (
-                                this.parameters,
                                 typeof(string),
                                 oDataEnum.Value
                             )
@@ -777,7 +742,6 @@ namespace AutoMapper.AspNet.OData
             FilterPart GetFilterPart(Type constantType)
                 => new ConstantOperand
                 (
-                    this.parameters,
                     constantType,
                     GetConstantNodeValue(constantNode, constantType)
                 );
@@ -786,7 +750,6 @@ namespace AutoMapper.AspNet.OData
         public FilterPart GetInFilterPart(InNode inNode)
             => new InOperator
             (
-                this.parameters,
                 GetFilterPart(inNode.Left),
                 GetFilterPart(inNode.Right)
             );
