@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.OData.Extensions;
+﻿using LogicBuilder.Expressions.Utils;
+using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.OData.UriParser;
 using System;
@@ -64,136 +65,175 @@ namespace AutoMapper.AspNet.OData
 
             return Expression.Lambda<Func<IQueryable<T>, IQueryable<T>>>
             (
-                options.GetOrderByMethod(param), param
+                param.GetOrderByMethod(options), param
             );
         }
 
-        /// <summary>
-        /// Get OrderBy Method
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="options"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        [Obsolete("Use \"public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options)\" instead.")]
         public static Expression GetOrderByMethod<T>(this ODataQueryOptions<T> options, Expression expression)
+            => expression.GetOrderByMethod<T>(options);
+
+        public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options)
         {
             if (options.OrderBy == null && options.Top == null)
                 return null;
 
-            if (options.OrderBy == null)
+            return expression.GetQueryableMethod
+            (
+                options.OrderBy?.OrderByClause,
+                typeof(T),
+                options.Skip?.Value,
+                options.Top?.Value
+            );
+        }
+
+        public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, Type type, int? skip, int? top)
+        {
+            if (orderByClause == null && !top.HasValue)
+                return null;
+
+            if (orderByClause == null)
             {
                 return Expression.Call
                 (
                     typeof(Queryable),
                     "Take",
-                    new[] { typeof(T) }, expression, Expression.Constant(options.Top.Value)
+                    new[] { type },
+                    expression,
+                    Expression.Constant(top.Value)
                 );
             }
 
+            return expression
+                .GetOrderByCall(orderByClause)
+                .GetSkipCall(skip)
+                .GetTakeCall(top);
+        }
+
+        private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)
+        {
             const string OrderBy = "OrderBy";
             const string OrderByDescending = "OrderByDescending";
+
+            return orderByClause.ThenBy == null
+                ? GetMethodCall()
+                : GetMethodCall().GetThenByCall(orderByClause.ThenBy);
+
+            Expression GetMethodCall()
+            {
+                SingleValueNode orderByNode = orderByClause.Expression;
+                switch (orderByNode)
+                {
+                    case CountNode countNode:
+                        return expression.GetOrderByCountCall
+                        (
+                            countNode.GetPropertyPath(),
+                            orderByClause.Direction == OrderByDirection.Ascending
+                                ? OrderBy
+                                : OrderByDescending,
+                            orderByClause.RangeVariable.Name
+                        );
+                    default:
+                        SingleValuePropertyAccessNode propertyNode = (SingleValuePropertyAccessNode)orderByNode;
+                        return expression.GetOrderByCall
+                        (
+                            propertyNode.GetPropertyPath(),
+                            orderByClause.Direction == OrderByDirection.Ascending
+                                ? OrderBy
+                                : OrderByDescending,
+                            orderByClause.RangeVariable.Name
+                        );
+                }
+            }
+        }
+
+        private static Expression GetThenByCall(this Expression expression, OrderByClause orderByClause)
+        {
             const string ThenBy = "ThenBy";
             const string ThenByDescending = "ThenByDescending";
 
-            return options.OrderBy.OrderByNodes.Aggregate(null, (Expression mce, OrderByNode orderByNode) =>
-            {
-                switch (orderByNode)
-                {
-                    case OrderByCountNode countNode:
-                        return mce == null
-                           ? expression.GetOrderByCountCall
-                                (
-                                    countNode.GetPropertyPath(),
-                                    orderByNode.Direction == OrderByDirection.Ascending
-                                        ? OrderBy
-                                        : OrderByDescending
-                                )
-                            : mce.GetOrderByCountCall
-                                (
-                                    countNode.GetPropertyPath(),
-                                    orderByNode.Direction == OrderByDirection.Ascending
-                                        ? ThenBy
-                                        : ThenByDescending
-                                );
-                    default:
-                        OrderByPropertyNode propertyNode = (OrderByPropertyNode)orderByNode;
-                        return mce == null
-                            ? expression.GetOrderByCall
-                                (
-                                    propertyNode.GetPropertyPath(),
-                                    orderByNode.Direction == OrderByDirection.Ascending 
-                                        ? OrderBy
-                                        : OrderByDescending
-                                )
-                            : mce.GetOrderByCall
-                                (
-                                    propertyNode.GetPropertyPath(), 
-                                    orderByNode.Direction == OrderByDirection.Ascending 
-                                        ? ThenBy
-                                        : ThenByDescending
-                                );
-                }
-            })
-            .GetSkipCall(options.Skip)
-            .GetTakeCall(options.Top);
-        }
+            return orderByClause.ThenBy == null
+                ? GetMethodCall()
+                : GetMethodCall().GetThenByCall(orderByClause.ThenBy);
 
-        private static string GetPropertyPath(this OrderByCountNode countNode)
-        {
-            return GetPropertyPath((CountNode)countNode.OrderByClause.Expression);
-            string GetPropertyPath(CountNode countNode)
+            Expression GetMethodCall()
             {
-                switch (countNode.Source)
+                return orderByClause.Expression switch
                 {
-                    case CollectionNavigationNode navigationNode:
-                        return string.Join(".", new List<string>().GetReferencePath(navigationNode));
-                    case null:
-                        throw new ArgumentNullException(nameof(countNode.Source));
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(countNode.Source));
-                }
+                    CountNode countNode => expression.GetOrderByCountCall
+                    (
+                        countNode.GetPropertyPath(),
+                        orderByClause.Direction == OrderByDirection.Ascending
+                            ? ThenBy
+                            : ThenByDescending
+                    ),
+                    SingleValuePropertyAccessNode propertyNode => expression.GetOrderByCall
+                    (
+                        propertyNode.GetPropertyPath(),
+                        orderByClause.Direction == OrderByDirection.Ascending
+                            ? ThenBy
+                            : ThenByDescending
+                    ),
+                    _ => throw new ArgumentException($"Unsupported SingleValueNode value: {orderByClause.Expression.GetType()}"),
+                };
             }
         }
 
-        private static string GetPropertyPath(this OrderByPropertyNode propertyNode)
+        private static string GetPropertyPath(this CountNode countNode)
         {
-            return GetPropertyPath((SingleValuePropertyAccessNode)propertyNode.OrderByClause.Expression);
-            string GetPropertyPath(SingleValuePropertyAccessNode singleValuePropertyAccess)
+            switch (countNode.Source)
             {
-                switch (singleValuePropertyAccess.Source)
-                {
-                    case SingleNavigationNode navigationNode:
-                        return $"{string.Join(".", new List<string>().GetReferencePath(navigationNode))}.{propertyNode.Property.Name}";
-                    default:
-                        return propertyNode.Property.Name;
-                }
+                case CollectionNavigationNode navigationNode:
+                    return string.Join(".", new List<string>().GetReferencePath(navigationNode.Source, navigationNode.NavigationProperty.Name));
+                case null:
+                    throw new ArgumentNullException(nameof(countNode.Source));
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(countNode.Source));
             }
         }
 
-        private static List<string> GetReferencePath(this List<string> list, SingleNavigationNode navigationNode)
+        public static string GetPropertyPath(this SingleValuePropertyAccessNode singleValuePropertyAccess)
+            => singleValuePropertyAccess.Source switch
+            {
+                SingleNavigationNode navigationNode => $"{navigationNode.GetPropertyPath()}.{singleValuePropertyAccess.Property.Name}",
+                SingleComplexNode complexNode => $"{complexNode.GetPropertyPath()}.{singleValuePropertyAccess.Property.Name}",
+                _ => singleValuePropertyAccess.Property.Name,
+            };
+
+        public static string GetPropertyPath(this CollectionPropertyAccessNode collectionPropertyAccess)
+            => collectionPropertyAccess.Source switch
+            {
+                SingleNavigationNode navigationNode => $"{navigationNode.GetPropertyPath()}.{collectionPropertyAccess.Property.Name}",
+                SingleComplexNode complexNode => $"{complexNode.GetPropertyPath()}.{collectionPropertyAccess.Property.Name}",
+                _ => collectionPropertyAccess.Property.Name,
+            };
+
+        public static string GetPropertyPath(this SingleNavigationNode singleNavigationNode)
+            => $"{string.Join(".", new List<string>().GetReferencePath(singleNavigationNode.Source, singleNavigationNode.NavigationProperty.Name))}";
+
+        public static string GetPropertyPath(this SingleComplexNode singleComplexNode)
+            => $"{string.Join(".", new List<string>().GetReferencePath(singleComplexNode.Source, singleComplexNode.Property.Name))}";
+
+        public static string GetPropertyPath(this CollectionComplexNode collectionComplexNode)
+            => $"{string.Join(".", new List<string>().GetReferencePath(collectionComplexNode.Source, collectionComplexNode.Property.Name))}";
+
+        public static string GetPropertyPath(this CollectionNavigationNode collectionNavigationNode)
+            => $"{string.Join(".", new List<string>().GetReferencePath(collectionNavigationNode.Source, collectionNavigationNode.NavigationProperty.Name))}";
+
+        public static List<string> GetReferencePath(this List<string> list, SingleResourceNode singleResourceNode, string propertyName)
         {
-            switch (navigationNode.Source)
+            switch (singleResourceNode)
             {
                 case SingleNavigationNode sourceNode:
-                    list.GetReferencePath(sourceNode);
-                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    list.GetReferencePath(sourceNode.Source, sourceNode.NavigationProperty.Name);
+                    list.Add(propertyName);
+                    return list;
+                case SingleComplexNode complexNode:
+                    list.GetReferencePath(complexNode.Source, complexNode.Property.Name);
+                    list.Add(propertyName);
                     return list;
                 default:
-                    list.AddRange(navigationNode.BindingPath.PathSegments);
-                    return list;
-            }
-        }
-
-        private static List<string> GetReferencePath(this List<string> list, CollectionNavigationNode navigationNode)
-        {
-            switch (navigationNode.Source)
-            {
-                case SingleNavigationNode sourceNode:
-                    list.GetReferencePath(sourceNode);
-                    list.AddRange(navigationNode.BindingPath.PathSegments);
-                    return list;
-                default:
-                    list.AddRange(navigationNode.BindingPath.PathSegments);
+                    list.Add(propertyName);
                     return list;
             }
         }
@@ -202,9 +242,23 @@ namespace AutoMapper.AspNet.OData
         {
             if (skip == null) return expression;
 
+            return expression.GetSkipCall(skip.Value);
+        }
+
+        public static Expression GetTakeCall(this Expression expression, TopQueryOption top)
+        {
+            if (top == null) return expression;
+
+            return expression.GetTakeCall(top.Value);
+        }
+
+        public static Expression GetSkipCall(this Expression expression, int? skip)
+        {
+            if (skip == null) return expression;
+
             return Expression.Call
             (
-                typeof(Queryable),
+                expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 "Skip",
                 new[] { expression.GetUnderlyingElementType() },
                 expression,
@@ -212,40 +266,19 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Expression GetTakeCall(this Expression expression, TopQueryOption top)
+        public static Expression GetTakeCall(this Expression expression, int? top)
         {
             if (top == null) return expression;
 
             return Expression.Call
             (
-                typeof(Queryable),
+                expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 "Take",
                 new[] { expression.GetUnderlyingElementType() },
                 expression,
                 Expression.Constant(top.Value)
             );
         }
-
-        private static Expression MakeSelector(this Expression expression, string memberFullName)
-            => memberFullName.Split('.')
-                .Aggregate
-                (
-                    expression,
-                    (ex, next) => Expression.MakeMemberAccess
-                    (
-                        ex,
-                        ex.Type.GetMemberInfo(next)
-                    )
-                );
-
-        private static MethodCallExpression GetEnumerableCountCall(this Expression expression, params Expression[] args)
-            => Expression.Call
-            (
-                typeof(Enumerable),
-                "Count",
-                new Type[] { expression.GetUnderlyingElementType() },
-                new Expression[] { expression }.Concat(args).ToArray()
-            );
 
         public static LambdaExpression MakeLambdaExpression(this ParameterExpression param, Expression body)
         {
@@ -261,7 +294,7 @@ namespace AutoMapper.AspNet.OData
             Expression countSelector = param.MakeSelector(memberFullName).GetEnumerableCountCall();
             return Expression.Call
             (
-                typeof(Queryable),
+                expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 methodName,
                 new Type[] { sourceType, countSelector.Type },
                 expression,
@@ -278,7 +311,7 @@ namespace AutoMapper.AspNet.OData
             MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
             return Expression.Call
             (
-                typeof(Queryable),
+                expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 methodName,
                 new Type[] { sourceType, memberInfo.GetMemberType() },
                 expression,
@@ -349,20 +382,20 @@ namespace AutoMapper.AspNet.OData
             });
         }
 
-        public static List<List<Expansion>> GetExpansions(this SelectExpandQueryOption clause)
+        public static List<List<Expansion>> GetExpansions(this SelectExpandQueryOption clause, Type parentType)
         {
             if (clause?.SelectExpandClause == null)
                 return new List<List<Expansion>>();
 
-            return clause.SelectExpandClause.SelectedItems.GetExpansions(new HashSet<string>(clause.GetSelects()));
+            return clause.SelectExpandClause.SelectedItems.GetExpansions(new HashSet<string>(clause.GetSelects()), parentType);
         }
 
-        private static List<List<Expansion>> GetNestedExpansions(this ExpandedNavigationSelectItem node)
+        private static List<List<Expansion>> GetNestedExpansions(this ExpandedNavigationSelectItem node, Type type)
         {
             if (node == null)
                 return new List<List<Expansion>>();
 
-            return node.SelectAndExpand.SelectedItems.GetExpansions(new HashSet<string>(node.SelectAndExpand.GetSelects()));
+            return node.SelectAndExpand.SelectedItems.GetExpansions(new HashSet<string>(node.SelectAndExpand.GetSelects()), type);
         }
 
         private static bool ExpansionIsValid(this HashSet<string> siblingSelects, string expansion)
@@ -373,7 +406,7 @@ namespace AutoMapper.AspNet.OData
             return siblingSelects.Contains(expansion);
         }
 
-        private static List<List<Expansion>> GetExpansions(this IEnumerable<SelectItem> selectedItems, HashSet<string> selects)
+        private static List<List<Expansion>> GetExpansions(this IEnumerable<SelectItem> selectedItems, HashSet<string> selects, Type parentType)
         {
             if (selectedItems == null)
                 return new List<List<Expansion>>();
@@ -385,10 +418,21 @@ namespace AutoMapper.AspNet.OData
                 if (!selects.ExpansionIsValid(path))/*If selects are defined then check to make sure the expansion is one of them.*/
                     return listOfExpansionLists;
 
-                Expansion exp = new Expansion { MemberName = path, Selects = next.SelectAndExpand.GetSelects() };
-                List<Expansion> li = new List<Expansion> { exp };
+                Type currentParentType = parentType.GetCurrentType();
+                Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
+                Type elementType = memberType.GetCurrentType();
 
-                List<List<Expansion>> navigationItems = next.GetNestedExpansions().Select
+                Expansion exp = new Expansion
+                {
+                    MemberType = memberType,
+                    ParentType = currentParentType,
+                    MemberName = path,
+                    FilterOptions = GetFilter(),
+                    QueryOptions = GetQuery(),
+                    Selects = next.SelectAndExpand.GetSelects()
+                };
+
+                List<List<Expansion>> navigationItems = next.GetNestedExpansions(elementType).Select
                 (
                     expansions =>
                     {
@@ -400,9 +444,42 @@ namespace AutoMapper.AspNet.OData
                 if (navigationItems.Any())
                     listOfExpansionLists.AddRange(navigationItems);
                 else
-                    listOfExpansionLists.Add(li);
+                    listOfExpansionLists.Add(new List<Expansion> { exp });
+
                 return listOfExpansionLists;
+
+                FilterOptions GetFilter()
+                    => HasFilter()
+                        ? new FilterOptions(next.FilterOption)
+                        : null;
+
+                QueryOptions GetQuery()
+                    => HasQuery()
+                        ? new QueryOptions(next.OrderByOption, (int?)next.SkipOption, (int?)next.TopOption)
+                        : null;
+
+                bool HasFilter()
+                    => memberType.IsList() && next.FilterOption != null;
+
+                bool HasQuery()
+                    => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue);
             });
+        }
+
+        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type)
+        {
+            IDictionary<string, ParameterExpression> parameters = new Dictionary<string, ParameterExpression>
+            {
+                [filterClause.RangeVariable.Name] = Expression.Parameter(type, filterClause.RangeVariable.Name)
+            };
+
+            return new FilterHelper
+            (
+                parameters,
+                type
+            )
+            .GetFilterPart(filterClause.Expression)
+            .GetFilter(parameters[filterClause.RangeVariable.Name]);
         }
 
         private static Expression Unquote(this Expression exp)
@@ -638,7 +715,47 @@ namespace AutoMapper.AspNet.OData
 
     public class Expansion
     {
+        public Expansion() { }
+
+        public Expansion(Expansion expansion)
+        {
+            MemberName = expansion.MemberName;
+            MemberType = expansion.MemberType;
+            ParentType = expansion.ParentType;
+            Selects = expansion.Selects;
+            QueryOptions = expansion.QueryOptions == null ? null : new QueryOptions(expansion.QueryOptions.OrderByClause, expansion.QueryOptions.Skip, expansion.QueryOptions.Top);
+            FilterOptions = expansion.FilterOptions == null ? null : new FilterOptions(expansion.FilterOptions.FilterClause);
+        }
+
         public string MemberName { get; set; }
+        public Type MemberType { get; set; }
+        public Type ParentType { get; set; }
         public List<string> Selects { get; set; }
+        public QueryOptions QueryOptions { get; set; }
+        public FilterOptions FilterOptions { get; set; }
+    }
+
+    public class QueryOptions
+    {
+        public QueryOptions(OrderByClause orderByClause, int? skip, int? top)
+        {
+            OrderByClause = orderByClause;
+            Skip = skip;
+            Top = top;
+        }
+
+        public OrderByClause OrderByClause { get; set; }
+        public int? Skip { get; set; }
+        public int? Top { get; set; }
+    }
+
+    public class FilterOptions
+    {
+        public FilterOptions(FilterClause filterClause)
+        {
+            FilterClause = filterClause;
+        }
+
+        public FilterClause FilterClause { get; set; }
     }
 }

@@ -18,10 +18,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Constants.cs" Link="Constants.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\CustomMethodCache.cs" Link="CustomMethodCache.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\EdmTypeStructure.cs" Link="EdmTypeStructure.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\FilterHelper.cs" Link="FilterHelper.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\LinqExtensions.cs" Link="LinqExtensions.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\ODataQueryOptionsExtensions.cs" Link="ODataQueryOptionsExtensions.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\TypeExtensions.cs" Link="TypeExtensions.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ChildCollectionFilterUpdater.cs" Link="Visitors\ChildCollectionFilterUpdater.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ChildCollectionOrderByUpdater.cs" Link="Visitors\ChildCollectionOrderByUpdater.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\FilterAppender.cs" Link="Visitors\FilterAppender.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\MethodAppender.cs" Link="Visitors\MethodAppender.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ProjectionVisitor.cs" Link="Visitors\ProjectionVisitor.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,9 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.0,5.0.0)" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="4.0.1" />
     <PackageReference Include="EntityFramework" Version="6.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.2.1" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[4.0.1-preview.0,5.0.0)" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
     <PackageReference Include="MinVer" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,6 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Visitors\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

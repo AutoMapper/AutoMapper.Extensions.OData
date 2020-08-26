@@ -1,4 +1,5 @@
-﻿using AutoMapper.Extensions.ExpressionMapping;
+﻿using AutoMapper.AspNet.OData.Visitors;
+using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -52,7 +53,13 @@ namespace AutoMapper.AspNet.OData
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
         {
-            List<Expression<Func<TModel, object>>> includeExpressions = options.SelectExpand.GetExpansions().BuildIncludes<TModel>(options.SelectExpand.GetSelects()).ToList();
+            var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
+            List<Expression<Func<TModel, object>>> includeExpressions = expansions.BuildIncludes<TModel>
+            (
+                options.SelectExpand.GetSelects()
+            )
+            .ToList();
+
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
             Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
@@ -61,8 +68,140 @@ namespace AutoMapper.AspNet.OData
             if (options.Count?.Value == true)
                 options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
 
-            return await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions);
+            IQueryable<TModel> queryable = await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions);
 
+            return queryable.UpdateQueryable(expansions);
+        }
+
+        private static IQueryable<TModel> UpdateQueryable<TModel>(this IQueryable<TModel> query, List<List<Expansion>> expansions)
+        {
+            List<List<Expansion>> filters = GetFilters();
+            List<List<Expansion>> methods = GetQueryMethods();
+
+            if (!filters.Any() && !methods.Any())
+                return query;
+
+            Expression expression = query.Expression;
+
+            if (filters.Any())
+                expression = UpdateProjectionFilterExpression(expression);
+
+            if (methods.Any())
+                expression = UpdateProjectionMethodExpression(expression);
+
+            return query.Provider.CreateQuery<TModel>(expression);
+
+            Expression UpdateProjectionFilterExpression(Expression projectionExpression)
+            {
+                filters.ForEach
+                (
+                    filterList => projectionExpression = ChildCollectionFilterUpdater.UpdaterExpansion
+                    (
+                        projectionExpression,
+                        filterList
+                    )
+                );
+
+                return projectionExpression;
+            }
+
+            Expression UpdateProjectionMethodExpression(Expression projectionExpression)
+            {
+                methods.ForEach
+                (
+                    methodList => projectionExpression = ChildCollectionOrderByUpdater.UpdaterExpansion
+                    (
+                        projectionExpression,
+                        methodList
+                    )
+                );
+
+                return projectionExpression;
+            }
+
+            List<List<Expansion>> GetFilters()
+                => expansions.Aggregate(new List<List<Expansion>>(), (listOfLists, nextList) =>
+                {
+                    var filterNextList = nextList.Aggregate(new List<Expansion>(), (list, next) =>
+                    {
+                        if (next.FilterOptions != null)
+                        {
+                            list = list.ConvertAll
+                            (
+                                exp => new Expansion
+                                {
+                                    MemberName = exp.MemberName,
+                                    MemberType = exp.MemberType,
+                                    ParentType = exp.ParentType,
+                                }
+                            );//new list removing filter
+
+                            list.Add
+                            (
+                                new Expansion
+                                {
+                                    MemberName = next.MemberName,
+                                    MemberType = next.MemberType,
+                                    ParentType = next.ParentType,
+                                    FilterOptions = new FilterOptions(next.FilterOptions.FilterClause)
+                                }
+                            );//add expansion with filter
+
+                            listOfLists.Add(list.ToList()); //Add the whole list to the list of filter lists
+                                                            //Only the last item in each list has a filter
+                                                            //Filters for parent expansions exist in their own lists
+                            return list;
+                        }
+
+                        list.Add(next);
+
+                        return list;
+                    });
+
+                    return listOfLists;
+                });
+
+            List<List<Expansion>> GetQueryMethods()
+                => expansions.Aggregate(new List<List<Expansion>>(), (listOfLists, nextList) =>
+                {
+                    var filterNextList = nextList.Aggregate(new List<Expansion>(), (list, next) =>
+                    {
+                        if (next.QueryOptions != null)
+                        {
+                            list = list.ConvertAll
+                            (
+                                exp => new Expansion
+                                {
+                                    MemberName = exp.MemberName,
+                                    MemberType = exp.MemberType,
+                                    ParentType = exp.ParentType,
+                                }
+                            );//new list removing query options
+
+                            list.Add
+                            (
+                                new Expansion
+                                {
+                                    MemberName = next.MemberName,
+                                    MemberType = next.MemberType,
+                                    ParentType = next.ParentType,
+                                    QueryOptions = new QueryOptions(next.QueryOptions.OrderByClause, next.QueryOptions.Skip, next.QueryOptions.Top)
+                                }
+                            );//add expansion with query options
+
+                            listOfLists.Add(list.ToList()); //Add the whole list to the list of query method lists
+                                                            //Only the last item in each list has a query method
+                                                            //Query methods for parent expansions exist in their own lists
+                            return list;
+                        }
+
+                        list.Add(next);
+
+                        return list;
+                    });
+
+                    return listOfLists;
+                });
         }
 
         /// <summary>
