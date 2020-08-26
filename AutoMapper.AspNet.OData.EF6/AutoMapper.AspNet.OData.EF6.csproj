@@ -40,6 +40,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.0,5.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.2.0" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[4.0.1-preview.0,5.0.0)" />
     <PackageReference Include="Microsoft.AspNet.OData" Version="7.4.1" />
     <PackageReference Include="MinVer" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
@@ -50,10 +51,6 @@
   <ItemGroup>
     <Folder Include="Visitors\" />
     <Folder Include="Properties\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\.NetStandardGit\LogicBuilder\LogicBuilder.DataComponents\LogicBuilder.Expressions.Utils\LogicBuilder.Expressions.Utils.csproj" />
   </ItemGroup>
 
 </Project>
