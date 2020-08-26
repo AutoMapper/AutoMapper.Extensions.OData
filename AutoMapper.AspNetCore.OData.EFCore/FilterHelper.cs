@@ -148,27 +148,44 @@ namespace AutoMapper.AspNet.OData
         }
 
         private FilterPart GetAnyNodeFilterPart(AnyNode anyNode)
-            => GetLamnbdaNodeFilterPart<AnyOperator>(anyNode);
-
-        private FilterPart GetAllNodeFilterPart(AllNode allNode)
-            => GetLamnbdaNodeFilterPart<AllOperator>(allNode);
-
-        private T CreateLambdaNodeFilterPartInstance<T>(params object[] args) where T : FilterPart
-           => (T)Activator.CreateInstance(typeof(T), args);
-
-        private FilterPart GetLamnbdaNodeFilterPart<T>(LambdaNode lambdaNode) where T : FilterPart
         {
-            if (lambdaNode.Body == null || IsTrueConstantExpression(lambdaNode.Body))
-                return CreateLambdaNodeFilterPartInstance<T>(parameters, GetFilterPart(lambdaNode.Source));
+            if (anyNode.Body == null || IsTrueConstantExpression(anyNode.Body))
+                return new AnyOperator(parameters, GetFilterPart(anyNode.Source));
 
             //Creating filter part for method call expression with a filter
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
-            return CreateLambdaNodeFilterPartInstance<T>
+            return new AnyOperator
             (
                 parameters,
-                GetFilterPart(lambdaNode.Source), //source =$it.Property.ChildCollection
-                GetFilterPart(lambdaNode.Body), //body = c.Active.
-                lambdaNode.CurrentRangeVariable.Name//current range variable name is c
+                GetFilterPart(anyNode.Source), //source =$it.Property.ChildCollection
+                new FilterLambdaOperator
+                (
+                    parameters, 
+                    GetFilterPart(anyNode.Body), //body = c.Active.
+                    GetClrType(anyNode.Source.ItemType), //collection element type
+                    anyNode.CurrentRangeVariable.Name//current range variable name is c
+                )
+            );
+        }
+
+        private FilterPart GetAllNodeFilterPart(AllNode allNode)
+        {
+            if (allNode.Body == null || IsTrueConstantExpression(allNode.Body))
+                return new AllOperator(parameters, GetFilterPart(allNode.Source));
+
+            //Creating filter part for method call expression with a filter
+            //e.g. $it.Property.ChildCollection.Any(c => c.Active);
+            return new AllOperator
+            (
+                parameters,
+                GetFilterPart(allNode.Source), //source =$it.Property.ChildCollection
+                new FilterLambdaOperator
+                (
+                    parameters,
+                    GetFilterPart(allNode.Body), //body = c.Active.
+                    GetClrType(allNode.Source.ItemType), //collection element type
+                    allNode.CurrentRangeVariable.Name//current range variable name is c
+                )
             );
         }
 
