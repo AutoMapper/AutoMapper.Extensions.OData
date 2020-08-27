@@ -21,6 +21,8 @@ namespace WebAPI.AspNet.OData.EF6.Mappings
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<TCity, OpsCity>()
                 .ForAllMembers(o => o.ExplicitExpansion());
+
+            CreateMap<OpsCity, TCity>();
         }
     }
 }
