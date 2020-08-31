@@ -153,14 +153,10 @@ namespace AutoMapper.AspNet.OData
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
             return new AnyOperator
             (
+                parameters,
                 GetFilterPart(anyNode.Source), //source =$it.Property.ChildCollection
-                new FilterLambdaOperator
-                (
-                    parameters, 
-                    GetFilterPart(anyNode.Body), //body = c.Active.
-                    GetClrType(anyNode.Source.ItemType), //collection element type
-                    anyNode.CurrentRangeVariable.Name//current range variable name is c
-                )
+                GetFilterPart(anyNode.Body), //body = c.Active.
+                anyNode.CurrentRangeVariable.Name//current range variable name is c
             );
         }
 
@@ -173,14 +169,10 @@ namespace AutoMapper.AspNet.OData
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
             return new AllOperator
             (
+                parameters,
                 GetFilterPart(allNode.Source), //source =$it.Property.ChildCollection
-                new FilterLambdaOperator
-                (
-                    parameters,
-                    GetFilterPart(allNode.Body), //body = c.Active.
-                    GetClrType(allNode.Source.ItemType), //collection element type
-                    allNode.CurrentRangeVariable.Name//current range variable name is c
-                )
+                GetFilterPart(allNode.Body), //body = c.Active.
+                allNode.CurrentRangeVariable.Name//current range variable name is c
             );
         }
 
@@ -693,8 +685,8 @@ namespace AutoMapper.AspNet.OData
                             left,
                             new ConstantOperand
                             (
-                                typeof(string),
-                                oDataEnum.Value
+                                oDataEnum.Value,
+                                typeof(string)
                             )
                         );
                     }
@@ -742,8 +734,8 @@ namespace AutoMapper.AspNet.OData
             IExpressionPart GetFilterPart(Type constantType)
                 => new ConstantOperand
                 (
-                    constantType,
-                    GetConstantNodeValue(constantNode, constantType)
+                    GetConstantNodeValue(constantNode, constantType),
+                    constantType
                 );
         }
 

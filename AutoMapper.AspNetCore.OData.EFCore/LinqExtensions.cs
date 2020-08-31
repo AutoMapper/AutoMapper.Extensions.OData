@@ -468,10 +468,7 @@ namespace AutoMapper.AspNet.OData
 
         public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type)
         {
-            IDictionary<string, ParameterExpression> parameters = new Dictionary<string, ParameterExpression>
-            {
-                [filterClause.RangeVariable.Name] = Expression.Parameter(type, filterClause.RangeVariable.Name)
-            };
+            var parameters = new Dictionary<string, ParameterExpression>();
 
             return new FilterHelper
             (
@@ -479,7 +476,7 @@ namespace AutoMapper.AspNet.OData
                 type
             )
             .GetFilterPart(filterClause.Expression)
-            .GetFilter(parameters[filterClause.RangeVariable.Name]);
+            .GetFilter(type, parameters, filterClause.RangeVariable.Name);
         }
 
         private static Expression Unquote(this Expression exp)
@@ -498,43 +495,13 @@ namespace AutoMapper.AspNet.OData
             => includes.Select(include => BuildSelectorExpression<TSource>(include)).ToList();
 
         private static Expression<Func<TSource, object>> BuildSelectorExpression<TSource>(string fullName, string parameterName = "i")
-            => (Expression<Func<TSource, object>>)BuildSelectorExpression(typeof(TSource), fullName, parameterName);
-
-        private static LambdaExpression BuildSelectorExpression(Type type, string fullName, string parameterName = "i")
         {
-            ParameterExpression param = Expression.Parameter(type, parameterName);
-            string[] parts = fullName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-            Type parentType = type;
-            Expression parent = param;
+            ParameterExpression param = Expression.Parameter(typeof(TSource), parameterName);
 
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (parentType.IsList())
-                {
-                    parent = GetSelectExpression(parts.Skip(i), parent, parentType.GetUnderlyingElementType(), parameterName);//parentType is the underlying type of the member since it is an IEnumerable<T>
-                    return Expression.Lambda
-                    (
-                        typeof(Func<,>).MakeGenericType(new[] { type, typeof(object) }),
-                        parent,
-                        param
-                    );
-                }
-                else
-                {
-                    MemberInfo mInfo = parentType.GetMemberInfo(parts[i]);
-                    parent = Expression.MakeMemberAccess(parent, mInfo);
-
-                    parentType = mInfo.GetMemberType();
-                }
-            }
-
-            if (parent.Type.IsValueType)//Convert value type expressions to object expressions otherwise
-                parent = Expression.Convert(parent, typeof(object));//Expression.Lambda below will throw an exception for value types
-
-            return Expression.Lambda
+            return (Expression<Func<TSource, object>>)Expression.Lambda
             (
-                typeof(Func<,>).MakeGenericType(new[] { type, typeof(object) }),
-                parent,
+                typeof(Func<,>).MakeGenericType(new[] { typeof(TSource), typeof(object) }),
+                param.BuildSelectorExpression(fullName, param.Name),
                 param
             );
         }
@@ -691,16 +658,6 @@ namespace AutoMapper.AspNet.OData
                 return currentParameterName += "0";
             }
         }
-
-        private static Expression GetSelectExpression(IEnumerable<string> parts, Expression parent, Type underlyingType, string parameterName)
-            => Expression.Call
-            (
-                typeof(Enumerable),
-                "Select",
-                new Type[] { underlyingType, typeof(object) },
-                parent,
-                BuildSelectorExpression(underlyingType, string.Join(".", parts), parameterName.ChildParameterName())
-            );
 
         private static Expression GetSelectExpression(IEnumerable<Expansion> expansions, Expression parent, Type underlyingType, List<LambdaExpression> valueMemberSelectors, string parameterName)
             => Expression.Call

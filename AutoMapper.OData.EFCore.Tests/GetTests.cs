@@ -337,6 +337,8 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
+        //Exception: 'The Include path 'Mandator->Buildings' results in a cycle. 
+        //Cycles are not allowed in no-tracking queries. Either use a tracking query or remove the cycle.'
         //[Fact]
         //public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
         //{
