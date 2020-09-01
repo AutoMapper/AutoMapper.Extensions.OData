@@ -370,8 +370,18 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        //Exception: 'The Include path 'Mandator->Buildings' results in a cycle. 
-        //Cycles are not allowed in no-tracking queries. Either use a tracking query or remove the cycle.'
+        //ArgumentNullException: Value cannot be null. (Parameter 'bindings')
+        //Microsoft.EntityFrameworkCore.InMemory (3.1.0).  Works using Microsoft.EntityFrameworkCore 3.1.
+        /*
+         *  StackTrace:
+   at System.Linq.Expressions.Expression.ValidateMemberInitArgs(Type type, ReadOnlyCollection`1 bindings)
+   at System.Linq.Expressions.Expression.MemberInit(NewExpression newExpression, IEnumerable`1 bindings)
+   at System.Linq.Expressions.MemberInitExpression.Update(NewExpression newExpression, IEnumerable`1 bindings)
+   at System.Linq.Expressions.ExpressionVisitor.VisitMemberInit(MemberInitExpression node)
+   at System.Linq.Expressions.MemberInitExpression.Accept(ExpressionVisitor visitor)
+   at System.Linq.Expressions.ExpressionVisitor.Visit(Expression node)
+   at Microsoft.EntityFrameworkCore.InMemory.Query.Internal.InMemoryExpressionTranslatingExpressionVisitor.VisitConditional(ConditionalExpression conditionalExpression)
+         */
         //[Fact]
         //public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
         //{

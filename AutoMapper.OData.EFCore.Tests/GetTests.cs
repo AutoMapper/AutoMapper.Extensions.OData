@@ -339,18 +339,18 @@ namespace AutoMapper.OData.EFCore.Tests
 
         //Exception: 'The Include path 'Mandator->Buildings' results in a cycle. 
         //Cycles are not allowed in no-tracking queries. Either use a tracking query or remove the cycle.'
-        //[Fact]
-        //public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
-        //{
-        //    Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
-        //    void Test(ICollection<CoreBuilding> collection)
-        //    {
-        //        Assert.Equal(5, collection.Count);
-        //        Assert.NotNull(collection.First().Tenant.Buildings);
-        //        Assert.Equal(3, collection.First().Tenant.Buildings.Count);
-        //        Assert.Equal(2, collection.Last().Tenant.Buildings.Count);
-        //    }
-        //}
+        [Fact]
+        public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(5, collection.Count);
+                Assert.NotNull(collection.First().Tenant.Buildings);
+                Assert.Equal(3, collection.First().Tenant.Buildings.Count);
+                Assert.Equal(2, collection.Last().Tenant.Buildings.Count);
+            }
+        }
 
         [Fact]
         public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference()
