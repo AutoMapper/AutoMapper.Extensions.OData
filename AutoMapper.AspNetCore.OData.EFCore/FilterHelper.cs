@@ -224,7 +224,7 @@ namespace AutoMapper.AspNet.OData
                     ),
                     "time" => GetFilterPart(arguments[0]), //new TimeOperator(parameters, GetFilterPart(arguments[0])),
                                                            //EF does not support Date/TimeOfDay selectors
-                    "tolower" => new TolowerOperator(GetFilterPart(arguments[0])),
+                    "tolower" => new ToLowerOperator(GetFilterPart(arguments[0])),
                     "toupper" => new ToUpperOperator(GetFilterPart(arguments[0])),
                     "trim" => new TrimOperator(GetFilterPart(arguments[0])),
                     "year" => new YearOperator(GetFilterPart(arguments[0])),
@@ -329,8 +329,8 @@ namespace AutoMapper.AspNet.OData
 
                     return new ConvertOperand
                     (
-                        conversionType,
-                        GetFilterPart(sourceNode)
+                        GetFilterPart(sourceNode),
+                        conversionType
                     );
                 }
 
@@ -379,8 +379,8 @@ namespace AutoMapper.AspNet.OData
                 {
                     return new ConvertOperand
                     (
-                        conversionType,
-                        GetFilterPart(covertNode.Source)
+                        GetFilterPart(covertNode.Source),
+                        conversionType
                     );
                 }
 
@@ -557,8 +557,8 @@ namespace AutoMapper.AspNet.OData
 
                 return new ConvertOperand
                 (
-                    fromEdmType,
-                    GetSourceFilterPart(sourceUnderlyingType)
+                    GetSourceFilterPart(sourceUnderlyingType),
+                    fromEdmType
                 );
             }
 
