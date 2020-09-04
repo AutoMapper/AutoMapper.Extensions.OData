@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.OData.Query;
+﻿//Adapted from Microsoft.AspNet.OData.Test.Query.Expressions
+using Microsoft.AspNet.OData.Query;
 using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;

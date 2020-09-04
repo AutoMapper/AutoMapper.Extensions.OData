@@ -1,4 +1,4 @@
-﻿//MAdapted from Microsoft.AspNet.OData.Test.Query.Expressions.ExpressionStringBuilder
+﻿//Adapted from Microsoft.AspNet.OData.Test.Query.Expressions.ExpressionStringBuilder
 using System;
 using System.Collections.Generic;
 using System.Globalization;

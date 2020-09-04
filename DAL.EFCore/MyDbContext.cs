@@ -9,7 +9,7 @@ namespace DAL.EFCore
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
-            this.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //this.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             this.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 

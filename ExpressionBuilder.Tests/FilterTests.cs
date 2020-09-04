@@ -1981,7 +1981,7 @@ namespace ExpressionBuilder.Tests
         public void NSCast_OnSingleEntity_GeneratesExpression_WithAsOperator()
         {
             //act
-            var filter = GetFilter<Product>("ExpressionBuilder.Tests.Data.Product/ProductName eq 'ProductName'");
+            var filter = GetFilter<DerivedProduct>("ExpressionBuilder.Tests.Data.Product/ProductName eq 'ProductName'");
 
             //assert
             AssertFilterStringIsCorrect(filter, "$it => (($it As Product).ProductName == \"ProductName\")");
@@ -2106,17 +2106,6 @@ namespace ExpressionBuilder.Tests
         [InlineData("cast(cast(cast(IntProp,Edm.Int64),Edm.Int16),Edm.String) eq '123'", "$it => (Convert(Convert($it.IntProp)).ToString() == \"123\")")]
         [InlineData("cast('123',ExpressionBuilder.Tests.Data.SimpleEnum) ne null", "$it => (Convert(123) != null)")]
         public void CastMethod_Succeeds(string filterString, string expectedResult)
-        {
-            //act
-            var filter = GetFilter<DataTypes>(filterString);
-
-            //assert
-            AssertFilterStringIsCorrect(filter, expectedResult);
-        }
-
-        [Theory]
-        [InlineData("cast(NullableLongProp,Edm.Double) eq 1.23", "$it => (Convert($it.NullableLongProp) == 1.23)")]
-        public void CastMethod_Succeeds1(string filterString, string expectedResult)
         {
             //act
             var filter = GetFilter<DataTypes>(filterString);
