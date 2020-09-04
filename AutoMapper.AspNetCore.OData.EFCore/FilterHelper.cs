@@ -308,7 +308,7 @@ namespace AutoMapper.AspNet.OData
                         return new ConstantOperand(null);
 
                     if (conversionType == typeof(string))
-                        return new ConvertToStringOperator( GetFilterPart(sourceNode));
+                        return new ConvertToStringOperator(GetFilterPart(sourceNode));
 
                     if (conversionType.IsEnum)
                     {
@@ -322,8 +322,8 @@ namespace AutoMapper.AspNet.OData
 
                         return new ConvertToEnumOperator
                         (
-                            conversionType,
-                            GetConstantNodeValue(enumSourceNode, conversionType)
+                            GetConstantNodeValue(enumSourceNode, conversionType),
+                            conversionType
                         );
                     }
 
