@@ -87,7 +87,7 @@ namespace AutoMapper.AspNet.OData
                     (
                         memberType,
                         fromEdmType,
-                        new MemberSelector
+                        new MemberSelectorOperator
                         (
                             propertyName,
                             GetFilterPart(singleComplexNode.Source)
@@ -95,7 +95,7 @@ namespace AutoMapper.AspNet.OData
                     );
                 }
 
-                return new MemberSelector
+                return new MemberSelectorOperator
                 (
                     propertyName,
                     GetFilterPart(singleComplexNode.Source)
@@ -266,7 +266,7 @@ namespace AutoMapper.AspNet.OData
                     return GetFilterPart(sourceNode);
 
                 if (!(operandType.IsAssignableFrom(conversionType) || conversionType.IsAssignableFrom(operandType)))
-                    return new ConstantOperand(null);
+                    return new ConstantOperator(null);
 
                 if (ShouldConvertTypes(operandType, conversionType, sourceNode))
                 {
@@ -305,7 +305,7 @@ namespace AutoMapper.AspNet.OData
                 {
                     if ((!typeNode.TypeReference.IsPrimitive() && !typeNode.TypeReference.IsEnum())
                         || (!operandType.IsLiteralType() && !operandType.ToNullableUnderlyingType().IsEnum))
-                        return new ConstantOperand(null);
+                        return new ConstantOperator(null);
 
                     if (conversionType == typeof(string))
                         return new ConvertToStringOperator(GetFilterPart(sourceNode));
@@ -315,7 +315,7 @@ namespace AutoMapper.AspNet.OData
                         if (!(sourceNode is ConstantNode enumSourceNode))
                         {
                             if (GetClrType(sourceNode.TypeReference) == typeof(string))
-                                return new ConstantOperand(null);
+                                return new ConstantOperator(null);
 
                             throw new ArgumentException("Expected ConstantNode for enum source node.");
                         }
@@ -327,7 +327,7 @@ namespace AutoMapper.AspNet.OData
                         );
                     }
 
-                    return new ConvertOperand
+                    return new ConvertOperator
                     (
                         GetFilterPart(sourceNode),
                         conversionType
@@ -377,7 +377,7 @@ namespace AutoMapper.AspNet.OData
             {
                 if (ShouldConvertTypes(operandType, conversionType, covertNode.Source))
                 {
-                    return new ConvertOperand
+                    return new ConvertOperator
                     (
                         GetFilterPart(covertNode.Source),
                         conversionType
@@ -446,21 +446,21 @@ namespace AutoMapper.AspNet.OData
             );
 
         private IExpressionPart GetCollectionComplexNodeFilterPart(CollectionComplexNode collectionComplexNode)
-            => new MemberSelector
+            => new MemberSelectorOperator
             (
                 collectionComplexNode.Property.Name,
                 GetFilterPart(collectionComplexNode.Source)
             );
 
         private IExpressionPart GetCollectionPropertyAccessNodeFilterPart(CollectionPropertyAccessNode collectionPropertyAccessNode)
-            => new MemberSelector
+            => new MemberSelectorOperator
             (
                 collectionPropertyAccessNode.Property.Name,
                 GetFilterPart(collectionPropertyAccessNode.Source)
             );
 
         private IExpressionPart GetCollectionNavigationNodeFilterPart(CollectionNavigationNode collectionNavigationNode)
-            => new MemberSelector
+            => new MemberSelectorOperator
             (
                 collectionNavigationNode.NavigationProperty.Name,
                 GetFilterPart(collectionNavigationNode.Source)
@@ -470,10 +470,10 @@ namespace AutoMapper.AspNet.OData
         {
             Type elemenType = GetClrType(collectionNode.ItemType);
 
-            return new CollectionConstantOperand
+            return new CollectionConstantOperator
             (
-                elemenType,
-                GetCollectionParameter(elemenType.ToNullableUnderlyingType())
+                GetCollectionParameter(elemenType.ToNullableUnderlyingType()),
+                elemenType
             );
 
             ICollection<object> GetCollectionParameter(Type underlyingType)
@@ -518,7 +518,7 @@ namespace AutoMapper.AspNet.OData
                     (
                         memberType,
                         fromEdmType,
-                        new MemberSelector
+                        new MemberSelectorOperator
                         (
                             propertyName,
                             GetFilterPart(singleValuePropertyAccesNode.Source)
@@ -526,7 +526,7 @@ namespace AutoMapper.AspNet.OData
                     );
                 }
 
-                return new MemberSelector
+                return new MemberSelectorOperator
                 (
                     propertyName,
                     GetFilterPart(singleValuePropertyAccesNode.Source)
@@ -535,7 +535,7 @@ namespace AutoMapper.AspNet.OData
         }
 
         private IExpressionPart GetSingleNavigationNodeFilterPart(SingleNavigationNode singleNavigationNode)
-            => new MemberSelector
+            => new MemberSelectorOperator
             (
                 singleNavigationNode.NavigationProperty.Name,
                 GetFilterPart(singleNavigationNode.Source)
@@ -555,7 +555,7 @@ namespace AutoMapper.AspNet.OData
                     };
                 }
 
-                return new ConvertOperand
+                return new ConvertOperator
                 (
                     GetSourceFilterPart(sourceUnderlyingType),
                     fromEdmType
@@ -586,14 +586,14 @@ namespace AutoMapper.AspNet.OData
 
             if (ShouldConvertToNumericDate(binaryOperatorNode))
             {
-                left = new ConvertToNumericDate(left);
-                right = new ConvertToNumericDate(right);
+                left = new ConvertToNumericDateOperator(left);
+                right = new ConvertToNumericDateOperator(right);
             }
 
             if (ShouldConvertToNumericTime(binaryOperatorNode))
             {
-                left = new ConvertToNumericTime(left);
-                right = new ConvertToNumericTime(right);
+                left = new ConvertToNumericTimeOperator(left);
+                right = new ConvertToNumericTimeOperator(right);
             }
 
             switch (binaryOperatorNode.OperatorKind)
@@ -683,7 +683,7 @@ namespace AutoMapper.AspNet.OData
                         return new HasOperator
                         (
                             left,
-                            new ConstantOperand
+                            new ConstantOperator
                             (
                                 oDataEnum.Value,
                                 typeof(string)
@@ -732,7 +732,7 @@ namespace AutoMapper.AspNet.OData
             return GetFilterPart(constantNode.Value == null ? typeof(object) : GetClrType(constantNode.TypeReference));
 
             IExpressionPart GetFilterPart(Type constantType)
-                => new ConstantOperand
+                => new ConstantOperator
                 (
                     GetConstantNodeValue(constantNode, constantType),
                     constantType
