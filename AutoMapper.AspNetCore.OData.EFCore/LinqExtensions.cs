@@ -291,7 +291,7 @@ namespace AutoMapper.AspNet.OData
         {
             Type sourceType = expression.GetUnderlyingElementType();
             ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
-            Expression countSelector = param.MakeSelector(memberFullName).GetEnumerableCountCall();
+            Expression countSelector = param.MakeSelector(memberFullName).GetCountCall();
             return Expression.Call
             (
                 expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
