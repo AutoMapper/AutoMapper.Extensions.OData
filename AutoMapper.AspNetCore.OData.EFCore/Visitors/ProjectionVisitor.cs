@@ -9,17 +9,17 @@ namespace AutoMapper.AspNet.OData.Visitors
 {
     internal abstract class ProjectionVisitor : ExpressionVisitor
     {
-        public ProjectionVisitor(List<Expansion> expansions)
+        public ProjectionVisitor(List<ODataExpansionOptions> expansions)
         {
             this.expansions = expansions;
         }
 
-        protected readonly List<Expansion> expansions;
+        protected readonly List<ODataExpansionOptions> expansions;
         private readonly List<Expression> foundExpansions = new List<Expression>();
 
         protected override Expression VisitMemberInit(MemberInitExpression node)
         {
-            Expansion expansion = expansions.First();
+            ODataExpansionOptions expansion = expansions.First();
 
             if (node.NewExpression.Type != expansion.ParentType)
                 return base.VisitMemberInit(node);
@@ -59,7 +59,7 @@ namespace AutoMapper.AspNet.OData.Visitors
             }
         }
 
-        protected abstract Expression GetBindingExpression(MemberAssignment binding, Expansion expansion);
+        protected abstract Expression GetBindingExpression(MemberAssignment binding, ODataExpansionOptions expansion);
 
         protected static bool ListTypesAreEquivalent(Type bindingType, Type expansionType)
         {

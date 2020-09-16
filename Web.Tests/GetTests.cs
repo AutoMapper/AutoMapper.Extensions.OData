@@ -462,6 +462,43 @@ namespace Web.Tests
             }
         }
 
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("19583")]
+        public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy_filterAndSortChildCollection(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($filter=Name ne 'Two L1';$orderby=Name;$select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("Two L2", collection.First().Buildings.First().Name);
+                Assert.NotNull(collection.First().Buildings.First().Builder);
+                Assert.NotNull(collection.First().Buildings.First().Builder.City);
+                Assert.NotEqual(default, collection.First().Buildings.First().Builder.City.Name);
+                Assert.Equal("Two", collection.First().Name);
+            }
+        }
+
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("19583")]
+        public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy_filterAndSortChildCollection(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings($filter=Name ne '';$orderby=Name desc;$expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(3, collection.First().Buildings.Count);
+                Assert.Equal("Two L3", collection.First().Buildings.First().Name);
+                Assert.NotNull(collection.First().Buildings.First().Builder);
+                Assert.NotNull(collection.First().Buildings.First().Builder.City);
+                Assert.Equal("Two", collection.First().Name);
+            }
+        }
+
         private async Task<ICollection<TModel>> Get<TModel>(string query, string port)
         {
             HttpResponseMessage result = await this.clientFactory.CreateClient().GetAsync

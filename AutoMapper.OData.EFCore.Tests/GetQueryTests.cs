@@ -425,13 +425,15 @@ namespace AutoMapper.OData.EFCore.Tests
                             {
                                 new Address { AddressID = 1, City = "CityOne" },
                                 new Address { AddressID = 2, City = "CityTwo"  },
-                            }
+                            },
+                            SupplierAddress = new Address { City = "A" }
                         },
                         new Product
                         {
                             ProductID = 2,
                             ProductName = "ProductTwo",
-                            AlternateAddresses = new Address[0]
+                            AlternateAddresses = new Address[0],
+                            SupplierAddress = new Address { City = "B" }
                         }
                     }
                 },
@@ -443,7 +445,8 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
-                            AlternateAddresses = new Address[0]
+                            AlternateAddresses = new Address[0],
+                            SupplierAddress = new Address { City = "C" }
                         }
                     }
                 }
@@ -553,7 +556,7 @@ namespace AutoMapper.OData.EFCore.Tests
             (
                 await Get<CategoryModel, Category>
                 (
-                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc))&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
                     GetCategories()
                 )
             );

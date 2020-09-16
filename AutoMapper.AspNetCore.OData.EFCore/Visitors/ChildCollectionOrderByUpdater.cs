@@ -8,14 +8,14 @@ namespace AutoMapper.AspNet.OData.Visitors
 {
     internal class ChildCollectionOrderByUpdater : ProjectionVisitor
     {
-        public ChildCollectionOrderByUpdater(List<Expansion> expansions) : base(expansions)
+        public ChildCollectionOrderByUpdater(List<ODataExpansionOptions> expansions) : base(expansions)
         {
         }
 
-        public static Expression UpdaterExpansion(Expression expression, List<Expansion> expansions)
+        public static Expression UpdaterExpansion(Expression expression, List<ODataExpansionOptions> expansions)
                 => new ChildCollectionOrderByUpdater(expansions).Visit(expression);
 
-        protected override Expression GetBindingExpression(MemberAssignment binding, Expansion expansion)
+        protected override Expression GetBindingExpression(MemberAssignment binding, ODataExpansionOptions expansion)
         {
             if (expansion.QueryOptions != null)
             {
