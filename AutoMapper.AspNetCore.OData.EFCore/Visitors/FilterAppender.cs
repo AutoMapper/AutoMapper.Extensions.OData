@@ -6,16 +6,16 @@ namespace AutoMapper.AspNet.OData.Visitors
 {
     internal class FilterAppender : ExpressionVisitor
     {
-        public FilterAppender(Expression expression, Expansion expansion)
+        public FilterAppender(Expression expression, ODataExpansionOptions expansion)
         {
             this.expansion = expansion;
             this.expression = expression;
         }
 
-        private readonly Expansion expansion;
+        private readonly ODataExpansionOptions expansion;
         private readonly Expression expression;
 
-        public static Expression AppendFilter(Expression expression, Expansion expansion)
+        public static Expression AppendFilter(Expression expression, ODataExpansionOptions expansion)
             => new FilterAppender(expression, expansion).Visit(expression);
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
