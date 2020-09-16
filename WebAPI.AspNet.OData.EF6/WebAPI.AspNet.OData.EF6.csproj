@@ -47,7 +47,7 @@
       <HintPath>..\packages\AutoMapper.10.0.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper.AspNet.OData.EF6, Version=2.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.2.0.1\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
+      <HintPath>..\packages\AutoMapper.AspNet.OData.EF6.2.0.2-preview.0\lib\net461\AutoMapper.AspNet.OData.EF6.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper.Extensions.ExpressionMapping, Version=4.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.Extensions.ExpressionMapping.4.0.1\lib\net461\AutoMapper.Extensions.ExpressionMapping.dll</HintPath>
@@ -59,10 +59,10 @@
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="LogicBuilder.Expressions.Utils, Version=4.0.0.0, Culture=neutral, PublicKeyToken=646893bec0268535, processorArchitecture=MSIL">
-      <HintPath>..\packages\LogicBuilder.Expressions.Utils.4.0.1\lib\netstandard2.0\LogicBuilder.Expressions.Utils.dll</HintPath>
+      <HintPath>..\packages\LogicBuilder.Expressions.Utils.4.0.2\lib\netstandard2.0\LogicBuilder.Expressions.Utils.dll</HintPath>
     </Reference>
     <Reference Include="LogicBuilder.Structures, Version=4.0.0.0, Culture=neutral, PublicKeyToken=646893bec0268535, processorArchitecture=MSIL">
-      <HintPath>..\packages\LogicBuilder.Structures.4.0.1\lib\netstandard2.0\LogicBuilder.Structures.dll</HintPath>
+      <HintPath>..\packages\LogicBuilder.Structures.4.0.2\lib\netstandard2.0\LogicBuilder.Structures.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.OData, Version=7.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.OData.7.4.1\lib\net45\Microsoft.AspNet.OData.dll</HintPath>
