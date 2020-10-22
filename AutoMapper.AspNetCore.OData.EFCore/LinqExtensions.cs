@@ -28,7 +28,7 @@ namespace AutoMapper.AspNet.OData
                 new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
         }
 
-        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, ODataQuerySettings querySettings)
+        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, ODataQuerySettings querySettings = null)
         {
             if (filterOption == null)
                 return null;
