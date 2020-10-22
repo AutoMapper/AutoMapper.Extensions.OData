@@ -590,7 +590,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    HandleNullPropagationOption.False
+                    new ODataQuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
                 );
             }
         }
@@ -617,7 +617,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    HandleNullPropagationOption.False
+                    new ODataQuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
                 );
             }
         }
