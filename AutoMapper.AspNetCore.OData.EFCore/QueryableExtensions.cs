@@ -18,11 +18,26 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).Result;
 
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
+            where TModel : class
+            => Task.Run(async () => await query.GetAsync(mapper, options, querySettings)).Result;
+
+
+        public static Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query,
+            IMapper mapper, ODataQueryOptions<TModel> options,
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+            where TModel : class
+        {
+            return GetAsync(query, mapper, options,
+                new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
+        }
+
+
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
             where TModel : class
         {
             ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeExpressions = options.SelectExpand.GetIncludes().BuildIncludesExpressionCollection<TModel>()?.ToList();
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
+            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(querySettings);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
             Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
 
@@ -33,7 +48,16 @@ namespace AutoMapper.AspNet.OData
             return await query.GetAsync(mapper, filter, queryableExpression, includeExpressions);
         }
 
-        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+        public static Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query,
+            IMapper mapper, ODataQueryOptions<TModel> options,
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+            where TModel : class
+        {
+            return GetQueryAsync(query, mapper, options,
+                new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
+        }
+
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
             where TModel : class
         {
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
@@ -43,7 +67,7 @@ namespace AutoMapper.AspNet.OData
             )
             .ToList();
 
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
+            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(querySettings);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
             Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
 
