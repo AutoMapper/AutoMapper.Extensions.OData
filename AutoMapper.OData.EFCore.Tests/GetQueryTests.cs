@@ -112,19 +112,6 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void OpsTenantExpandBuildingsNoFilterAndOrderByWithPageSize()
-        {
-            Test(await GetWithPageSize<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc",1));
-
-            void Test(ICollection<OpsTenant> collection)
-            {
-                Assert.Equal(1, collection.Count);
-                Assert.Equal(3, collection.First().Buildings.Count);
-                Assert.Equal("Two", collection.First().Name);
-            }
-        }
-
-        [Fact]
         public async void OpsTenantNoExpandNoFilterAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$orderby=Name desc"));
@@ -631,33 +618,6 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
                     new ODataQuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
-                );
-            }
-        }
-
-        private async Task<ICollection<TModel>> GetWithPageSize<TModel, TData>(string query, int pageSize, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
-        {
-            return
-            (
-                await DoGet
-                (
-                    serviceProvider.GetRequiredService<IMapper>(),
-                    serviceProvider.GetRequiredService<MyDbContext>()
-                )
-            ).ToList();
-
-            async Task<IQueryable<TModel>> DoGet(IMapper mapper, MyDbContext context)
-            {
-                return await context.Set<TData>().GetQueryAsync
-                (
-                    mapper,
-                    options ?? ODataHelpers.GetODataQueryOptions<TModel>
-                    (
-                        query,
-                        serviceProvider,
-                        serviceProvider.GetRequiredService<IRouteBuilder>()
-                    ),
-                    new ODataQuerySettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize}
                 );
             }
         }
