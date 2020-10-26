@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNet.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Adding filtering and sorting for child collections.</PackageReleaseNotes>
+    <PackageReleaseNotes>Incorporating v.latest from AutoMapper.Extensions.ExpressionMapping</PackageReleaseNotes>
     <PackageTags>linq expressions odata ef</PackageTags>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.2-preview-3,5.0.0)" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.2,5.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="4.0.2" />
     <PackageReference Include="Microsoft.AspNet.OData" Version="7.4.1" />
