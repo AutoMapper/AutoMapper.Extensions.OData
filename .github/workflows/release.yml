@@ -16,10 +16,10 @@ jobs:
 
     - name: Set Variables
       run: |
-        echo '::set-env name=DEPLOY_PACKAGE_URL::https://api.nuget.org/v3/index.json'
-        echo '::set-env name=DEPLOY_PACKAGE_API_KEY::${{ secrets.NUGET_API_KEY }}'
-        echo '::set-env name=REPO::${{ github.repository }}'
-        echo '::set-env name=REPO_OWNER::${{ github.repository_owner }}'
+        echo "DEPLOY_PACKAGE_URL=https://api.nuget.org/v3/index.json" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+        echo "DEPLOY_PACKAGE_API_KEY=${{ secrets.NUGET_API_KEY }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+        echo "REPO=${{ github.repository }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+        echo "REPO_OWNER=${{ github.repository_owner }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
     - name: Restore
       run: dotnet restore
@@ -30,17 +30,20 @@ jobs:
     - name: Test
       run: dotnet test --no-restore --verbosity normal
 
-    - run: echo '::set-env name=PROJECT_NAME::AutoMapper.AspNetCore.OData.EFCore'
-    - name: Pack and push
+    - name: Pack and push AutoMapper.AspNetCore.OData.EFCore
+      env:
+        PROJECT_NAME: AutoMapper.AspNetCore.OData.EFCore
       run: ./Pack_Push.ps1
       shell: pwsh
 
-    - run: echo '::set-env name=PROJECT_NAME::AutoMapper.AspNet.OData.EF6'
-    - name: Pack and push
+    - name: Pack and push AutoMapper.AspNet.OData.EF6
+      env:
+        PROJECT_NAME: AutoMapper.AspNet.OData.EF6
       run: ./Pack_Push.ps1
       shell: pwsh
 
-    - run: echo '::set-env name=PROJECT_NAME::AutoMapper.AspNetCore.OData.EF6'
-    - name: Pack and push
+    - name: Pack and push AutoMapper.AspNetCore.OData.EF6
+      env:
+        PROJECT_NAME: AutoMapper.AspNetCore.OData.EF6
       run: ./Pack_Push.ps1
       shell: pwsh
