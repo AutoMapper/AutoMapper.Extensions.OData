@@ -18,7 +18,7 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).Result;
 
-        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
+        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, querySettings)).Result;
 
@@ -29,11 +29,11 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
         {
             return GetAsync(query, mapper, options,
-                new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
+                new QuerySettings {HandleNullPropagation = handleNullPropagation});
         }
 
 
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
             ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeExpressions = options.SelectExpand.GetIncludes().BuildIncludesExpressionCollection<TModel>()?.ToList();
@@ -54,10 +54,10 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
         {
             return GetQueryAsync(query, mapper, options,
-                new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
+                new QuerySettings {HandleNullPropagation = handleNullPropagation});
         }
 
-        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, ODataQuerySettings querySettings = null)
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));

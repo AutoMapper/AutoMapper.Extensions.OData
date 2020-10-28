@@ -25,18 +25,18 @@ namespace AutoMapper.AspNet.OData
         public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
         {
             return ToFilterExpression<T>(filterOption,
-                new ODataQuerySettings {HandleNullPropagation = handleNullPropagation});
+                new QuerySettings {HandleNullPropagation = handleNullPropagation});
         }
 
-        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, ODataQuerySettings querySettings = null)
+        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, QuerySettings querySettings = null)
         {
             if (filterOption == null)
                 return null;
 
-            querySettings ??= new ODataQuerySettings();
+            querySettings ??= new QuerySettings();
 
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
-            queryable = filterOption.ApplyTo(queryable, querySettings);
+            queryable = filterOption.ApplyTo(queryable, querySettings.AsODataQuerySettings());
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);

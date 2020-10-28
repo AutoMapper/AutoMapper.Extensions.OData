@@ -149,7 +149,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new ODataQuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
+                    new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
                 );
             }
         }
