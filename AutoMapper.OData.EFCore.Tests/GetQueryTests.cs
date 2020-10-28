@@ -345,6 +345,36 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void BuildingExpandBuilderTenantExpandCitySkip2NoCount()
+        {
+            string query = "/corebuilding?$skip=2&$expand=Builder($expand=City),Tenant";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    query,
+                    options
+                )
+            );
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Null(options.Request.ODataFeature().TotalCount);
+                Assert.Equal(3, collection.Count);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal("Two L1", collection.First().Name);
+            }
+        }
+
+
+        [Fact]
         public async void BuildingSelectName_WithoutOrder_WithoutTop()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$select=Name"));

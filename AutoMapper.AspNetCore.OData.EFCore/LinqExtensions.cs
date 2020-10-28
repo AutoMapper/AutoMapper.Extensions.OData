@@ -60,7 +60,7 @@ namespace AutoMapper.AspNet.OData
         /// <returns></returns>
         public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options)
         {
-            if (options.OrderBy == null && options.Top == null)
+            if (options.OrderBy == null && options.Top == null && options.Skip == null)
                 return null;
 
             ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
@@ -77,39 +77,33 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options)
         {
-            if (options.OrderBy == null && options.Top == null)
+            if (options.OrderBy == null && options.Top == null && options.Skip == null)
                 return null;
 
             return expression.GetQueryableMethod
             (
                 options.OrderBy?.OrderByClause,
-                typeof(T),
                 options.Skip?.Value,
                 options.Top?.Value
             );
         }
 
-        public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, Type type, int? skip, int? top)
+        public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, int? skip, int? top)
         {
-            if (orderByClause == null && !top.HasValue)
+            if (orderByClause == null && !top.HasValue && !skip.HasValue)
                 return null;
 
-            if (orderByClause == null)
-            {
-                return Expression.Call
-                (
-                    typeof(Queryable),
-                    "Take",
-                    new[] { type },
-                    expression,
-                    Expression.Constant(top.Value)
-                );
-            }
+            if (orderByClause != null)
+                expression = expression.GetOrderByCall(orderByClause);
 
-            return expression
-                .GetOrderByCall(orderByClause)
-                .GetSkipCall(skip)
-                .GetTakeCall(top);
+            if (skip.HasValue)
+                expression = expression.GetSkipCall(skip);
+
+            if (top.HasValue)
+                expression = expression.GetTakeCall(top);
+
+            return expression;
+
         }
 
         private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)

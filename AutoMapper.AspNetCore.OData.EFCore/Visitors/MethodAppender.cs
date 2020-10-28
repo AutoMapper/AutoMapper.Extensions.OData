@@ -30,7 +30,6 @@ namespace AutoMapper.AspNet.OData.Visitors
                 return node.GetQueryableMethod
                 (
                     expansion.QueryOptions.OrderByClause,
-                    elementType,
                     expansion.QueryOptions.Skip,
                     expansion.QueryOptions.Top
                 );
