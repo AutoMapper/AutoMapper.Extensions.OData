@@ -98,7 +98,7 @@ namespace AutoMapper.AspNet.OData
             {
                 return Expression.Call
                 (
-                    typeof(Queryable),
+                    expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                     "Take",
                     new[] { type },
                     expression,
