@@ -550,6 +550,26 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void FilteringOnRoot_ChildCollection_WithTopNoOrderBy_AndChildCollectionOfChildCollection_WithNoMatches()
+        {
+            Test
+            (
+                await Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$top=1;$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
+            }
+        }
+
+        [Fact]
         public async void FilteringOnRoot_ChildCollection_AndChildCollectionOfChildCollection_WithNoMatches_SortRoot_AndChildCollection_AndChildCollectionOfChildCollection()
         {
             Test
