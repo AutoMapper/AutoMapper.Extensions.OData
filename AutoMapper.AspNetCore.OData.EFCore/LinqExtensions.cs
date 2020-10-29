@@ -21,22 +21,13 @@ namespace AutoMapper.AspNet.OData
         /// <typeparam name="T"></typeparam>
         /// <param name="filterOption"></param>
         /// <returns></returns>
-        [Obsolete("ToFilterExpression with handleNullPropagation parameter is obsolete. Use ToFilterExpression with querySettings parameter.")]
         public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
-        {
-            return ToFilterExpression<T>(filterOption,
-                new QuerySettings {HandleNullPropagation = handleNullPropagation});
-        }
-
-        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, QuerySettings querySettings = null)
         {
             if (filterOption == null)
                 return null;
 
-            querySettings ??= new QuerySettings();
-
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
-            queryable = filterOption.ApplyTo(queryable, querySettings.AsODataQuerySettings());
+            queryable = filterOption.ApplyTo(queryable, new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation });
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);
