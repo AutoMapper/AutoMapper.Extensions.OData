@@ -18,6 +18,10 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).Result;
 
+        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+            where TModel : class
+            => query.Get(mapper, options, querySettings == null ? HandleNullPropagationOption.Default : querySettings.HandleNullPropagation);
+
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
         {
@@ -32,6 +36,10 @@ namespace AutoMapper.AspNet.OData
 
             return await query.GetAsync(mapper, filter, queryableExpression, includeExpressions);
         }
+
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+            where TModel : class
+            => await query.GetAsync(mapper, options, querySettings == null ? HandleNullPropagationOption.Default : querySettings.HandleNullPropagation);
 
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
@@ -55,6 +63,10 @@ namespace AutoMapper.AspNet.OData
 
             return queryable.UpdateQueryableExpression(expansions);
         }
+
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+            where TModel : class
+            => await query.GetQueryAsync(mapper, options, querySettings == null ? HandleNullPropagationOption.Default : querySettings.HandleNullPropagation);
 
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,

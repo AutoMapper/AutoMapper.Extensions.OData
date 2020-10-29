@@ -384,7 +384,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    HandleNullPropagationOption.False
+                    new QuerySettings{HandleNullPropagation = HandleNullPropagationOption.False}
                 );
             }
         }
