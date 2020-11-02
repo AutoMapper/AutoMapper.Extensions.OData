@@ -556,7 +556,7 @@ namespace AutoMapper.OData.EFCore.Tests
             (
                 await Get<CategoryModel, Category>
                 (
-                    "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc;$top=1),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
                     GetCategories()
                 )
             );
@@ -565,6 +565,8 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 Assert.Equal("CategoryOne", collection.First().CategoryName);
                 Assert.Equal("ProductOne", collection.First().Products.First().ProductName);
+             
+                Assert.Single(collection.First().Products.First().AlternateAddresses);
                 Assert.Equal("CityTwo", collection.First().Products.First().AlternateAddresses.First().City);
             }
         }
