@@ -25,7 +25,7 @@ namespace WebAPI.AspNet.OData.EF6
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            DAL.MyDbContext.DSN = @"data source=.\SQL2014;initial catalog=Issue3;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework";//"Data Source=adeaeawe;Initial Catalog=aeaweawe;User ID=aeaweads;Password=aweasdawae; MultipleActiveResultSets=True";
+            DAL.MyDbContext.DSN = @"data source=.\SQL2016;initial catalog=YourDB;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework";//"Data Source=adeaeawe;Initial Catalog=aeaweawe;User ID=aeaweads;Password=aweasdawae; MultipleActiveResultSets=True";
 
             config.Count().Filter().OrderBy().Expand().Select().MaxTop(null);
 
