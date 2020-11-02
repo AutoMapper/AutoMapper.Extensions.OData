@@ -10,7 +10,7 @@ namespace MigrationTool
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=.\SQL2014;Database=YourDB;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=.\SQL2016;Database=YourDB;Trusted_Connection=True;");
         }
 
         public DbSet<TMandator> MandatorSet { get; set; }
