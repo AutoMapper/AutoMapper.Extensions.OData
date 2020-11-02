@@ -434,6 +434,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder(serviceProvider);
 
             builder.EntitySet<T>(typeof(T).Name);
+            builder.EnableLowerCamelCase();
             IEdmModel model = builder.GetEdmModel();
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
             ODataPath path = new ODataPath(new Microsoft.OData.UriParser.EntitySetSegment(entitySet));
