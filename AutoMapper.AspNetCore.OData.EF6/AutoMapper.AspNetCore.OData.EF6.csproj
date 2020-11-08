@@ -24,6 +24,7 @@
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\FilterHelper.cs" Link="FilterHelper.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\LinqExtensions.cs" Link="LinqExtensions.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\ODataQueryOptionsExtensions.cs" Link="ODataQueryOptionsExtensions.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\ProjectionSettings.cs" Link="ProjectionSettings.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\QuerySettings.cs" Link="QuerySettings.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\TypeExtensions.cs" Link="TypeExtensions.cs" />

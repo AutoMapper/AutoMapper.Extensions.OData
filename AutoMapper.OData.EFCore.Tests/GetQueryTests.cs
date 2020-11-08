@@ -179,7 +179,19 @@ namespace AutoMapper.OData.EFCore.Tests
                 builderParameter = builderParameterValue
             };
 
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'", null, parameters));
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'", 
+                    null, 
+                    new QuerySettings
+                    {
+                        ProjectionSettings = new ProjectionSettings { Parameters = parameters },
+                        HandleNullPropagation = HandleNullPropagationOption.False
+                    }
+                )
+            );
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -612,7 +624,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, object parameters = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return
             (
@@ -633,13 +645,12 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.False },
-                    parameters
+                    querySettings
                 );
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, object parameters = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return 
             (
@@ -661,8 +672,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.False },
-                    parameters
+                    querySettings
                 );
             }
         }
