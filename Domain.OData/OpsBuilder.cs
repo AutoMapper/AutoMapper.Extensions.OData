@@ -9,5 +9,6 @@ namespace Domain.OData
         public Int32 Id { get; set; }
         public String Name { get; set; }
         public OpsCity City { get; set; }
+        public Int32 Parameter { get; set; }
     }
 }

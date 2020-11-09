@@ -43,6 +43,10 @@ namespace AutoMapper.AspNet.OData
 
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
+            => await query.GetQueryAsync(mapper, options, new QuerySettings { HandleNullPropagation = handleNullPropagation });
+
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+            where TModel : class
         {
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
             List<Expression<Func<TModel, object>>> includeExpressions = expansions.Select(list => new List<Expansion>(list)).BuildIncludes<TModel>
@@ -51,7 +55,7 @@ namespace AutoMapper.AspNet.OData
             )
             .ToList();
 
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(handleNullPropagation);
+            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(querySettings == null ? HandleNullPropagationOption.False : querySettings.HandleNullPropagation);
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryableExpression = options.GetQueryableExpression();
             Expression<Func<IQueryable<TModel>, long>> countExpression = LinqExtensions.GetCountExpression<TModel>(filter);
 
@@ -59,14 +63,10 @@ namespace AutoMapper.AspNet.OData
             if (options.Count?.Value == true)
                 options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
 
-            IQueryable<TModel> queryable = await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions);
+            IQueryable<TModel> queryable = await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions, querySettings?.ProjectionSettings);
 
             return queryable.UpdateQueryableExpression(expansions);
         }
-
-        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
-            where TModel : class
-            => await query.GetQueryAsync(mapper, options, querySettings == null ? HandleNullPropagationOption.Default : querySettings.HandleNullPropagation);
 
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
@@ -101,7 +101,8 @@ namespace AutoMapper.AspNet.OData
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            IEnumerable<Expression<Func<TModel, object>>> includeProperties = null)
+            IEnumerable<Expression<Func<TModel, object>>> includeProperties = null,
+            ProjectionSettings projectionSettings = null)
         {
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
@@ -113,8 +114,8 @@ namespace AutoMapper.AspNet.OData
             return await Task.Run
             (
                 () => mappedQueryFunc != null
-                    ? mapper.ProjectTo(mappedQueryFunc(query), null, GetIncludes())
-                    : mapper.ProjectTo(query, null, GetIncludes())
+                    ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
+                    : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes())
             );
 
             Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? new Expression<Func<TModel, object>>[] { };

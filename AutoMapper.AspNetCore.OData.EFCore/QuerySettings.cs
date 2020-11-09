@@ -16,13 +16,10 @@ namespace AutoMapper.AspNet.OData
         /// </value>
         public HandleNullPropagationOption HandleNullPropagation { get; set; } = HandleNullPropagationOption.Default;
 
+        /// <summary>
+        /// Miscellaneous arguments for IMapper.ProjectTo
+        /// </summary>
+        public ProjectionSettings ProjectionSettings { get; set; }
 
-        internal ODataQuerySettings AsODataQuerySettings()
-        {
-            return new ODataQuerySettings
-            {
-                HandleNullPropagation = HandleNullPropagation
-            };
-        }
     }
 }

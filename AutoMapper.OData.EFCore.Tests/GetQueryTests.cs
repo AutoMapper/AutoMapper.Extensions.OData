@@ -169,6 +169,41 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void BuildingExpandBuilderTenantFilterEqAndOrderByWithParameter()
+        {
+            string buildingParameterValue = Guid.NewGuid().ToString();
+            int builderParameterValue = new Random().Next();
+            var parameters = new
+            {
+                buildingParameter = buildingParameterValue,
+                builderParameter = builderParameterValue
+            };
+
+            Test
+            (
+                await Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'", 
+                    null, 
+                    new QuerySettings
+                    {
+                        ProjectionSettings = new ProjectionSettings { Parameters = parameters },
+                        HandleNullPropagation = HandleNullPropagationOption.False
+                    }
+                )
+            );
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("One L1", collection.First().Name);
+                Assert.Equal(buildingParameterValue, collection.First().Parameter);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal(builderParameterValue, collection.First().Builder.Parameter);
+            }
+        }
+
+        [Fact]
         public async void BuildingExpandBuilderTenantFilterEqAndOrderBy()
         {
             Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
@@ -589,7 +624,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return
             (
@@ -610,12 +645,12 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
+                    querySettings
                 );
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return 
             (
@@ -637,7 +672,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.False }
+                    querySettings
                 );
             }
         }
