@@ -28,7 +28,7 @@ namespace WebAPI.AspNet.OData.EF6.Controllers
         [HttpGet]
         public async Task<IHttpActionResult> Get(ODataQueryOptions<CoreBuilding> options)
         {
-            return Ok(await Repository.BuildingSet.GetQueryAsync(this._mapper, options, HandleNullPropagationOption.Default));
+            return Ok(await Repository.BuildingSet.GetQueryAsync(this._mapper, options, new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.Default }));
         }
     }
 
@@ -47,7 +47,7 @@ namespace WebAPI.AspNet.OData.EF6.Controllers
         [HttpGet]
         public async Task<IHttpActionResult> Get(ODataQueryOptions<OpsTenant> options)
         {
-            return Ok(await Repository.MandatorSet.GetQueryAsync(this._mapper, options, HandleNullPropagationOption.Default));
+            return Ok(await Repository.MandatorSet.GetQueryAsync(this._mapper, options, new QuerySettings { HandleNullPropagation = HandleNullPropagationOption.Default }));
         }
     }
 }
