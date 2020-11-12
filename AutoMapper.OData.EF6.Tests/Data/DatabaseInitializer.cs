@@ -1,4 +1,4 @@
-﻿using DAL.EFCore;
+﻿using DAL.EF6;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;

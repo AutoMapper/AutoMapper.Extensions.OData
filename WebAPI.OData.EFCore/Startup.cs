@@ -64,11 +64,8 @@ namespace WebAPI.OData.EFCore
             app.UseMvc(r => {
 
 
-                var builder = new ODataConventionModelBuilder()
-                {
-                    //Namespace = "OData",
-                };
-                var eb = builder.EntitySet<OpsTenant>(nameof(OpsTenant));
+                var builder = new ODataConventionModelBuilder();
+                builder.EntitySet<OpsTenant>(nameof(OpsTenant));
                 builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
                 builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
                 builder.EntitySet<OpsCity>(nameof(OpsCity));
@@ -77,24 +74,6 @@ namespace WebAPI.OData.EFCore
                 r.MapODataServiceRoute("odata", "", model, new DefaultODataBatchHandler());
 
             });
-
-            //app.UseRouting();
-
-            //app.UseEndpoints(routeBuilder =>
-            //{
-            //    routeBuilder.Expand().Select().Filter();
-
-            //    routeBuilder.MapODataRoute(
-            //        "OdataSimple",
-            //        "OdataSimple",
-            //        GetSimpleEdmModel("OdataSimple"));
-
-            //    routeBuilder.MapODataRoute(
-            //        "OdataAutomapper",
-            //        "OdataAutomapper",
-            //        GetMappedEdmModel("OdataAutomapper"));
-
-            //});
         }
     }
 }

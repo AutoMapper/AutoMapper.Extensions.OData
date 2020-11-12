@@ -1,7 +1,8 @@
-﻿using DAL.EF6;
+﻿using AutoMapper;
+using DAL.EF6;
 using Domain.OData;
 
-namespace AutoMapper.OData.EF6.Tests.Mappings
+namespace WebAPI.OData.EF6.Mappings
 {
     public class OpsTenantMappings : Profile
     {

@@ -1,8 +1,5 @@
-﻿using DAL.EFCore;
-using System;
-using System.Collections.Generic;
+﻿using DAL.EF6;
 using System.Data.Entity;
-using System.Text;
 
 namespace AutoMapper.OData.EF6.Tests.Data
 {

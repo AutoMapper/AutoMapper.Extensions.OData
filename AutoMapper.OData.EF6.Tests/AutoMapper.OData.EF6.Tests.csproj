@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoMapper.AspNetCore.OData.EF6\AutoMapper.AspNetCore.OData.EF6.csproj" />
-    <ProjectReference Include="..\DAL.EFCore\DAL.EFCore.csproj" />
+    <ProjectReference Include="..\DAL.EF6\DAL.EF6.csproj" />
     <ProjectReference Include="..\Domain.OData\Domain.OData.csproj" />
   </ItemGroup>
 

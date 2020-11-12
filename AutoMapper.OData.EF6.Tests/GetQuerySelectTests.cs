@@ -1,6 +1,6 @@
 ﻿using AutoMapper.AspNet.OData;
 using AutoMapper.OData.EF6.Tests.Data;
-using DAL.EFCore;
+using DAL.EF6;
 using Domain.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;

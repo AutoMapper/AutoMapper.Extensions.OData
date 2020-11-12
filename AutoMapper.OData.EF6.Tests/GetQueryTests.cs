@@ -1,5 +1,8 @@
-﻿using AutoMapper.OData.EF6.Tests.Data;
-using AutoMapper.AspNet.OData;
+﻿using AutoMapper.AspNet.OData;
+using AutoMapper.OData.EF6.Tests.Data;
+using AutoMapper.OData.EF6.Tests.Model;
+using DAL.EF6;
+using Domain.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Builder;
@@ -10,9 +13,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Domain.OData;
-using AutoMapper.OData.EF6.Tests.Model;
-using DAL.EFCore;
 
 namespace AutoMapper.OData.EF6.Tests
 {
