@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
     <RootNamespace>AutoMapper.AspNet.OData</RootNamespace>
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Incorporating v.latest from AutoMapper.Extensions.ExpressionMapping</PackageReleaseNotes>
+    <PackageReleaseNotes>Supporting EF6 through .NetStandard 2.1.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
@@ -41,7 +41,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.0.2,5.0.0)" />
-    <PackageReference Include="EntityFramework" Version="6.2.0" />
+    <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="4.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
     <PackageReference Include="MinVer" Version="2.3.0">
