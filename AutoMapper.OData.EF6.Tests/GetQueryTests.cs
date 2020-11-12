@@ -1,21 +1,20 @@
-﻿using AutoMapper.AspNet.OData;
-using AutoMapper.OData.EFCore.Tests.Data;
-using AutoMapper.OData.EFCore.Tests.Model;
-using DAL.EFCore;
-using Domain.OData;
+﻿using AutoMapper.OData.EF6.Tests.Data;
+using AutoMapper.AspNet.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Domain.OData;
+using AutoMapper.OData.EF6.Tests.Model;
+using DAL.EFCore;
 
-namespace AutoMapper.OData.EFCore.Tests
+namespace AutoMapper.OData.EF6.Tests
 {
     public class GetQueryTests
     {
@@ -32,25 +31,13 @@ namespace AutoMapper.OData.EFCore.Tests
         {
             IServiceCollection services = new ServiceCollection();
             services.AddOData();
-            services.AddDbContext<MyDbContext>
-                (
-                    options =>
-                    {
-                        options.UseInMemoryDatabase("MyDbContext");
-                        options.UseInternalServiceProvider(new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider());
-                    },
-                    ServiceLifetime.Transient
-                )
+            services.AddTransient<TestDbContext>(_ => new TestDbContext())
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 
             serviceProvider = services.BuildServiceProvider();
-
-            MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
-            context.Database.EnsureCreated();
-            SeedDatabase(context);
         }
 
         [Fact]
@@ -183,8 +170,8 @@ namespace AutoMapper.OData.EFCore.Tests
             (
                 await Get<CoreBuilding, TBuilding>
                 (
-                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'", 
-                    null, 
+                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'",
+                    null,
                     new QuerySettings
                     {
                         ProjectionSettings = new ProjectionSettings { Parameters = parameters },
@@ -654,46 +641,9 @@ namespace AutoMapper.OData.EFCore.Tests
             => await Get
             (
                 query,
-                serviceProvider.GetRequiredService<MyDbContext>().Set<TData>(),
+                serviceProvider.GetRequiredService<TestDbContext>().Set<TData>(),
                 options,
                 querySettings
             );
-
-        static void SeedDatabase(MyDbContext context)
-        {
-            context.City.Add(new TCity { Name = "London" });
-            context.City.Add(new TCity { Name = "Leeds" });
-            context.SaveChanges();
-
-            List<TCity> cities = context.City.ToList();
-            context.Builder.Add(new TBuilder { Name = "Sam", CityId = cities.First(b => b.Name == "London").Id });
-            context.Builder.Add(new TBuilder { Name = "John", CityId = cities.First(b => b.Name == "London").Id });
-            context.Builder.Add(new TBuilder { Name = "Mark", CityId = cities.First(b => b.Name == "Leeds").Id });
-            context.SaveChanges();
-
-            List<TBuilder> builders = context.Builder.ToList();
-            context.MandatorSet.Add(new TMandator
-            {
-                Identity = Guid.NewGuid(),
-                Name = "One",
-                Buildings = new List<TBuilding>
-                {
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L1", BuilderId = builders.First(b => b.Name == "Sam").Id },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L2", BuilderId = builders.First(b => b.Name == "Sam").Id  }
-                }
-            });
-            context.MandatorSet.Add(new TMandator
-            {
-                Identity = Guid.NewGuid(),
-                Name = "Two",
-                Buildings = new List<TBuilding>
-                {
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L1", BuilderId = builders.First(b => b.Name == "John").Id  },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L2", BuilderId = builders.First(b => b.Name == "Mark").Id  },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L3", BuilderId = builders.First(b => b.Name == "Mark").Id  }
-                }
-            });
-            context.SaveChanges();
-        }
     }
 }
