@@ -175,7 +175,7 @@ namespace AutoMapper.OData.EF6.Tests
                     new QuerySettings
                     {
                         ProjectionSettings = new ProjectionSettings { Parameters = parameters },
-                        HandleNullPropagation = HandleNullPropagationOption.False
+                        ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False }
                     }
                 )
             );
