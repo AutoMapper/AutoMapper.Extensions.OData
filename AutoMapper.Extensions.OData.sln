@@ -45,11 +45,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MigrationTool", "MigrationT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeedDatabase", "SeedDatabase\SeedDatabase.csproj", "{CE492720-2000-4533-93AF-5AA71A65D305}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMapper.OData.EF6.Tests", "AutoMapper.OData.EF6.Tests\AutoMapper.OData.EF6.Tests.csproj", "{BF11CF7F-0424-46F7-A60E-B614525C68C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoMapper.OData.EF6.Tests", "AutoMapper.OData.EF6.Tests\AutoMapper.OData.EF6.Tests.csproj", "{BF11CF7F-0424-46F7-A60E-B614525C68C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI.OData.EF6", "WebAPI.OData.EF6\WebAPI.OData.EF6.csproj", "{4C069416-CF7B-45C7-8C8F-B3D24DC16D01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAPI.OData.EF6", "WebAPI.OData.EF6\WebAPI.OData.EF6.csproj", "{4C069416-CF7B-45C7-8C8F-B3D24DC16D01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL.EF6", "DAL.EF6\DAL.EF6.csproj", "{8139DB48-8A96-405A-9B02-44C4AEF79FD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL.EF6", "DAL.EF6\DAL.EF6.csproj", "{8139DB48-8A96-405A-9B02-44C4AEF79FD0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
