@@ -1,14 +1,14 @@
-﻿using DAL.EF6;
+﻿using DAL.EFCore;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace AutoMapper.OData.EF6.Tests.Data
+namespace AutoMapper.OData.EFCore.Tests.Data
 {
-    public class DatabaseInitializer : DropCreateDatabaseAlways<TestDbContext>
+    public static class DatabaseInitializer
     {
-        protected override void Seed(TestDbContext context)
+        public static void SeedDatabase(MyDbContext context)
         {
             context.City.Add(new TCity { Name = "London" });
             context.City.Add(new TCity { Name = "Leeds" });
@@ -45,8 +45,6 @@ namespace AutoMapper.OData.EF6.Tests.Data
                 }
             });
             context.SaveChanges();
-
-            base.Seed(context);
         }
     }
 }

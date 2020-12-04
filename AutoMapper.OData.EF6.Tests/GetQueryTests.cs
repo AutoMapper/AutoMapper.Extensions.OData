@@ -86,6 +86,30 @@ namespace AutoMapper.OData.EF6.Tests
         }
 
         [Fact]
+        public async void OpsTenantFilterGtDateNoExpand()
+        {
+            Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate gt 2012-11-11T12:00:00.00Z"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Null(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+
+        [Fact]
+        public async void OpsTenantFilterLtDateNoExpand()
+        {
+            Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(0, collection.Count);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantExpandBuildingsNoFilterAndOrderBy()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc"));

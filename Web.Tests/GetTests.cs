@@ -83,6 +83,36 @@ namespace Web.Tests
         [InlineData("16324")]
         [InlineData("19583")]
         [InlineData("49786")]
+        public async void OpsTenantFilterGtDateNoExpand(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$filter=CreatedDate gt 2012-11-11T00:00:00.00Z", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Null(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("19583")]
+        [InlineData("49786")]
+        public async void OpsTenantFilterLtDateNoExpand(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(0, collection.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("19583")]
+        [InlineData("49786")]
         public async void OpsTenantExpandBuildingsNoFilterAndOrderBy(string port)
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc", port));
