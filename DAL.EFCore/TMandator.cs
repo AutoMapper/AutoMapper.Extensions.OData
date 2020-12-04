@@ -19,6 +19,9 @@ namespace DAL.EFCore
         [Column("sName")]
         public String Name { get; set; }
 
+        [Column("CreatedDate")]
+        public DateTime CreatedDate { get; set; }
+
         public virtual ICollection<TBuilding> Buildings { get; set; }
 
     }
