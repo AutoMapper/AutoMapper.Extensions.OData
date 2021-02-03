@@ -16,7 +16,7 @@ namespace AutoMapper.AspNet.OData
     public static class LinqExtensions
     {
         /// <summary>
-        /// Returns a lambda expresion representing the filter
+        /// Returns a lambda expression representing the filter
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="filterOption"></param>
@@ -53,7 +53,7 @@ namespace AutoMapper.AspNet.OData
         }
 
         /// <summary>
-        /// Returns a lambda expresion for order and paging expressions
+        /// Returns a lambda expression for order and paging expressions
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="options"></param>
