@@ -58,16 +58,16 @@ namespace AutoMapper.AspNet.OData
         /// <typeparam name="T"></typeparam>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options)
+        public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
-            if (options.OrderBy == null && options.Top == null)
+            if (options.OrderBy == null && options.Top == null && oDataSettings?.PageSize == null)
                 return null;
 
             ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
 
             return Expression.Lambda<Func<IQueryable<T>, IQueryable<T>>>
             (
-                param.GetOrderByMethod(options), param
+                param.GetOrderByMethod(options, oDataSettings), param
             );
         }
 
@@ -75,9 +75,9 @@ namespace AutoMapper.AspNet.OData
         public static Expression GetOrderByMethod<T>(this ODataQueryOptions<T> options, Expression expression)
             => expression.GetOrderByMethod<T>(options);
 
-        public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options)
+        public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
-            if (options.OrderBy == null && options.Top == null)
+            if (options.OrderBy == null && options.Top == null && oDataSettings?.PageSize == null)
                 return null;
 
             return expression.GetQueryableMethod
@@ -85,8 +85,16 @@ namespace AutoMapper.AspNet.OData
                 options.OrderBy?.OrderByClause,
                 typeof(T),
                 options.Skip?.Value,
-                options.Top?.Value
+                GetPageSize(options.Top)
             );
+
+            int? GetPageSize(TopQueryOption topQueryOption)
+            {
+                if (topQueryOption?.Value < oDataSettings?.PageSize)
+                    return topQueryOption.Value;
+
+                return oDataSettings?.PageSize ?? topQueryOption?.Value;
+            }
         }
 
         public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, Type type, int? skip, int? top)
