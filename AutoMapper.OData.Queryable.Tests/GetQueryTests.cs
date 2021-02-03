@@ -9,11 +9,9 @@ using DAL.EFCore;
 using Domain.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using IDataContext = AutoMapper.OData.Queryable.Tests.Data.IDataContext;
 
 namespace AutoMapper.OData.Queryable.Tests
 {
