@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>AutoMapper.AspNet.OData</RootNamespace>
     <PackageId>AutoMapper.AspNetCore.OData.EFCore</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Supporting EF6 through .NetStandard 2.1.</PackageReleaseNotes>
+    <PackageReleaseNotes>Supporting EFCore through .NetStandard 2.1.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
@@ -18,10 +18,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Constants.cs" Link="Constants.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\CustomMethodCache.cs" Link="CustomMethodCache.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\EdmTypeStructure.cs" Link="EdmTypeStructure.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\FilterHelper.cs" Link="FilterHelper.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\LinqExtensions.cs" Link="LinqExtensions.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\ODataQueryOptionsExtensions.cs" Link="ODataQueryOptionsExtensions.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\ODataSettings.cs" Link="ODataSettings.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\ProjectionSettings.cs" Link="ProjectionSettings.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\QuerySettings.cs" Link="QuerySettings.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\TypeExtensions.cs" Link="TypeExtensions.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Visitors\ChildCollectionFilterUpdater.cs" Link="Visitors\ChildCollectionFilterUpdater.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Visitors\ChildCollectionOrderByUpdater.cs" Link="Visitors\ChildCollectionOrderByUpdater.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Visitors\FilterAppender.cs" Link="Visitors\FilterAppender.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Visitors\MethodAppender.cs" Link="Visitors\MethodAppender.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData\Visitors\ProjectionVisitor.cs" Link="Visitors\ProjectionVisitor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AutoMapper.AspNetCore.OData\Properties\Resources.resx" Link="Properties\Resources.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.1.0,5.0.0)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="4.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="MinVer" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,18 +52,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Folder Include="Visitors\" />
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>
