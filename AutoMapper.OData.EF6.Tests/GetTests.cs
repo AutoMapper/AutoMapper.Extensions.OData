@@ -15,6 +15,7 @@ using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -455,7 +456,16 @@ namespace AutoMapper.OData.EF6.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, int? pageSize = null) where TModel : class where TData : class
+        #region Negative
+        [Fact]
+        public async Task CancellationThrowsException()
+        {
+            var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Get<CoreBuilding, TBuilding>("/corebuilding", cancellationToken: cancelledToken));
+        }
+        #endregion Negative
+
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, int? pageSize = null, CancellationToken cancellationToken = default) where TModel : class where TData : class
         {
             return await DoGet
             (
@@ -481,7 +491,8 @@ namespace AutoMapper.OData.EF6.Tests
                             HandleNullPropagation = HandleNullPropagationOption.False,
                             PageSize = pageSize
                         } 
-                    }
+                    },
+                    cancellationToken
                 );
             }
         }

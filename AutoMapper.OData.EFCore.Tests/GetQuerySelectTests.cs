@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -128,7 +129,16 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null) where TModel : class where TData : class
+        #region Negative
+        [Fact]
+        public async Task CancellationThrowsException()
+        {
+            var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Get<CoreBuilding, TBuilding>("/corebuilding", cancellationToken: cancelledToken));
+        }
+        #endregion Negative
+
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, CancellationToken cancellationToken = default) where TModel : class where TData : class
         {
             return
             (
@@ -150,7 +160,8 @@ namespace AutoMapper.OData.EFCore.Tests
                         serviceProvider,
                         serviceProvider.GetRequiredService<IRouteBuilder>()
                     ),
-                    new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }
+                    new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } },
+                    cancellationToken
                 );
             }
         }

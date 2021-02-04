@@ -1,5 +1,4 @@
-﻿using AutoMapper.AspNet.OData.Visitors;
-using AutoMapper.Extensions.ExpressionMapping;
+﻿using AutoMapper.Extensions.ExpressionMapping;
 using LogicBuilder.Expressions.Utils.Expansions;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AutoMapper.AspNet.OData
@@ -17,13 +17,16 @@ namespace AutoMapper.AspNet.OData
         [Obsolete("\"Use ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\"")]
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.False)
             where TModel : class
-            => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).Result;
+            => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).GetAwaiter().GetResult();
 
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
-            => Task.Run(async () => await query.GetAsync(mapper, options, querySettings)).Result;
+            => Task.Run(async () => await query.GetAsync(mapper, options, querySettings)).GetAwaiter().GetResult();
 
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, 
+            ODataQueryOptions<TModel> options, 
+            QuerySettings querySettings = null,
+            CancellationToken cancellationToken = default)
             where TModel : class
         {
             ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeExpressions = options.SelectExpand.GetIncludes().BuildIncludesExpressionCollection<TModel>()?.ToList();
@@ -33,25 +36,34 @@ namespace AutoMapper.AspNet.OData
 
             options.AddExpandOptionsResult();
             if (options.Count?.Value == true)
-                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
+                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression, cancellationToken: cancellationToken));
 
             if (querySettings?.ODataSettings?.PageSize.HasValue == true)
                 options.AddNextLinkOptionsResult(querySettings.ODataSettings.PageSize.Value);
 
-            return await query.GetAsync(mapper, filter, queryableExpression, includeExpressions);
+            return await query.GetAsync(mapper, filter, queryableExpression, includeExpressions, cancellationToken);
         }
 
         [Obsolete("\"Use Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\"")]
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.False)
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, 
+            ODataQueryOptions<TModel> options, 
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.False,
+            CancellationToken cancellationToken = default)
             where TModel : class
             => await query.GetAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } });
 
         [Obsolete("\"Use Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\"")]
-        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.False)
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, 
+            ODataQueryOptions<TModel> options, 
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.False,
+            CancellationToken cancellationToken = default)
             where TModel : class
-            => await query.GetQueryAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } });
+            => await query.GetQueryAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } }, cancellationToken);
 
-        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
+        public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, 
+            ODataQueryOptions<TModel> options, 
+            QuerySettings querySettings = null, 
+            CancellationToken cancellationToken = default) 
             where TModel : class
         {
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
@@ -67,12 +79,12 @@ namespace AutoMapper.AspNet.OData
 
             options.AddExpandOptionsResult();
             if (options.Count?.Value == true)
-                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression));
+                options.AddCountOptionsResult<TModel, TData>(await query.QueryAsync(mapper, countExpression, cancellationToken: cancellationToken));
 
             if (querySettings?.ODataSettings?.PageSize.HasValue == true)
                 options.AddNextLinkOptionsResult(querySettings.ODataSettings.PageSize.Value);
 
-            IQueryable<TModel> queryable = await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions, querySettings?.ProjectionSettings);
+            IQueryable<TModel> queryable = await query.GetQueryAsync(mapper, filter, queryableExpression, includeExpressions, querySettings?.ProjectionSettings, cancellationToken);
 
             return queryable.UpdateQueryableExpression(expansions);
         }
@@ -81,13 +93,14 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
             ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
-            => Task.Run(async () => await query.GetAsync(mapper, filter, queryFunc, includeProperties)).Result;
+            => Task.Run(async () => await query.GetAsync(mapper, filter, queryFunc, includeProperties)).GetAwaiter().GetResult();
 
 
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            CancellationToken cancellationToken = default)
         {
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
@@ -101,7 +114,7 @@ namespace AutoMapper.AspNet.OData
                 query = includes.Select(i => i.Compile()).Aggregate(query, (q, next) => q = next(q));
 
             //Call the store
-            ICollection<TData> result = mappedQueryFunc != null ? await mappedQueryFunc(query).ToListAsync() : await query.ToListAsync();
+            ICollection<TData> result = mappedQueryFunc != null ? await mappedQueryFunc(query).ToListAsync(cancellationToken) : await query.ToListAsync(cancellationToken);
 
             //Map and return the data
             return mapper.Map<IEnumerable<TData>, IEnumerable<TModel>>(result).ToList();
@@ -111,7 +124,8 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
             IEnumerable<Expression<Func<TModel, object>>> includeProperties = null,
-            ProjectionSettings projectionSettings = null)
+            ProjectionSettings projectionSettings = null,
+            CancellationToken cancellationToken = default)
         {
             //Map the expressions
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
@@ -124,15 +138,17 @@ namespace AutoMapper.AspNet.OData
             (
                 () => mappedQueryFunc != null
                     ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
-                    : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes())
+                    : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes()),
+                cancellationToken
             );
 
-            Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? new Expression<Func<TModel, object>>[] { };
+            Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? Array.Empty<Expression<Func<TModel, object>>>();
         }
 
         public static async Task<TReturn> QueryAsync<TModel, TData, TModelReturn, TDataReturn, TReturn>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            CancellationToken cancellationToken = default)
         {
             Func<IQueryable<TData>, TDataReturn> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, TDataReturn>>>(queryFunc).Compile();
             ICollection<Expression<Func<IQueryable<TData>, IIncludableQueryable<TData, object>>>> includes = mapper.MapIncludesList<Expression<Func<IQueryable<TData>, IIncludableQueryable<TData, object>>>>(includeProperties);
@@ -140,19 +156,21 @@ namespace AutoMapper.AspNet.OData
             if (includes != null)
                 query = includes.Select(i => i.Compile()).Aggregate(query, (q, next) => q = next(q));
 
-            TDataReturn result = await Task.Run(() => mappedQueryFunc(query));
+            TDataReturn result = await Task.Run(() => mappedQueryFunc(query), cancellationToken);
 
             return typeof(TReturn) == typeof(TDataReturn) ? (TReturn)(object)result : mapper.Map<TDataReturn, TReturn>(result);
         }
 
         public static async Task<TModelReturn> QueryAsync<TModel, TData, TModelReturn, TDataReturn>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
-            => await query.QueryAsync<TModel, TData, TModelReturn, TDataReturn, TModelReturn>(mapper, queryFunc, includeProperties);
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            CancellationToken cancellationToken = default)
+            => await query.QueryAsync<TModel, TData, TModelReturn, TDataReturn, TModelReturn>(mapper, queryFunc, includeProperties, cancellationToken);
 
         public static async Task<TModelReturn> QueryAsync<TModel, TData, TModelReturn>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<IQueryable<TModel>, TModelReturn>> queryFunc,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
-            => await query.QueryAsync<TModel, TData, TModelReturn, TModelReturn, TModelReturn>(mapper, queryFunc, includeProperties);
+            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
+            CancellationToken cancellationToken = default)
+            => await query.QueryAsync<TModel, TData, TModelReturn, TModelReturn, TModelReturn>(mapper, queryFunc, includeProperties, cancellationToken);
     }
 }
