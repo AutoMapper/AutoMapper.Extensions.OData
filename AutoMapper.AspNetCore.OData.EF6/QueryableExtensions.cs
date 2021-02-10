@@ -183,7 +183,7 @@ namespace AutoMapper.AspNet.OData
                 query = includes.Aggregate(query, (q, next) => q.Include(next));
 
             //Call the store
-            ICollection<TData> result = mappedQueryFunc != null ? mappedQueryFunc(query).ToList() : query.ToList();
+            ICollection<TData> result = mappedQueryFunc != null ? await mappedQueryFunc(query).ToListAsync() : await query.ToListAsync();
 
             //Map and return the data
             return mapper.Map<IEnumerable<TData>, IEnumerable<TModel>>(result).ToList();
