@@ -398,7 +398,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
                 Uri nextPageLink = options.Request.ODataFeature().NextLink;
                 Assert.NotNull(nextPageLink);
-                Assert.Equal(nextPageLink, options.Request.GetNextPageLink(pageSize));
+                Assert.Equal("localhost:16324/corebuilding?$top=1&$skip=2", nextPageLink.AbsoluteUri);
                 Assert.Contains("$top=1", nextPageLink.Query);
                 Assert.Contains("$skip=2", nextPageLink.Query);
             }

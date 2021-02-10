@@ -23,6 +23,7 @@ namespace AutoMapper.AspNet.OData
         /// <param name="options"></param>
         /// <param name="handleNullPropagation"></param>
         /// <returns></returns>
+        [Obsolete("\"Use ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings)\"")]
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, handleNullPropagation)).Result;
@@ -40,20 +41,6 @@ namespace AutoMapper.AspNet.OData
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings)
             where TModel : class
             => Task.Run(async () => await query.GetAsync(mapper, options, querySettings)).Result;
-
-        /// <summary>
-        /// GetAsync
-        /// </summary>
-        /// <typeparam name="TModel"></typeparam>
-        /// <typeparam name="TData"></typeparam>
-        /// <param name="query"></param>
-        /// <param name="mapper"></param>
-        /// <param name="options"></param>
-        /// <param name="handleNullPropagation"></param>
-        /// <returns></returns>
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
-            where TModel : class
-            => await query.GetAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } });
 
         /// <summary>
         /// GetAsync
@@ -86,6 +73,21 @@ namespace AutoMapper.AspNet.OData
         }
 
         /// <summary>
+        /// GetAsync
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="mapper"></param>
+        /// <param name="options"></param>
+        /// <param name="handleNullPropagation"></param>
+        /// <returns></returns>
+        [Obsolete("\"Use Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\"")]
+        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+            where TModel : class
+            => await query.GetAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } });
+
+        /// <summary>
         /// GetQueryAsync
         /// </summary>
         /// <typeparam name="TModel"></typeparam>
@@ -95,6 +97,7 @@ namespace AutoMapper.AspNet.OData
         /// <param name="options"></param>
         /// <param name="handleNullPropagation"></param>
         /// <returns></returns>
+        [Obsolete("\"Use Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\"")]
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
             where TModel : class
             => await query.GetQueryAsync(mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = handleNullPropagation } });
