@@ -415,6 +415,108 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void BuildingWithoutTopAndPageSize()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(5, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithTopOnly()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3"));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(3, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithPageSizeOnly()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding", pageSize: 2));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(2, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithTopAndSmallerPageSize()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", pageSize: 2));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(2, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithTopAndLargerPageSize()
+        {
+            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", pageSize: 4));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(3, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithTopAndSmallerPageSizeNextLink()
+        {
+            int pageSize = 2;
+            string query = "/corebuilding?$top=3";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+
+            Test(await Get<CoreBuilding, TBuilding>(query, options, null, pageSize));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(2, collection.Count);
+
+                Uri nextPageLink = options.Request.ODataFeature().NextLink;
+                Assert.NotNull(nextPageLink);
+                Assert.Equal("localhost:16324/corebuilding?$top=1&$skip=2", nextPageLink.AbsoluteUri);
+                Assert.Contains("$top=1", nextPageLink.Query);
+                Assert.Contains("$skip=2", nextPageLink.Query);
+            }
+        }
+
+        [Fact]
+        public async void BuildingWithTopAndLargerPageSizeNextLink()
+        {
+            int pageSize = 4;
+            string query = "/corebuilding?$top=3";
+            ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
+            (
+                query,
+                serviceProvider,
+                serviceProvider.GetRequiredService<IRouteBuilder>()
+            );
+
+            Test(await Get<CoreBuilding, TBuilding>(query, options, null, pageSize));
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(3, collection.Count);
+                Assert.Null(options.Request.ODataFeature().NextLink);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantOrderByCountOfReference()
         {
             Test(await Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
@@ -674,13 +776,28 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class 
-            => await Get
+        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null, int? pageSize = null) where TModel : class where TData : class
+        {
+            return await Get
             (
                 query,
                 serviceProvider.GetRequiredService<MyDbContext>().Set<TData>(),
                 options,
-                querySettings
+                GetQuerySettings()
             );
+
+            QuerySettings GetQuerySettings()
+            {
+                if (querySettings == null)
+                    return new QuerySettings { ODataSettings = new ODataSettings { PageSize = pageSize } };
+
+                if (querySettings.ODataSettings == null)
+                    querySettings.ODataSettings = new ODataSettings { PageSize = pageSize };
+                else
+                    querySettings.ODataSettings.PageSize = pageSize;
+
+                return querySettings;
+            }
+        }
     }
 }

@@ -15,5 +15,13 @@ namespace AutoMapper.AspNet.OData
         /// The default is <see cref="F:Microsoft.AspNet.OData.Query.HandleNullPropagationOption.Default" />.
         /// </value>
         public HandleNullPropagationOption HandleNullPropagation { get; set; } = HandleNullPropagationOption.Default;
+
+        /// <summary>
+        /// Gets or sets the maximum number of query results to return.
+        /// </summary>
+        /// <value>
+        /// The maximum number of query results to return, or null if there is no limit. Default is null.
+        /// </value>
+        public int? PageSize { get; set; }
     }
 }
