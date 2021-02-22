@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNet.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Removing Task.Run form non-async calls. CancellationToken support.  Restring page size Server-side.</PackageReleaseNotes>
+    <PackageReleaseNotes>Removing Task.Run form non-async calls. CancellationToken support.  Restricting page size Server-side.</PackageReleaseNotes>
     <PackageTags>linq expressions odata ef</PackageTags>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
