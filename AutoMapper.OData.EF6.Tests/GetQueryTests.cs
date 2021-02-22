@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -49,7 +50,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -62,7 +64,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantExpandBuildingsFilterNeAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -75,7 +78,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantFilterEqNoExpand()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=Name eq 'One'"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=Name eq 'One'"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=Name eq 'One'"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -88,7 +92,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantFilterGtDateNoExpand()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate gt 2012-11-11T12:00:00.00Z"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate gt 2012-11-11T12:00:00.00Z"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate gt 2012-11-11T12:00:00.00Z"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -101,7 +106,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantFilterLtDateNoExpand()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -112,7 +118,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantExpandBuildingsNoFilterAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -125,7 +132,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantNoExpandNoFilterAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -138,7 +146,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantNoExpandFilterEqAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$filter=Name eq 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$filter=Name eq 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$filter=Name eq 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -151,7 +160,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]//Similar to test below but works if $select=Buildings is added to the query
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -167,7 +177,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -192,7 +203,20 @@ namespace AutoMapper.OData.EF6.Tests
 
             Test
             (
-                await Get<CoreBuilding, TBuilding>
+                Get<CoreBuilding, TBuilding>
+                (
+                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'",
+                    null,
+                    new QuerySettings
+                    {
+                        ProjectionSettings = new ProjectionSettings { Parameters = parameters },
+                        ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False }
+                    }
+                )
+            );
+            Test
+            (
+                await GetAsync<CoreBuilding, TBuilding>
                 (
                     "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'",
                     null,
@@ -217,7 +241,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantFilterEqAndOrderBy()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -231,7 +256,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNameExpandTenantFilterEqAndOrderBy()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -245,7 +271,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantFilterOnNestedPropertyAndOrderBy()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Builder/Name eq 'Sam'&$orderby=Name asc"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Builder/Name eq 'Sam'&$orderby=Name asc"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Builder/Name eq 'Sam'&$orderby=Name asc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -259,7 +286,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityFilterOnPropertyAndOrderBy()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Name ne 'One L2'&$orderby=Name desc"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Name ne 'One L2'&$orderby=Name desc"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Name ne 'One L2'&$orderby=Name desc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -279,14 +307,8 @@ namespace AutoMapper.OData.EF6.Tests
                 serviceProvider,
                 serviceProvider.GetRequiredService<IRouteBuilder>()
             );
-            Test
-            (
-                await Get<CoreBuilding, TBuilding>
-                (
-                    query,
-                    options
-                )
-            );
+            Test(Get<CoreBuilding, TBuilding>(query, options));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -299,7 +321,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityOrderByName()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -311,7 +334,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityOrderByNameThenByIdentity()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -323,7 +347,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderName()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -343,14 +368,8 @@ namespace AutoMapper.OData.EF6.Tests
                 serviceProvider,
                 serviceProvider.GetRequiredService<IRouteBuilder>()
             );
-            Test
-            (
-                await Get<CoreBuilding, TBuilding>
-                (
-                    query,
-                    options
-                )
-            );
+            Test(Get<CoreBuilding, TBuilding>(query, options));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -372,14 +391,8 @@ namespace AutoMapper.OData.EF6.Tests
                 serviceProvider.GetRequiredService<IRouteBuilder>()
             );
 
-            Test
-            (
-                await Get<CoreBuilding, TBuilding>
-                (
-                    query,
-                    options
-                )
-            );
+            Test(Get<CoreBuilding, TBuilding>(query, options));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -393,7 +406,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingSelectName_WithoutOrder_WithoutTop()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$select=Name"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$select=Name"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$select=Name"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -404,7 +418,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingWithoutTopAndPageSize()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -415,7 +430,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingWithTopOnly()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=3"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=3"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -426,7 +442,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingWithPageSizeOnly()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding", pageSize: 2));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 2 } }));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 2 } }));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -437,7 +454,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingWithTopAndSmallerPageSize()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", pageSize: 2));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 2 } }));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=3", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 2 } }));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -448,7 +466,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingWithTopAndLargerPageSize()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", pageSize: 4));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=3", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 4 } }));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=3", querySettings: new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = 4 } }));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -468,7 +487,8 @@ namespace AutoMapper.OData.EF6.Tests
                 serviceProvider.GetRequiredService<IRouteBuilder>()
             );
 
-            Test(await Get<CoreBuilding, TBuilding>(query, options, null, pageSize));
+            Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -494,7 +514,8 @@ namespace AutoMapper.OData.EF6.Tests
                 serviceProvider.GetRequiredService<IRouteBuilder>()
             );
 
-            Test(await Get<CoreBuilding, TBuilding>(query, options, null, pageSize));
+            Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -506,7 +527,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void OpsTenantOrderByCountOfReference()
         {
-            Test(await Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -518,22 +540,42 @@ namespace AutoMapper.OData.EF6.Tests
             }
         }
 
-        //ArgumentNullException: Value cannot be null. (Parameter 'bindings')
-        //Microsoft.EntityFrameworkCore.InMemory (3.1.0).  Works using Microsoft.EntityFrameworkCore 3.1.
+        //System.NotSupportedException
         /*
          *  StackTrace:
-   at System.Linq.Expressions.Expression.ValidateMemberInitArgs(Type type, ReadOnlyCollection`1 bindings)
-   at System.Linq.Expressions.Expression.MemberInit(NewExpression newExpression, IEnumerable`1 bindings)
-   at System.Linq.Expressions.MemberInitExpression.Update(NewExpression newExpression, IEnumerable`1 bindings)
-   at System.Linq.Expressions.ExpressionVisitor.VisitMemberInit(MemberInitExpression node)
-   at System.Linq.Expressions.MemberInitExpression.Accept(ExpressionVisitor visitor)
-   at System.Linq.Expressions.ExpressionVisitor.Visit(Expression node)
-   at Microsoft.EntityFrameworkCore.InMemory.Query.Internal.InMemoryExpressionTranslatingExpressionVisitor.VisitConditional(ConditionalExpression conditionalExpression)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.ValidateInitializerMetadata(InitializerMetadata metadata)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.MemberInitTranslator.TypedTranslate(ExpressionConverter parent, MemberInitExpression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TypedTranslator`1.Translate(ExpressionConverter parent, Expression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TranslateExpression(Expression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TranslateLambda(LambdaExpression lambda, DbExpression input)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TranslateLambda(LambdaExpression lambda, DbExpression input, DbExpressionBinding& binding)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.MethodCallTranslator.OneLambdaTranslator.Translate(ExpressionConverter parent, MethodCallExpression call, DbExpression& source, DbExpressionBinding& sourceBinding, DbExpression& lambda)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.MethodCallTranslator.SelectTranslator.Translate(ExpressionConverter parent, MethodCallExpression call)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.MethodCallTranslator.SequenceMethodTranslator.Translate(ExpressionConverter parent, MethodCallExpression call, SequenceMethod sequenceMethod)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.MethodCallTranslator.TypedTranslate(ExpressionConverter parent, MethodCallExpression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TypedTranslator`1.Translate(ExpressionConverter parent, Expression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.TranslateExpression(Expression linq)
+   at System.Data.Entity.Core.Objects.ELinq.ExpressionConverter.Convert()
+   at System.Data.Entity.Core.Objects.ELinq.ELinqQueryState.GetExecutionPlan(Nullable`1 forMergeOption)
+   at System.Data.Entity.Core.Objects.ObjectQuery`1.<>c__DisplayClass41_0.<GetResults>b__1()
+   at System.Data.Entity.Core.Objects.ObjectContext.ExecuteInTransaction[T](Func`1 func, IDbExecutionStrategy executionStrategy, Boolean startLocalTransaction, Boolean releaseConnectionOnSuccess)
+   at System.Data.Entity.Core.Objects.ObjectQuery`1.<>c__DisplayClass41_0.<GetResults>b__0()
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.Execute[TResult](Func`1 operation)
+   at System.Data.Entity.Core.Objects.ObjectQuery`1.GetResults(Nullable`1 forMergeOption)
+   at System.Data.Entity.Core.Objects.ObjectQuery`1.<System.Collections.Generic.IEnumerable<T>.GetEnumerator>b__31_0()
+   at System.Data.Entity.Internal.LazyEnumerator`1.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at AutoMapper.OData.EF6.Tests.GetQueryTests.GetAsync[TModel,TData](String query, IQueryable`1 dataQueryable, ODataQueryOptions`1 options, QuerySettings querySettings) in C:\.github\AutoMapper\AutoMapper.Extensions.OData\AutoMapper.OData.EF6.Tests\GetQueryTests.cs:line 861
+   at AutoMapper.OData.EF6.Tests.GetQueryTests.GetAsync[TModel,TData](String query, ODataQueryOptions`1 options, QuerySettings querySettings) in C:\.github\AutoMapper\AutoMapper.Extensions.OData\AutoMapper.OData.EF6.Tests\GetQueryTests.cs:line 882
+   at AutoMapper.OData.EF6.Tests.GetQueryTests.CoreBuildingOrderByCountOfChildReferenceOfReference() in C:\.github\AutoMapper\AutoMapper.Extensions.OData\AutoMapper.OData.EF6.Tests\GetQueryTests.cs:line 558
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__139_0(Object state)
+Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuilding' appears in two structurally incompatible initializations within a single LINQ to Entities query. A type can be initialized in two places in the same query, but only if the same properties are set in both places and those properties are set in the same order.
          */
         //[Fact]
         //public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
         //{
-        //    Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
+        //    Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc"));
         //    void Test(ICollection<CoreBuilding> collection)
         //    {
         //        Assert.Equal(5, collection.Count);
@@ -546,7 +588,9 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference()
         {
-            Test(await Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Builder($expand=City)&$orderby=Builder/City/Name desc"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$expand=Builder($expand=City)&$orderby=Builder/City/Name desc"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$expand=Builder($expand=City)&$orderby=Builder/City/Name desc"));
+
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
@@ -605,7 +649,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne')&$filter=CategoryName eq 'CategoryOne'",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne')&$filter=CategoryName eq 'CategoryOne'",
                     GetCategories()
@@ -624,7 +676,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
                     GetCategories()
@@ -643,7 +703,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
                     GetCategories()
@@ -662,7 +730,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne';$expand=AlternateAddresses($filter=City eq 'CityOne'))&$filter=CategoryName eq 'CategoryOne'",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName eq 'ProductOne';$expand=AlternateAddresses($filter=City eq 'CityOne'))&$filter=CategoryName eq 'CategoryOne'",
                     GetCategories()
@@ -682,7 +758,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
                     GetCategories()
@@ -702,7 +786,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$top=1;$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$top=1;$expand=AlternateAddresses($filter=City ne ''))&$filter=CategoryName ne ''",
                     GetCategories()
@@ -722,7 +814,15 @@ namespace AutoMapper.OData.EF6.Tests
         {
             Test
             (
-                await Get<CategoryModel, Category>
+                Get<CategoryModel, Category>
+                (
+                    "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
                 (
                     "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc",
                     GetCategories()
@@ -737,7 +837,46 @@ namespace AutoMapper.OData.EF6.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        [Fact]
+        public async Task CancellationThrowsException()
+        {
+            var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GetAsync<CoreBuilding, TBuilding>("/corebuilding?$count=true", querySettings: new QuerySettings { AsyncSettings = new AsyncSettings { CancellationToken = cancelledToken } }));
+        }
+
+        private ICollection<TModel> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        {
+            return
+            (
+                DoGet
+                (
+                    serviceProvider.GetRequiredService<IMapper>()
+                )
+            ).ToList();
+
+            IQueryable<TModel> DoGet(IMapper mapper)
+            {
+                return dataQueryable.GetQuery
+                (
+                    mapper,
+                    options ?? GetODataQueryOptions<TModel>(query),
+                    querySettings
+                );
+            }
+        }
+
+        private ICollection<TModel> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        {
+            return Get
+            (
+                query,
+                serviceProvider.GetRequiredService<TestDbContext>().Set<TData>(),
+                options,
+                querySettings
+            );
+        }
+
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return
             (
@@ -752,39 +891,37 @@ namespace AutoMapper.OData.EF6.Tests
                 return await dataQueryable.GetQueryAsync
                 (
                     mapper,
-                    options ?? ODataHelpers.GetODataQueryOptions<TModel>
-                    (
-                        query,
-                        serviceProvider,
-                        serviceProvider.GetRequiredService<IRouteBuilder>()
-                    ),
+                    options ?? GetODataQueryOptions<TModel>(query),
                     querySettings
                 );
             }
         }
 
-        private async Task<ICollection<TModel>> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null, int? pageSize = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
-            return await Get
+            return await GetAsync
             (
                 query,
                 serviceProvider.GetRequiredService<TestDbContext>().Set<TData>(),
                 options,
-                GetQuerySettings()
+                querySettings
             );
+        }
 
-            QuerySettings GetQuerySettings()
+        private ODataQueryOptions _oDataQueryOptions;
+        private ODataQueryOptions<TModel> GetODataQueryOptions<TModel>(string query) where TModel : class
+        {
+            if (_oDataQueryOptions == null)
             {
-                if (querySettings == null)
-                    return new QuerySettings { ODataSettings = new ODataSettings { PageSize = pageSize } };
-
-                if (querySettings.ODataSettings == null)
-                    querySettings.ODataSettings = new ODataSettings { PageSize = pageSize };
-                else
-                    querySettings.ODataSettings.PageSize = pageSize;
-
-                return querySettings;
+                _oDataQueryOptions = ODataHelpers.GetODataQueryOptions<TModel>
+                (
+                    query,
+                    serviceProvider,
+                    serviceProvider.GetRequiredService<IRouteBuilder>()
+                );
             }
+
+            return (ODataQueryOptions<TModel>)_oDataQueryOptions;
         }
     }
 }
