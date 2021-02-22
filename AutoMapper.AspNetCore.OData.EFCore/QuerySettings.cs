@@ -17,5 +17,9 @@ namespace AutoMapper.AspNet.OData
         /// </summary>
         public ProjectionSettings ProjectionSettings { get; set; }
 
+        /// <summary>
+        /// Async Settings hold the cancellation token for async requests
+        /// </summary>
+        public AsyncSettings AsyncSettings { get; set; }
     }
 }

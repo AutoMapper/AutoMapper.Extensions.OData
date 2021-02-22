@@ -33,12 +33,14 @@ namespace AutoMapper.AspNet.OData
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);
         }
 
+        [Obsolete]
         public static Expression<Func<IQueryable<T>, long>> GetCountExpression<T>(Expression filter = null)
         {
             ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
             return Expression.Lambda<Func<IQueryable<T>, long>>(GetLongCountMethod(param, filter), param);
         }
 
+        [Obsolete]
         private static Expression GetLongCountMethod(ParameterExpression param, Expression filter = null)
         {
             return Expression.Call

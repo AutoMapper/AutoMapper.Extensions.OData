@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\AsyncSettings.cs" Link="AsyncSettings.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Constants.cs" Link="Constants.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\CustomMethodCache.cs" Link="CustomMethodCache.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\EdmTypeStructure.cs" Link="EdmTypeStructure.cs" />
@@ -41,9 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="4.1.1-preview.1.3" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="4.1.1" />
     <PackageReference Include="EntityFramework" Version="6.3.0" />
-    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="4.0.2" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
     <PackageReference Include="MinVer" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
