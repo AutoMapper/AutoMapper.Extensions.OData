@@ -2,12 +2,9 @@
 using AutoMapper.AspNet.OData;
 using DAL.EF6;
 using Domain.OData;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 using System.Threading.Tasks;
 
 namespace WebAPI.OData.EF6.Controllers

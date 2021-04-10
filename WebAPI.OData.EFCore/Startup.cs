@@ -1,16 +1,14 @@
 ﻿using AutoMapper;
 using DAL.EFCore;
 using Domain.OData;
-using Microsoft.AspNet.OData.Batch;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 
 namespace WebAPI.OData.EFCore
 {
@@ -28,7 +26,8 @@ namespace WebAPI.OData.EFCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddOData();
+            services.AddControllers();
+            services.AddOData(opt => opt.AddModel("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
 
             services.AddSingleton<AutoMapper.IConfigurationProvider>
             (
@@ -39,14 +38,6 @@ namespace WebAPI.OData.EFCore
                 })
             )
             .AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService));
-
-            services.AddMvc(options =>
-            {
-                // https://blogs.msdn.microsoft.com/webdev/2018/08/27/asp-net-core-2-2-0-preview1-endpoint-routing/
-                // Because conflicts with ODataRouting as of this version
-                // could improve performance though
-                options.EnableEndpointRouting = false;
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,22 +49,26 @@ namespace WebAPI.OData.EFCore
             }
 
             app.UseHttpsRedirection();
-            app.UseCors();
-            app.UseODataBatching();
 
-            app.UseMvc(r => {
+            app.UseRouting();
 
+            app.UseAuthorization();
 
-                var builder = new ODataConventionModelBuilder();
-                builder.EntitySet<OpsTenant>(nameof(OpsTenant));
-                builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
-                builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
-                builder.EntitySet<OpsCity>(nameof(OpsCity));
-                var model = builder.GetEdmModel();
-                r.Count().Filter().OrderBy().Expand().Select().MaxTop(null);
-                r.MapODataServiceRoute("odata", "", model, new DefaultODataBatchHandler());
-
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
+        }
+
+        private IEdmModel GetEdmModel()
+        {
+            var builder = new ODataConventionModelBuilder();
+            builder.EntitySet<OpsTenant>(nameof(OpsTenant));
+            builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
+            builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
+            builder.EntitySet<OpsCity>(nameof(OpsCity));
+
+            return builder.GetEdmModel();
         }
     }
 }
