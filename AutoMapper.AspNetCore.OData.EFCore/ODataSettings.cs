@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNet.OData.Query;
+﻿
+#if ASPNET
+using Microsoft.AspNet.OData.Query;
+#endif
+#if ASPNETCORE
+using Microsoft.AspNetCore.OData.Query;
+#endif
 
 namespace AutoMapper.AspNet.OData
 {

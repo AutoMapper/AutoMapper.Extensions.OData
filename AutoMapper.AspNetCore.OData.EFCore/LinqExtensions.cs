@@ -1,8 +1,12 @@
 ﻿using AutoMapper.AspNet.OData.Visitors;
 using LogicBuilder.Expressions.Utils;
 using LogicBuilder.Expressions.Utils.Expansions;
-using Microsoft.AspNet.OData.Extensions;
+#if ASPNET
 using Microsoft.AspNet.OData.Query;
+#endif
+#if ASPNETCORE
+using Microsoft.AspNetCore.OData.Query;
+#endif
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;

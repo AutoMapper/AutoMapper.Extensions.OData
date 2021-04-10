@@ -17,6 +17,14 @@
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;ASPNET</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;ASPNET</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\AutoMapper.AspNetCore.OData.EF6\QueryableExtensions.cs" Link="QueryableExtensions.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\AsyncSettings.cs" Link="AsyncSettings.cs" />
