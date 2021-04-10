@@ -1,11 +1,9 @@
 ﻿using ExpressionBuilder.Tests.Data;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
@@ -23,7 +21,7 @@ namespace ExpressionBuilder.Tests
             if (cachedModels.TryGetValue(modelType, out IEdmModel cachedModel))
                 return cachedModel;
 
-            return GetModel(new ODataConventionModelBuilder(serviceProvider));
+            return GetModel(new ODataConventionModelBuilder());
 
             IEdmModel GetModel(ODataConventionModelBuilder builder)
             {
@@ -77,7 +75,7 @@ namespace ExpressionBuilder.Tests
 
         public static FilterClause GetFilterClauseFromFilterOption(IEdmModel model, IEdmEntitySet entitySet, ODataQueryOptionParser parser, string filter)
         {
-            Microsoft.AspNet.OData.Routing.ODataPath path = new Microsoft.AspNet.OData.Routing.ODataPath(new EntitySetSegment(entitySet));
+            ODataPath path = new ODataPath(new EntitySetSegment(entitySet));
             ODataQueryContext context = new ODataQueryContext(model, typeof(DataTypes), path);
 
             return new FilterQueryOption(filter, context, parser).FilterClause;
@@ -85,14 +83,13 @@ namespace ExpressionBuilder.Tests
 
         public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, IRouteBuilder routeBuilder) where T : class
         {
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder(serviceProvider);
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
 
             builder.EntitySet<T>(typeof(T).Name);
             IEdmModel model = builder.GetEdmModel();
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
-            Microsoft.AspNet.OData.Routing.ODataPath path = new Microsoft.AspNet.OData.Routing.ODataPath(new EntitySetSegment(entitySet));
+            ODataPath path = new ODataPath(new EntitySetSegment(entitySet));
 
-            routeBuilder.EnableDependencyInjection();
 
             return new ODataQueryOptions<T>
             (

@@ -2,9 +2,9 @@
 using AutoMapper.OData.EF6.Tests.Data;
 using DAL.EF6;
 using Domain.OData;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -74,8 +74,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingSelectNameExpandBuilder_Builder_ShouldBeNull()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -89,8 +89,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNamefilterEqAndOrderBy()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -106,8 +106,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeNull_BuilderNameShouldeSam_BuilderIdShouldBeZero()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {

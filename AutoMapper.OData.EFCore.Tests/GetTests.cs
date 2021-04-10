@@ -2,17 +2,17 @@
 using AutoMapper.OData.EFCore.Tests.Data;
 using DAL.EFCore;
 using Domain.OData;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Extensions;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,8 +161,8 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantFilterEqAndOrderBy()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -543,15 +543,13 @@ namespace AutoMapper.OData.EFCore.Tests
     {
         public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, IRouteBuilder routeBuilder) where T : class
         {
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder(serviceProvider);
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
 
             builder.EntitySet<T>(typeof(T).Name);
-            builder.EnableLowerCamelCase();
             IEdmModel model = builder.GetEdmModel();
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
             ODataPath path = new ODataPath(new Microsoft.OData.UriParser.EntitySetSegment(entitySet));
 
-            routeBuilder.EnableDependencyInjection();
 
             return new ODataQueryOptions<T>
             (

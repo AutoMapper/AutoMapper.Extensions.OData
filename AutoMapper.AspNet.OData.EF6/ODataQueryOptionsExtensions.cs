@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
-using System;
 
 namespace AutoMapper.AspNet.OData
 {

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNet.OData.Query;
-
-namespace AutoMapper.AspNet.OData
+﻿namespace AutoMapper.AspNet.OData
 {
     /// <summary>
     /// This class describes the settings to use during query composition.

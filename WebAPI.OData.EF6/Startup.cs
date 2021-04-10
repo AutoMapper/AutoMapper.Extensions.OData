@@ -1,21 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using DAL.EF6;
 using Domain.OData;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 
 namespace WebAPI.OData.EF6
 {
@@ -32,7 +25,7 @@ namespace WebAPI.OData.EF6
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddOData();
+            services.AddOData(opt => opt.AddModel("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
             services.AddScoped
             (
                 _ => new MyDbContext
@@ -68,8 +61,6 @@ namespace WebAPI.OData.EF6
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.Count().Filter().OrderBy().Expand().Select().MaxTop(null);
-                endpoints.MapODataRoute("odata", "", GetEdmModel());
             });
         }
 

@@ -1,5 +1,4 @@
 ﻿//Adapted from Microsoft.AspNet.OData.Test.Query.Expressions
-using Microsoft.AspNet.OData.Query;
 using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
@@ -31,7 +30,6 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         public System.DateTime Birthday { get; set; }
 
         public DateTimeOffset NonNullableDiscontinuedDate { get; set; }
-        [NotFilterable]
         public DateTimeOffset NotFilterableDiscontinuedDate { get; set; }
 
         public DateTimeOffset DiscontinuedOffset { get; set; }
@@ -56,7 +54,6 @@ namespace AutoMapper.OData.EFCore.Tests.Model
 
         public int[] AlternateIDs { get; set; }
         public AddressModel[] AlternateAddresses { get; set; }
-        [NotFilterable]
         public AddressModel[] NotFilterableAlternateAddresses { get; set; }
     }
 

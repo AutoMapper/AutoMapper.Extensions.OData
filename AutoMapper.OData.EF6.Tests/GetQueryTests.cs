@@ -3,8 +3,8 @@ using AutoMapper.OData.EF6.Tests.Data;
 using AutoMapper.OData.EF6.Tests.Model;
 using DAL.EF6;
 using Domain.OData;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNetCore.OData.Extensions;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.AspNetCore.OData;
 
 namespace AutoMapper.OData.EF6.Tests
 {
@@ -205,7 +206,7 @@ namespace AutoMapper.OData.EF6.Tests
             (
                 Get<CoreBuilding, TBuilding>
                 (
-                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'",
+                    "/corebuilding?$top=1&$expand=Builder&$filter=Name eq 'One L1'",
                     null,
                     new QuerySettings
                     {
@@ -218,7 +219,7 @@ namespace AutoMapper.OData.EF6.Tests
             (
                 await GetAsync<CoreBuilding, TBuilding>
                 (
-                    "/corebuilding?$top=1&$expand=Builder&$filter=name eq 'One L1'",
+                    "/corebuilding?$top=1&$expand=Builder&$filter=Name eq 'One L1'",
                     null,
                     new QuerySettings
                     {
@@ -241,8 +242,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderTenantFilterEqAndOrderBy()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -256,8 +257,8 @@ namespace AutoMapper.OData.EF6.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNameExpandTenantFilterEqAndOrderBy()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=name eq 'One L1'"));
+            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=Name eq 'One L1'"));
+            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name),Tenant&$filter=Name eq 'One L1'"));
 
             void Test(ICollection<CoreBuilding> collection)
             {

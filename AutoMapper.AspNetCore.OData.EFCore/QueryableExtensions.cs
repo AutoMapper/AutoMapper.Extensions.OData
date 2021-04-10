@@ -1,6 +1,6 @@
 ﻿using AutoMapper.Extensions.ExpressionMapping;
 using LogicBuilder.Expressions.Utils.Expansions;
-using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System;

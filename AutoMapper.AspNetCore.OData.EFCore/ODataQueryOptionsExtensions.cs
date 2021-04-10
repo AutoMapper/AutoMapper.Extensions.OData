@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Query;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.AspNetCore.OData.Extensions;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace AutoMapper.AspNet.OData
 {
@@ -43,7 +40,7 @@ namespace AutoMapper.AspNet.OData
             if (options.Request == null)
                 return;
 
-            options.Request.ODataFeature().NextLink = options.Request.GetNextPageLink(pageSize);
+            options.Request.ODataFeature().NextLink = options.Request.GetNextPageLink(pageSize, null, null);
         }
     }
 }
