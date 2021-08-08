@@ -32,7 +32,6 @@ namespace ExpressionBuilder.Tests
         private void Initialize()
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddOData();
             services.AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
 

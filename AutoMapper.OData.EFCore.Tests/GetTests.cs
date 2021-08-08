@@ -4,10 +4,10 @@ using DAL.EFCore;
 using Domain.OData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
@@ -36,7 +36,12 @@ namespace AutoMapper.OData.EFCore.Tests
         private void Initialize()
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddOData();
+            IMvcCoreBuilder builder = new TestMvcCoreBuilder
+            {
+                Services = services
+            };
+
+            builder.AddOData();
             services.AddDbContext<MyDbContext>
                 (
                     options =>
@@ -49,7 +54,8 @@ namespace AutoMapper.OData.EFCore.Tests
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
-                .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
+                .AddRouting()
+                .AddLogging();
 
             serviceProvider = services.BuildServiceProvider();
 
@@ -209,8 +215,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
             Test(Get<CoreBuilding, TBuilding>(query, options));
             Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
@@ -270,8 +275,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
             Test(Get<CoreBuilding, TBuilding>(query, options));
             Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
@@ -292,8 +296,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options));
@@ -388,8 +391,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
@@ -415,8 +417,7 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
@@ -530,8 +531,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 _oDataQueryOptions = ODataHelpers.GetODataQueryOptions<TModel>
                 (
                     query,
-                    serviceProvider,
-                    serviceProvider.GetRequiredService<IRouteBuilder>()
+                    serviceProvider
                 );
             }
 
@@ -541,7 +541,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
     public static class ODataHelpers
     {
-        public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, IRouteBuilder routeBuilder) where T : class
+        public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider) where T : class
         {
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
 
@@ -577,5 +577,11 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         static readonly string BASEADDRESS = "http://localhost:16324";
+    }
+
+    internal class TestMvcCoreBuilder : IMvcCoreBuilder
+    {
+        public ApplicationPartManager PartManager { get; set; }
+        public IServiceCollection Services { get; set; }
     }
 }
