@@ -24,8 +24,7 @@ namespace WebAPI.OData.EF6
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-            services.AddOData(opt => opt.AddModel("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
+            services.AddControllers().AddOData(opt => opt.AddRouteComponents("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
             services.AddScoped
             (
                 _ => new MyDbContext

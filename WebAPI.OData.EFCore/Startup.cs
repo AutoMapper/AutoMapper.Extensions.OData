@@ -26,8 +26,7 @@ namespace WebAPI.OData.EFCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
-            services.AddOData(opt => opt.AddModel("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
+            services.AddControllers().AddOData(opt => opt.AddRouteComponents("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
 
             services.AddSingleton<AutoMapper.IConfigurationProvider>
             (
