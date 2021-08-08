@@ -3,10 +3,10 @@ using AutoMapper.OData.EF6.Tests.Data;
 using AutoMapper.OData.EF6.Tests.Model;
 using DAL.EF6;
 using Domain.OData;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Microsoft.AspNetCore.OData;
 
 namespace AutoMapper.OData.EF6.Tests
 {
@@ -32,12 +31,18 @@ namespace AutoMapper.OData.EF6.Tests
         private void Initialize()
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddOData();
+            IMvcCoreBuilder builder = new TestMvcCoreBuilder
+            {
+                Services = services
+            };
+
+            builder.AddOData();
             services.AddTransient<TestDbContext>(_ => new TestDbContext())
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
-                .AddTransient<IRouteBuilder>(sp => new RouteBuilder(sp.GetRequiredService<IApplicationBuilder>()));
+                .AddRouting()
+                .AddLogging();
 
             serviceProvider = services.BuildServiceProvider();
         }
@@ -305,8 +310,7 @@ namespace AutoMapper.OData.EF6.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
             Test(Get<CoreBuilding, TBuilding>(query, options));
             Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
@@ -366,8 +370,7 @@ namespace AutoMapper.OData.EF6.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
             Test(Get<CoreBuilding, TBuilding>(query, options));
             Test(await GetAsync<CoreBuilding, TBuilding>(query, options));
@@ -388,8 +391,7 @@ namespace AutoMapper.OData.EF6.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options));
@@ -484,8 +486,7 @@ namespace AutoMapper.OData.EF6.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
@@ -511,8 +512,7 @@ namespace AutoMapper.OData.EF6.Tests
             ODataQueryOptions<CoreBuilding> options = ODataHelpers.GetODataQueryOptions<CoreBuilding>
             (
                 query,
-                serviceProvider,
-                serviceProvider.GetRequiredService<IRouteBuilder>()
+                serviceProvider
             );
 
             Test(Get<CoreBuilding, TBuilding>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } }));
@@ -917,8 +917,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                 _oDataQueryOptions = ODataHelpers.GetODataQueryOptions<TModel>
                 (
                     query,
-                    serviceProvider,
-                    serviceProvider.GetRequiredService<IRouteBuilder>()
+                    serviceProvider
                 );
             }
 
