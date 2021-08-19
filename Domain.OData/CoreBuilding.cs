@@ -11,5 +11,6 @@ namespace Domain.OData
         public OpsBuilder Builder { get; set; }
         public OpsTenant Tenant { get; set; }
         public string Parameter { get; set; }
+        public Int32 Floors { get; set; }
     }
 }

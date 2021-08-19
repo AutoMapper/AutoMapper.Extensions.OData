@@ -30,5 +30,7 @@ namespace DAL.EFCore
         [Column("fkMandatorID")]
         public Int32 MandatorId { get; set; }
 
+        public Int32 FloorAmount { get; set; }
+
     }
 }

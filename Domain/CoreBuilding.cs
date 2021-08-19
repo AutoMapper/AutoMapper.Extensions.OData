@@ -10,5 +10,6 @@ namespace Domain.OData
         public string Name { get; set; }
         public OpsBuilder Builder { get; set; }
         public OpsTenant Tenant { get; set; }
+        public Int32 Floors { get; set; }
     }
 }
