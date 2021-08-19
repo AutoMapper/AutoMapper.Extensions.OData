@@ -69,6 +69,12 @@ namespace AutoMapper.AspNet.OData
         public static IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
+            // This gives InMemoryProjectionBindingExpressionVisitor error.
+            // var output = options.ApplyTo(mapper.ProjectTo<TModel>(query));
+
+            // This can be used to generate an Expression, but what to do afterwards?
+            // var queryable = options.Apply.ApplyTo(Enumerable.Empty<T>().AsQueryable(), new ODataQuerySettings() { HandleNullPropagation = HandleNullPropagationOption.Default });
+
             Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False);
             query.ApplyOptions(mapper, filter, options, querySettings);
             return query.GetQueryable(mapper, options, querySettings, filter);
@@ -176,6 +182,7 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter)
             where TModel : class
         {
+            // var transformations = options.Apply.ApplyClause.Transformations;  // TODO How to use?
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
 
             return query.GetQuery
@@ -200,6 +207,9 @@ namespace AutoMapper.AspNet.OData
         {
             Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
             Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
+
+            // TODO 
+            // Apply
 
             if (filter != null)
                 query = query.Where(f);
@@ -227,6 +237,7 @@ namespace AutoMapper.AspNet.OData
 
         private static void ApplyOptions<TModel>(ODataQueryOptions<TModel> options, QuerySettings querySettings)
         {
+            options.AddApplyOptionsResult();
             options.AddExpandOptionsResult();
             if (querySettings?.ODataSettings?.PageSize.HasValue == true)
                 options.AddNextLinkOptionsResult(querySettings.ODataSettings.PageSize.Value);

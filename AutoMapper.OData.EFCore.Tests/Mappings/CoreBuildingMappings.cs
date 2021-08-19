@@ -15,6 +15,7 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.LongName))
                 .ForMember(d => d.Tenant, o => o.MapFrom(s => s.Mandator))
                 .ForMember(d => d.Parameter, o => o.MapFrom(s => buildingParameter))
+                .ForMember(d => d.Floors, o => o.MapFrom(s => s.FloorAmount))
                 .ForAllMembers(o => o.ExplicitExpansion());
 
             CreateMap<TBuilder, OpsBuilder>()

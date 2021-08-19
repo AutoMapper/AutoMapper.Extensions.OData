@@ -28,5 +28,7 @@ namespace DAL.EF6
         [ForeignKey("Mandator")]
         [Column("fkMandatorID")]
         public Int32 MandatorId { get; set; }
+
+        public Int32 FloorAmount { get; set; }
     }
 }
