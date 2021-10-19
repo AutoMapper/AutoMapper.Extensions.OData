@@ -1,10 +1,11 @@
-﻿
-#if ASPNET
+﻿#if ASPNET
 using Microsoft.AspNet.OData.Query;
 #endif
 #if ASPNETCORE
 using Microsoft.AspNetCore.OData.Query;
+using System;
 #endif
+
 
 namespace AutoMapper.AspNet.OData
 {
@@ -29,5 +30,15 @@ namespace AutoMapper.AspNet.OData
         /// The maximum number of query results to return, or null if there is no limit. Default is null.
         /// </value>
         public int? PageSize { get; set; }
+
+#if ASPNETCORE
+        /// <summary>
+        /// Gets of sets the <see cref="TimeZoneInfo"/>.
+        /// </summary>
+        /// <value>
+        /// Default is null.
+        /// </value>
+        public TimeZoneInfo TimeZone { get; set; }
+#endif
     }
 }
