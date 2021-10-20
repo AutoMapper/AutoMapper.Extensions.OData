@@ -65,6 +65,58 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void OpsTenantCreatedOnFilterServerUTCTimeZone()
+        {
+            var querySettings = new QuerySettings
+            {
+                ODataSettings = new ODataSettings
+                {
+                    HandleNullPropagation = HandleNullPropagationOption.False,
+                    TimeZone = TimeZoneInfo.Utc
+                }
+            };
+
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T00:00:00Z", querySettings: querySettings));
+
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-11T19:00:00-05:00", querySettings: querySettings));
+
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T00:00:00Z", querySettings: querySettings));
+
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-11T19:00:00-05:00", querySettings: querySettings));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+            }
+        }
+
+        [Fact]
+        public async void OpsTenantCreatedOnFilterServerESTTimeZone()
+        {
+            var querySettings = new QuerySettings
+            {
+                ODataSettings = new ODataSettings
+                {
+                    HandleNullPropagation = HandleNullPropagationOption.False,
+                    TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")
+                }
+            };
+
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T05:00:00Z", querySettings: querySettings));
+
+            Test(Get<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T00:00:00-05:00", querySettings: querySettings));
+
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T05:00:00Z", querySettings: querySettings));
+
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$filter=CreatedDate eq 2012-12-12T00:00:00-05:00", querySettings: querySettings));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy()
         {
             Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
@@ -446,7 +498,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        //Exception: 'The Include path 'Mandator->Buildings' results in a cycle. 
+        //Exception: 'The Include path 'Mandator->Buildings' results in a cycle.
         //Cycles are not allowed in no-tracking queries. Either use a tracking query or remove the cycle.'
         [Fact]
         public async void CoreBuildingOrderByCountOfChildReferenceOfReference()
