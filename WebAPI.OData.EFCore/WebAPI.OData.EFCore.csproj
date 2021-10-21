@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="2.2.0-preview.1.2" />
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="4.1.1" />
+    <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="2.2.2-alpha.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[4.1.2,5.0.0)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0" />
   </ItemGroup>
