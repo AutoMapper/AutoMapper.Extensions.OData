@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -20,18 +19,24 @@ namespace AutoMapper.AspNet.OData
     public static class LinqExtensions
     {
         /// <summary>
-        /// Returns a lambda expresion representing the filter
+        /// Returns a lambda expression representing the filter
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="filterOption"></param>
         /// <returns></returns>
-        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default)
+        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default, TimeZoneInfo timeZone = null)
         {
             if (filterOption == null)
                 return null;
 
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
+
+#if ASPNETCORE
+            queryable = filterOption.ApplyTo(queryable, new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone });
+#else
             queryable = filterOption.ApplyTo(queryable, new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation });
+#endif
+
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);
@@ -52,8 +57,8 @@ namespace AutoMapper.AspNet.OData
                 typeof(Queryable),
                 "LongCount",
                 new Type[] { param.GetUnderlyingElementType() },
-                filter == null 
-                    ? new Expression[] { param } 
+                filter == null
+                    ? new Expression[] { param }
                     : new Expression[] { param, filter }
             );
         }
