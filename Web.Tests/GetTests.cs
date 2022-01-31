@@ -33,7 +33,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy(string port)
         {
@@ -49,7 +48,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsFilterNeAndOrderBy(string port)
         {
@@ -65,7 +63,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantFilterEqNoExpand(string port)
         {
@@ -81,7 +78,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantFilterGtDateNoExpand(string port)
         {
@@ -97,7 +93,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantFilterLtDateNoExpand(string port)
         {
@@ -111,7 +106,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsNoFilterAndOrderBy(string port)
         {
@@ -127,7 +121,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantNoExpandNoFilterAndOrderBy(string port)
         {
@@ -143,7 +136,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantNoExpandFilterEqAndOrderBy(string port)
         {
@@ -159,7 +151,6 @@ namespace Web.Tests
 
         [Theory]//Similar to test below but works if $select=Buildings is added to the query
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy(string port)
         {
@@ -178,7 +169,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy(string port)
         {
@@ -196,7 +186,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantFilterEqAndOrderBy(string port)
         {
@@ -213,7 +202,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantFilterOnNestedPropertyAndOrderBy(string port)
         {
@@ -230,7 +218,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityFilterOnPropertyAndOrderBy(string port)
         {
@@ -246,7 +233,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityFilterOnNestedNestedPropertyWithCount(string port)
         {
@@ -269,7 +255,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByName(string port)
         {
@@ -284,7 +269,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByNameThenByIdentity(string port)
         {
@@ -299,7 +283,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderName(string port)
         {
@@ -315,7 +298,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1WithCount(string port)
         {
@@ -339,7 +321,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1NoCount(string port)
         {
@@ -363,7 +344,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingSelectName_WithoutOrder_WithoutTop(string port)
         {
@@ -377,7 +357,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantOrderByCountOfReference(string port)
         {
@@ -396,7 +375,6 @@ namespace Web.Tests
         [Theory]
         [InlineData("16324")]
         //EF 6 seems to have a problem with circular reference Building/Tenant/Buildings
-        //[InlineData("19583")]
         //[InlineData("16325")]
         public async void CoreBuildingOrderByCountOfChildReferenceOfReference(string port)
         {
@@ -412,7 +390,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference(string port)
         {
@@ -428,7 +405,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantSelectName(string port)
         {
@@ -445,7 +421,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy_FirstBuildingHasValues(string port)
         {
@@ -464,7 +439,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingSelectNameExpandBuilder_Builder_ShouldBeNull(string port)
         {
@@ -481,7 +455,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderSelectNamefilterEqAndOrderBy(string port)
         {
@@ -500,7 +473,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeNull_BuilderNameShouldeSam_BuilderIdShouldBeZero(string port)
         {
@@ -519,7 +491,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy_filterAndSortChildCollection(string port)
         {
@@ -539,7 +510,6 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
-        [InlineData("19583")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsExpandBuilderExpandCityFilterNeAndOrderBy_filterAndSortChildCollection(string port)
         {
