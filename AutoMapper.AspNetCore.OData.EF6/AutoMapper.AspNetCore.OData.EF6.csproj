@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Supporting ODataQuerySettings.TimeZone.</PackageReleaseNotes>
+    <PackageReleaseNotes>AutoMapper v11.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
     <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
@@ -67,7 +67,7 @@
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[5.0.0,6.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[5.0.0,6.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.6" />
     <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
