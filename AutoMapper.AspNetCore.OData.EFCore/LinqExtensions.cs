@@ -42,27 +42,6 @@ namespace AutoMapper.AspNet.OData
             return (Expression<Func<T, bool>>)(whereMethodCallExpression.Arguments[1].Unquote() as LambdaExpression);
         }
 
-        [Obsolete]
-        public static Expression<Func<IQueryable<T>, long>> GetCountExpression<T>(Expression filter = null)
-        {
-            ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
-            return Expression.Lambda<Func<IQueryable<T>, long>>(GetLongCountMethod(param, filter), param);
-        }
-
-        [Obsolete]
-        private static Expression GetLongCountMethod(ParameterExpression param, Expression filter = null)
-        {
-            return Expression.Call
-            (
-                typeof(Queryable),
-                "LongCount",
-                new Type[] { param.GetUnderlyingElementType() },
-                filter == null
-                    ? new Expression[] { param }
-                    : new Expression[] { param, filter }
-            );
-        }
-
         /// <summary>
         /// Returns a lambda expresion for order and paging expressions
         /// </summary>
@@ -82,10 +61,6 @@ namespace AutoMapper.AspNet.OData
                 param.GetOrderByMethod(options, oDataSettings), param
             );
         }
-
-        [Obsolete("Use \"Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options, ODataSettings oDataSettings = null)\" instead.")]
-        public static Expression GetOrderByMethod<T>(this ODataQueryOptions<T> options, Expression expression)
-            => expression.GetOrderByMethod<T>(options);
 
         public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
