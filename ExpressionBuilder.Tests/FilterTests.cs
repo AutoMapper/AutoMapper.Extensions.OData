@@ -3020,11 +3020,11 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
-        [InlineData("binary'AP8Q' ge binary'AP8Q'", "GreaterThanOrEqual")]
-        [InlineData("binary'AP8Q' le binary'AP8Q'", "LessThanOrEqual")]
-        [InlineData("binary'AP8Q' lt binary'AP8Q'", "LessThan")]
-        [InlineData("binary'AP8Q' gt binary'AP8Q'", "GreaterThan")]
-        public void DisAllowed_ByteArrayComparisons(string filterString, string op)
+        [InlineData("binary'AP8Q' ge binary'AP8Q'")]
+        [InlineData("binary'AP8Q' le binary'AP8Q'")]
+        [InlineData("binary'AP8Q' lt binary'AP8Q'")]
+        [InlineData("binary'AP8Q' gt binary'AP8Q'")]
+        public void DisAllowed_ByteArrayComparisons(string filterString)
         {
             //assert
             Assert.Throws<InvalidOperationException>(() => GetFilter<DataTypes>(filterString));
