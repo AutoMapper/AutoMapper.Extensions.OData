@@ -17,9 +17,10 @@ namespace AutoMapper.AspNet.OData
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(
+            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone);
+
             query.ApplyOptions(mapper, filter, options, querySettings);
             return query.Get
             (
@@ -33,7 +34,7 @@ namespace AutoMapper.AspNet.OData
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(
+            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone);
             await query.ApplyOptionsAsync(mapper, filter, options, querySettings);
@@ -50,9 +51,10 @@ namespace AutoMapper.AspNet.OData
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(
-                querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
-                querySettings?.ODataSettings?.TimeZone);
+            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
+                     querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
+                     querySettings?.ODataSettings?.TimeZone);
+                
             await query.ApplyOptionsAsync(mapper, filter, options, querySettings);
             return query.GetQueryable(mapper, options, querySettings, filter);
         }
@@ -60,7 +62,7 @@ namespace AutoMapper.AspNet.OData
         public static IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
-            Expression<Func<TModel, bool>> filter = options.Filter.ToFilterExpression<TModel>(
+            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone);
             query.ApplyOptions(mapper, filter, options, querySettings);

@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.AspNetCore.OData.EFCore" Version="2.2.3-alpha.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AutoMapper.AspNetCore.OData.EFCore\AutoMapper.AspNetCore.OData.EFCore.csproj" />
     <ProjectReference Include="..\DAL.EFCore\DAL.EFCore.csproj" />
     <ProjectReference Include="..\Domain.OData\Domain.OData.csproj" />
   </ItemGroup>

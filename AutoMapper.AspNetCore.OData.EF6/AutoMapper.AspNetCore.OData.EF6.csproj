@@ -57,6 +57,7 @@
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\FilterAppender.cs" Link="Visitors\FilterAppender.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\MethodAppender.cs" Link="Visitors\MethodAppender.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ProjectionVisitor.cs" Link="Visitors\ProjectionVisitor.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ParameterReplacer.cs" Link="Visitors\ParameterReplacer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,7 +68,7 @@
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[5.0.0,6.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[5.0.0,6.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.7" />
     <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

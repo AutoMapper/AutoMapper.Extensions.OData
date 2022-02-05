@@ -19,9 +19,9 @@
     },
     "WebAPI.OData.EFCore": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "api/values",
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:16324",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

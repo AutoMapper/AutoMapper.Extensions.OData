@@ -4,11 +4,13 @@ using Domain.OData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using WebAPI.OData.EF6.Binders;
 
 namespace WebAPI.OData.EF6
 {
@@ -24,7 +26,9 @@ namespace WebAPI.OData.EF6
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddOData(opt => opt.AddRouteComponents("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
+            services.AddControllers()
+                .AddOData(opt => opt.EnableQueryFeatures()
+                    .AddRouteComponents("", GetEdmModel(), services => services.AddSingleton<ISearchBinder, OpsTenantSearchBinder>()));
             services.AddScoped
             (
                 _ => new MyDbContext
