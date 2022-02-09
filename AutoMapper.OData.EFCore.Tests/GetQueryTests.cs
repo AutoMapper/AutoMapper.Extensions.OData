@@ -1,4 +1,9 @@
-﻿using AutoMapper.AspNet.OData;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper.AspNet.OData;
 using AutoMapper.OData.EFCore.Tests.Data;
 using AutoMapper.OData.EFCore.Tests.Model;
 using DAL.EFCore;
@@ -9,11 +14,6 @@ using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace AutoMapper.OData.EFCore.Tests
@@ -52,7 +52,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddRouting()
                 .AddLogging();
-
+            
             serviceProvider = services.BuildServiceProvider();
 
             MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
@@ -64,6 +64,31 @@ namespace AutoMapper.OData.EFCore.Tests
         public void IsConfigurationValid()
         {
             serviceProvider.GetRequiredService<IConfigurationProvider>().AssertConfigurationIsValid();
+        }
+        
+        [Fact]
+        public async void OpsTenantSearch()
+        {
+            Test(Get<OpsTenant, TMandator>("/opstenant?$search=One"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$search=One"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+        
+        [Fact]
+        public async void OpsTenantSearchAndFilter()
+        {
+            Test(Get<OpsTenant, TMandator>("/opstenant?$search=One&$filter=Name eq 'Two'"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$search=One&$filter=Name eq 'Two'"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(0, collection.Count);
+            }
         }
 
         [Fact]
