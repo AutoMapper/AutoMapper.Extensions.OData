@@ -57,6 +57,7 @@
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\FilterAppender.cs" Link="Visitors\FilterAppender.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\MethodAppender.cs" Link="Visitors\MethodAppender.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ProjectionVisitor.cs" Link="Visitors\ProjectionVisitor.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ParameterReplacer.cs" Link="Visitors\ParameterReplacer.cs" />
   </ItemGroup>
 
   <ItemGroup>

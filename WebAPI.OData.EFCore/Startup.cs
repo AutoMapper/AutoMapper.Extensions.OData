@@ -4,11 +4,14 @@ using Domain.OData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using WebAPI.OData.EFCore.Binders;
+using WebAPI.OData.EFCore.Mappings;
 
 namespace WebAPI.OData.EFCore
 {
@@ -26,8 +29,9 @@ namespace WebAPI.OData.EFCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers().AddOData(opt => opt.AddRouteComponents("", GetEdmModel()).Count().Filter().OrderBy().Expand().Select().SetMaxTop(null));
-
+            services.AddControllers()
+                .AddOData(opt => opt.EnableQueryFeatures()
+                    .AddRouteComponents("", GetEdmModel(), services => services.AddSingleton<ISearchBinder, OpsTenantSearchBinder>()));
             services.AddSingleton<AutoMapper.IConfigurationProvider>
             (
                 new MapperConfiguration(cfg =>

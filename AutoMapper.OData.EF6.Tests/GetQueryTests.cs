@@ -54,6 +54,31 @@ namespace AutoMapper.OData.EF6.Tests
         }
 
         [Fact]
+        public async void OpsTenantSearch()
+        {
+            Test(Get<OpsTenant, TMandator>("/opstenant?$search=One"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$search=One"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+        
+        [Fact]
+        public async void OpsTenantSearchAndFilter()
+        {
+            Test(Get<OpsTenant, TMandator>("/opstenant?$search=One&$filter=Name eq 'Two'"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$search=One&$filter=Name eq 'Two'"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(0, collection.Count);
+            }
+        }
+        
+        [Fact]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy()
         {
             Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));

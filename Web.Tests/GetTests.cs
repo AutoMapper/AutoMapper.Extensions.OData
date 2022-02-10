@@ -30,6 +30,64 @@ namespace Web.Tests
 
             this.clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         }
+        
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("16325")]
+        public async void OpsTenantSearchAndFilterNoResult(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$search=One&$filter=Name eq 'Two'", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(0, collection.Count);
+            }
+        }
+        
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("16325")]
+        public async void OpsTenantSearchAndFilterExpand(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$search=One&$filter=CreatedDate gt 2012-11-11T00:00:00.00Z&$expand=Buildings", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+        
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("16325")]
+        public async void OpsTenantSearchExpand(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$search=One&$expand=Buildings", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
+
+        [Theory]
+        [InlineData("16324")]
+        [InlineData("16325")]
+        public async void OpsTenantSearchNoExpand(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$search=One", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.False(collection.First()?.Buildings?.Any() == true);
+                Assert.Equal("One", collection.First().Name);
+            }
+        }
 
         [Theory]
         [InlineData("16324")]

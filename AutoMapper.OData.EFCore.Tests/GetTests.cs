@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper.OData.EFCore.Tests.Binders;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Xunit;
 
 namespace AutoMapper.OData.EFCore.Tests
@@ -40,7 +42,7 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 Services = services
             };
-
+            
             builder.AddOData();
             services.AddDbContext<MyDbContext>
                 (
@@ -602,20 +604,23 @@ namespace AutoMapper.OData.EFCore.Tests
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
             ODataPath path = new ODataPath(new Microsoft.OData.UriParser.EntitySetSegment(entitySet));
 
-
-            return new ODataQueryOptions<T>
+            var request = new DefaultHttpContext()
+            {
+                RequestServices = serviceProvider
+            }.Request;
+            
+            var oDataOptions = new ODataOptions().AddRouteComponents("key", model,
+                x => x.AddSingleton<ISearchBinder, OpsTenantSearchBinder>());
+            var (_, routeProvider) = oDataOptions.RouteComponents["key"];
+            
+            request.ODataFeature().Services = routeProvider;
+            var oDataQueryOptions = new ODataQueryOptions<T>
             (
                 new ODataQueryContext(model, typeof(T), path),
-                BuildRequest
-                (
-                    new DefaultHttpContext()
-                    {
-                        RequestServices = serviceProvider
-                    }.Request,
-                    new Uri(BASEADDRESS + queryString)
-                )
+                BuildRequest(request, new Uri(BASEADDRESS + queryString))
             );
-
+            return oDataQueryOptions;
+            
             static HttpRequest BuildRequest(HttpRequest request, Uri uri)
             {
                 request.Method = "GET";
