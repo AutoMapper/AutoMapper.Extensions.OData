@@ -4,14 +4,15 @@ using Domain.OData;
 using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.OData.UriParser;
 
-namespace WebAPI.OData.EFCore.Binders;
-
-public class OpsTenantSearchBinder : QueryBinder, ISearchBinder
+namespace WebAPI.OData.EFCore.Binders
 {
-    public Expression BindSearch(SearchClause searchClause, QueryBinderContext context)
+    public class OpsTenantSearchBinder : QueryBinder, ISearchBinder
     {
-        SearchTermNode node = searchClause.Expression as SearchTermNode;
-        Expression<Func<OpsTenant, bool>> exp = p => p.Name == node.Text;
-        return exp;
+        public Expression BindSearch(SearchClause searchClause, QueryBinderContext context)
+        {
+            SearchTermNode node = searchClause.Expression as SearchTermNode;
+            Expression<Func<OpsTenant, bool>> exp = p => p.Name == node.Text;
+            return exp;
+        }
     }
 }
