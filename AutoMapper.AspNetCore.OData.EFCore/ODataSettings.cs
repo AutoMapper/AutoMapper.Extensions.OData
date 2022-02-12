@@ -1,10 +1,5 @@
-﻿#if ASPNET
-using Microsoft.AspNet.OData.Query;
-#endif
-#if ASPNETCORE
-using Microsoft.AspNetCore.OData.Query;
+﻿using Microsoft.AspNetCore.OData.Query;
 using System;
-#endif
 
 
 namespace AutoMapper.AspNet.OData
@@ -31,7 +26,6 @@ namespace AutoMapper.AspNet.OData
         /// </value>
         public int? PageSize { get; set; }
 
-#if ASPNETCORE
         /// <summary>
         /// Gets of sets the <see cref="TimeZoneInfo"/>.
         /// </summary>
@@ -39,6 +33,5 @@ namespace AutoMapper.AspNet.OData
         /// Default is null.
         /// </value>
         public TimeZoneInfo TimeZone { get; set; }
-#endif
     }
 }

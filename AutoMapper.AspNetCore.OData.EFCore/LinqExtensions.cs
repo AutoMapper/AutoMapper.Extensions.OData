@@ -1,12 +1,7 @@
 ﻿using AutoMapper.AspNet.OData.Visitors;
 using LogicBuilder.Expressions.Utils;
 using LogicBuilder.Expressions.Utils.Expansions;
-#if ASPNET
-using Microsoft.AspNet.OData.Query;
-#endif
-#if ASPNETCORE
 using Microsoft.AspNetCore.OData.Query;
-#endif
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
@@ -257,9 +252,9 @@ namespace AutoMapper.AspNet.OData
                 case CollectionNavigationNode navigationNode:
                     return string.Join(".", new List<string>().GetReferencePath(navigationNode.Source, navigationNode.NavigationProperty.Name));
                 case null:
-                    throw new ArgumentNullException(nameof(countNode.Source));
+                    throw new ArgumentNullException(nameof(countNode));
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(countNode.Source));
+                    throw new ArgumentOutOfRangeException(nameof(countNode));
             }
         }
 
@@ -493,7 +488,7 @@ namespace AutoMapper.AspNet.OData
                 Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
                 Type elementType = memberType.GetCurrentType();
 
-                ODataExpansionOptions exp = new ODataExpansionOptions
+                ODataExpansionOptions exp = new()
                 {
                     MemberType = memberType,
                     ParentType = currentParentType,

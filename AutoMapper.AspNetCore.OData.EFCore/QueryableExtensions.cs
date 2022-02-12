@@ -94,6 +94,13 @@ namespace AutoMapper.AspNet.OData
                     )
             ).ToList();
 
+        public static async Task ApplyOptionsAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, Expression<Func<TModel, bool>> filter, ODataQueryOptions<TModel> options, QuerySettings querySettings)
+        {
+            ApplyOptions(options, querySettings);
+            if (options.Count?.Value == true)
+                options.AddCountOptionsResult(await query.QueryLongCountAsync(mapper, filter, querySettings?.AsyncSettings?.CancellationToken ?? default));
+        }
+
         private static IQueryable<TData> GetDataQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
@@ -159,13 +166,6 @@ namespace AutoMapper.AspNet.OData
             ApplyOptions(options, querySettings);
             if (options.Count?.Value == true)
                 options.AddCountOptionsResult(query.QueryLongCount(mapper, filter));
-        }
-
-        private static async Task ApplyOptionsAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, Expression<Func<TModel, bool>> filter, ODataQueryOptions<TModel> options, QuerySettings querySettings)
-        {
-            ApplyOptions(options, querySettings);
-            if (options.Count?.Value == true)
-                options.AddCountOptionsResult(await query.QueryLongCountAsync(mapper, filter, querySettings?.AsyncSettings?.CancellationToken ?? default));
         }
 
         private static void ApplyOptions<TModel>(ODataQueryOptions<TModel> options, QuerySettings querySettings)
