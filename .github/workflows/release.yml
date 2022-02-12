@@ -14,6 +14,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.100
+
     - name: Set Variables
       run: |
         echo "DEPLOY_PACKAGE_URL=https://api.nuget.org/v3/index.json" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
