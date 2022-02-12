@@ -1,11 +1,6 @@
 ﻿using AutoMapper.Extensions.ExpressionMapping;
 using LogicBuilder.Expressions.Utils.Expansions;
-#if ASPNET
-using Microsoft.AspNet.OData.Query;
-#endif
-#if ASPNETCORE
 using Microsoft.AspNetCore.OData.Query;
-#endif
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
