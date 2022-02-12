@@ -6,9 +6,9 @@
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AutoMapper v11.</PackageReleaseNotes>
+    <PackageReleaseNotes>Supporting $search.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
-    <PackageIconUrl>https://s3.amazonaws.com/automapper/icon.png</PackageIconUrl>
+	<PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</PackageProjectUrl>
@@ -22,6 +22,10 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\AsyncSettings.cs" Link="AsyncSettings.cs" />
