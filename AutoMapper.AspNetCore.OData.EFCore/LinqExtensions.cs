@@ -123,15 +123,21 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
-            if (NoQueryableMethod(options, oDataSettings))
+            if ( NoQueryableMethod( options, oDataSettings ) )
                 return null;
+
+            var orderBy = options.OrderBy;
+            if ( options.Skip is not null && options.OrderBy?.OrderByClause is null )
+            {
+                orderBy = options.GenerateStableOrder( );
+            }
 
             return expression.GetQueryableMethod
             (
-                options.OrderBy?.OrderByClause,
-                typeof(T),
+                orderBy?.OrderByClause,
+                typeof( T ),
                 options.Skip?.Value,
-                GetPageSize()
+                GetPageSize( )
             );
 
             int? GetPageSize()
@@ -150,12 +156,16 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
-            => options.OrderBy == null && options.Top == null && oDataSettings?.PageSize == null;
+        private static bool NoQueryableMethod( ODataQueryOptions options, ODataSettings oDataSettings )
+            => options.OrderBy is null
+            && options.Top is null
+            && options.Skip is null
+            && oDataSettings?.PageSize is null;
 
-        public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, Type type, int? skip, int? top)
+        public static Expression GetQueryableMethod(this Expression expression, 
+            OrderByClause orderByClause, Type type, int? skip, int? top)
         {
-            if (orderByClause == null && !top.HasValue)
+            if ( orderByClause is null && skip is null && top is null )
                 return null;
 
             if (orderByClause == null)

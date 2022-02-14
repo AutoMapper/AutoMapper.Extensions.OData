@@ -909,6 +909,32 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void SkipFirstResult_WithNoOrderByClause_ShouldReturnOrderedCollection( )
+        {
+            var query = "/corebuilding?$skip=1";
+            var options = ODataHelpers
+                .GetODataQueryOptions<CoreBuilding>( query, serviceProvider);
+
+            var skippedResults = await GetAsync<CoreBuilding, TBuilding>( query, options );
+
+            query = "/corebuilding";
+            options = ODataHelpers
+                .GetODataQueryOptions<CoreBuilding>( query, serviceProvider );
+
+            var allResults = await GetAsync<CoreBuilding, TBuilding>( query, options );
+
+            Assert.True( allResults.Count - skippedResults.Count == 1 );
+
+            //var skippedIds = skippedResults
+            //    .Select( r => r.Identity )
+            //    .ToList( );
+            //
+            //var allIds = allResults/*.OrderBy( r => r.Identity )*/
+            //    .Select( r => r.Identity )
+            //    .ToList( );
+        }
+
+        [Fact]
         public async Task CancellationThrowsException()
         {
             var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
