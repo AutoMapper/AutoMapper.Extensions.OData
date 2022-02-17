@@ -683,13 +683,6 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
-                            ProductID = 3,
-                            ProductName = "ProductThree",
-                            AlternateAddresses = Array.Empty<Address>( ),
-                            SupplierAddress = new Address { City = "B" }
-                        },
-                        new Product
-                        {
                             ProductID = 1,
                             ProductName = "ProductOne",
                             AlternateAddresses = new Address[]
@@ -705,7 +698,14 @@ namespace AutoMapper.OData.EFCore.Tests
                             ProductName = "ProductTwo",
                             AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "B" }
-                        }
+                        },
+                        new Product
+                        {
+                            ProductID = 3,
+                            ProductName = "ProductThree",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "B" }
+                        },
                     }
                 },
                 new Category
@@ -773,7 +773,7 @@ namespace AutoMapper.OData.EFCore.Tests
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
             }
         }
 
@@ -855,7 +855,7 @@ namespace AutoMapper.OData.EFCore.Tests
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
             }
         }
@@ -934,7 +934,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void SkipFirstResult_WithNoOrderByClause_ShouldReturnOrderedCollection( )
+        public async void SkipFirstResultOnRoot_WithNoOrderByClause_ShouldReturnOrderedCollection( )
         {
             var query = "/corebuilding?$skip=1";
             var options = ODataHelpers
