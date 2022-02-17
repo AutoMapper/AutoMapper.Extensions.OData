@@ -126,6 +126,7 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter)
             where TModel : class
         {
+            
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
 
             return query.GetQuery

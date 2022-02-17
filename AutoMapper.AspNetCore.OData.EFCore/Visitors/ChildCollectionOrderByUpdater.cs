@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.OData.Edm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,10 +8,10 @@ using System.Text;
 namespace AutoMapper.AspNet.OData.Visitors
 {
     internal class ChildCollectionOrderByUpdater : ProjectionVisitor
-    {
-        public ChildCollectionOrderByUpdater(List<ODataExpansionOptions> expansions) : base(expansions)
-        {
-        }
+    {        
+        public ChildCollectionOrderByUpdater(List<ODataExpansionOptions> expansions) 
+            : base(expansions)
+        { }
 
         public static Expression UpdaterExpansion(Expression expression, List<ODataExpansionOptions> expansions)
                 => new ChildCollectionOrderByUpdater(expansions).Visit(expression);

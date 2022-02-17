@@ -2,6 +2,7 @@
 using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
@@ -9,6 +10,37 @@ namespace AutoMapper.AspNet.OData
 {
     internal static class TypeExtensions
     {
+        public static string FirstSortableProperty( this Type type )
+        {            
+            if ( !type.IsClass )
+            {
+                throw new ArgumentException( "type" );
+            }
+
+            var allProperties = type
+                .GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                .Where( p => p.PropertyType.IsLiteralType( ) );
+
+            var property = allProperties
+                .FirstOrDefault( p => Attribute.IsDefined( p, typeof( KeyAttribute ) ) );
+
+            if ( property is not null )
+            {
+                return property.Name;
+            }
+
+            property = allProperties
+                .SingleOrDefault( p => p.Name.Equals( "ID", StringComparison.OrdinalIgnoreCase )
+                    || p.Name.Contains( $"{type.Name}ID", StringComparison.OrdinalIgnoreCase ) );
+
+            if ( property is not null )
+            {
+                return property.Name;
+            }
+
+            return allProperties.FirstOrDefault( )?.Name;
+        }
+
         public static MemberInfo[] GetSelectedMembers(this Type parentType, List<string> selects)
         {
             if (selects == null || !selects.Any())

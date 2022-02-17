@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -682,6 +683,13 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
+                            ProductID = 3,
+                            ProductName = "ProductThree",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "B" }
+                        },
+                        new Product
+                        {
                             ProductID = 1,
                             ProductName = "ProductOne",
                             AlternateAddresses = new Address[]
@@ -695,7 +703,7 @@ namespace AutoMapper.OData.EFCore.Tests
                         {
                             ProductID = 2,
                             ProductName = "ProductTwo",
-                            AlternateAddresses = new Address[0],
+                            AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "B" }
                         }
                     }
@@ -708,7 +716,7 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
-                            AlternateAddresses = new Address[0],
+                            AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "C" }
                         }
                     }
@@ -909,6 +917,23 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void Skip_Test( )
+        {
+            // "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc"
+            // var query = "/CategoryModel?$expand=Products($skip=1;$select=ProductName)";
+            var query = "/CategoryModel?$expand=Products($skip=1;$top=5)";
+            var results1 = ( await GetAsync<CategoryModel, Category>( query, GetCategories( ) ) ).ToList( );
+            var productIDs = results1.First( ).Products.Select( p => p.ProductID ).ToList( );
+            var productCounts1 = results1.Sum( r => r.Products.Count );
+
+            //var query = "/CategoryModel?$expand=Products";
+            //var results2 = ( await GetAsync<CategoryModel, Category>( query, GetCategories( ) ) );
+            //var productCounts2 = results2.Sum( r => r.Products.Count );
+
+            Debugger.Break( );
+        }
+
+        [Fact]
         public async void SkipFirstResult_WithNoOrderByClause_ShouldReturnOrderedCollection( )
         {
             var query = "/corebuilding?$skip=1";
@@ -925,13 +950,15 @@ namespace AutoMapper.OData.EFCore.Tests
 
             Assert.True( allResults.Count - skippedResults.Count == 1 );
 
-            //var skippedIds = skippedResults
-            //    .Select( r => r.Identity )
-            //    .ToList( );
-            //
-            //var allIds = allResults/*.OrderBy( r => r.Identity )*/
-            //    .Select( r => r.Identity )
-            //    .ToList( );
+            var skippedIDs = skippedResults
+                .Select( r => r.Identity )
+                .ToHashSet( );
+
+            var allIDs = allResults
+                .Select( r => r.Identity )
+                .ToHashSet( );
+
+            Assert.Subset( allIDs, skippedIDs );
         }
 
         [Fact]
@@ -973,7 +1000,8 @@ namespace AutoMapper.OData.EFCore.Tests
             );
         }
 
-        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, 
+            IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return
             (
