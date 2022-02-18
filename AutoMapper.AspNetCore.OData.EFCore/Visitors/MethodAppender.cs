@@ -1,9 +1,6 @@
 ﻿using LogicBuilder.Expressions.Utils;
-using Microsoft.OData.Edm;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace AutoMapper.AspNet.OData.Visitors
 {
