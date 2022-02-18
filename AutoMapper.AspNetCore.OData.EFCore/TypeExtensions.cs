@@ -16,8 +16,9 @@ namespace AutoMapper.AspNet.OData
                 .GetProperties( BindingFlags.Public | BindingFlags.Instance )
                 .Where( p => p.PropertyType.IsLiteralType( ) );
 
+            var attributeType = typeof(KeyAttribute);
             var property = allProperties
-                .FirstOrDefault( p => Attribute.IsDefined( p, typeof( KeyAttribute ) ) );
+                .FirstOrDefault( p => Attribute.IsDefined( p, attributeType ) );
 
             if ( property is not null )
                 return property.Name;            

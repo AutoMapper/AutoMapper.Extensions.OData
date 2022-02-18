@@ -12,7 +12,7 @@ namespace AutoMapper.AspNet.OData.Visitors
         public MethodAppender(Expression expression, ODataExpansionOptions expansion)
         {
             this.expansion = expansion;
-            this.expression = expression;            
+            this.expression = expression;
         }
 
         private readonly ODataExpansionOptions expansion;
@@ -27,7 +27,7 @@ namespace AutoMapper.AspNet.OData.Visitors
             if (node.Method.Name == "Select"
                 && elementType == node.Type.GetUnderlyingElementType()
                 && this.expression.ToString().StartsWith(node.ToString()))//makes sure we're not updating some nested "Select"
-            {                                
+            {
                 return node.GetQueryableMethod
                 (
                     expansion.QueryOptions.OrderByClause,
