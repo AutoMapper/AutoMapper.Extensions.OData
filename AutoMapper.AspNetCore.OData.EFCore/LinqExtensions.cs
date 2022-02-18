@@ -123,18 +123,18 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Expression GetOrderByMethod<T>(this Expression expression, 
+        public static Expression GetOrderByMethod<T>(this Expression expression,
             ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
-        {            
-            if ( NoQueryableMethod( options, oDataSettings ) )
+        {
+            if (NoQueryableMethod(options, oDataSettings))
                 return null;
 
             return expression.GetQueryableMethod
             (
                 options.OrderBy?.OrderByClause,
-                typeof( T ),
+                typeof(T),
                 options.Skip?.Value,
-                GetPageSize( )
+                GetPageSize()
             );
 
             int? GetPageSize()
@@ -151,31 +151,25 @@ namespace AutoMapper.AspNet.OData
                     ? options.Top.Value
                     : oDataSettings.PageSize;
             }
-        }
+        }        
 
-        private static bool NoQueryableMethod( ODataQueryOptions options, ODataSettings oDataSettings )
-            => options.OrderBy is null
-            && options.Top is null
-            && options.Skip is null
-            && oDataSettings?.PageSize is null;
-
-        public static Expression GetQueryableMethod(this Expression expression, 
-            OrderByClause orderByClause, Type type, int? skip, int? top )
+        public static Expression GetQueryableMethod(this Expression expression,
+            OrderByClause orderByClause, Type type, int? skip, int? top)
         {
-            if ( orderByClause is null && skip is null && top is null )
+            if (orderByClause is null && skip is null && top is null)
                 return null;
 
-            if (orderByClause is null && ( skip is not null || top is not null ) )
+            if (orderByClause is null && (skip is not null || top is not null))
             {
-                var propertyName = type.FirstSortableProperty( );
+                var propertyName = type.FirstSortableProperty();
 
-                if ( propertyName is null )
+                if (propertyName is null)
                     return null;
 
                 return expression
-                    .GetOrderByCall( propertyName, nameof( Queryable.OrderBy ) )
-                    .GetSkipCall( skip )
-                    .GetTakeCall( top );
+                    .GetOrderByCall(propertyName, nameof(Queryable.OrderBy))
+                    .GetSkipCall(skip)
+                    .GetTakeCall(top);
             }
 
             return expression
@@ -183,6 +177,12 @@ namespace AutoMapper.AspNet.OData
                 .GetSkipCall(skip)
                 .GetTakeCall(top);
         }
+
+        private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
+            => options.OrderBy is null
+            && options.Top is null
+            && options.Skip is null
+            && oDataSettings?.PageSize is null;
 
         private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)
         {
@@ -209,9 +209,6 @@ namespace AutoMapper.AspNet.OData
                         );
                     default:
                         SingleValuePropertyAccessNode propertyNode = (SingleValuePropertyAccessNode)orderByNode;
-                        var path = propertyNode.GetPropertyPath( );
-                        var range = orderByClause.RangeVariable.Name;
-
                         return expression.GetOrderByCall
                         (
                             propertyNode.GetPropertyPath(),

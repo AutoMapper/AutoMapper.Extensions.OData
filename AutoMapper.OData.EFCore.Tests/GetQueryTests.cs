@@ -704,7 +704,7 @@ namespace AutoMapper.OData.EFCore.Tests
                             ProductID = 3,
                             ProductName = "ProductThree",
                             AlternateAddresses = Array.Empty<Address>( ),
-                            SupplierAddress = new Address { City = "B" }
+                            SupplierAddress = new Address { City = "C" }
                         },
                     }
                 },
@@ -917,48 +917,55 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void Skip_Test( )
+        public async void ExpandingChildCollectionWithTopAndSkipNoOrderByShouldReturnOrderedChildCollection()
         {
-            // "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc"
-            // var query = "/CategoryModel?$expand=Products($skip=1;$select=ProductName)";
-            var query = "/CategoryModel?$expand=Products($skip=1;$top=5)";
-            var results1 = ( await GetAsync<CategoryModel, Category>( query, GetCategories( ) ) ).ToList( );
-            var productIDs = results1.First( ).Products.Select( p => p.ProductID ).ToList( );
-            var productCounts1 = results1.Sum( r => r.Products.Count );
+            const string query = "/CategoryModel?$expand=Products($skip=1;$top=2)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
 
-            //var query = "/CategoryModel?$expand=Products";
-            //var results2 = ( await GetAsync<CategoryModel, Category>( query, GetCategories( ) ) );
-            //var productCounts2 = results2.Sum( r => r.Products.Count );
-
-            Debugger.Break( );
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.First().Products.First().ProductID);
+                Assert.Equal(3, collection.First().Products.Last().ProductID);
+                Assert.Empty(collection.Last().Products);
+            }
         }
 
         [Fact]
-        public async void SkipFirstResultOnRoot_WithNoOrderByClause_ShouldReturnOrderedCollection( )
+        public async void ExpandingChildCollectionSkipBeyondAllElementsNoOrderByShouldReturnEmptyChildCollection()
         {
-            var query = "/corebuilding?$skip=1";
-            var options = ODataHelpers
-                .GetODataQueryOptions<CoreBuilding>( query, serviceProvider);
+            const string query = "/CategoryModel?$expand=Products($skip=3)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
 
-            var skippedResults = await GetAsync<CoreBuilding, TBuilding>( query, options );
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection.First().Products);
+                Assert.Empty(collection.Last().Products);
+            }
+        }
 
-            query = "/corebuilding";
-            options = ODataHelpers
-                .GetODataQueryOptions<CoreBuilding>( query, serviceProvider );
+        [Fact]
+        public async void SkipFirstOnRootNoOrderByShouldReturnOrderedCollection()
+        {
+            const string query = "/CategoryModel?$skip=1";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
 
-            var allResults = await GetAsync<CoreBuilding, TBuilding>( query, options );
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+            }
+        }
 
-            Assert.True( allResults.Count - skippedResults.Count == 1 );
+        [Fact]
+        public async void SkipBeyondAllElementsOnRootNoOrderByShouldReturnEmptyCollection()
+        {
+            const string query = "/CategoryModel?$skip=2";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
 
-            var skippedIDs = skippedResults
-                .Select( r => r.Identity )
-                .ToHashSet( );
-
-            var allIDs = allResults
-                .Select( r => r.Identity )
-                .ToHashSet( );
-
-            Assert.Subset( allIDs, skippedIDs );
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection);
+            }
         }
 
         [Fact]

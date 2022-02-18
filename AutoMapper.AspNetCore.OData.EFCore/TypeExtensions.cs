@@ -12,11 +12,6 @@ namespace AutoMapper.AspNet.OData
     {
         public static string FirstSortableProperty( this Type type )
         {            
-            if ( !type.IsClass )
-            {
-                throw new ArgumentException( "type" );
-            }
-
             var allProperties = type
                 .GetProperties( BindingFlags.Public | BindingFlags.Instance )
                 .Where( p => p.PropertyType.IsLiteralType( ) );
@@ -25,18 +20,14 @@ namespace AutoMapper.AspNet.OData
                 .FirstOrDefault( p => Attribute.IsDefined( p, typeof( KeyAttribute ) ) );
 
             if ( property is not null )
-            {
-                return property.Name;
-            }
+                return property.Name;            
 
-            property = allProperties
-                .SingleOrDefault( p => p.Name.Equals( "ID", StringComparison.OrdinalIgnoreCase )
-                    || p.Name.Contains( $"{type.Name}ID", StringComparison.OrdinalIgnoreCase ) );
+            property = allProperties.SingleOrDefault( p => 
+                p.Name.Equals( "ID", StringComparison.OrdinalIgnoreCase )
+                || p.Name.Equals( $"{type.Name}ID", StringComparison.OrdinalIgnoreCase ) );
 
-            if ( property is not null )
-            {
-                return property.Name;
-            }
+            if ( property is not null )            
+                return property.Name;            
 
             return allProperties.FirstOrDefault( )?.Name;
         }
