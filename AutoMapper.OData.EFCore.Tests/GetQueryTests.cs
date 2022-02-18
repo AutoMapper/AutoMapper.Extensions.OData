@@ -716,8 +716,22 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
+                            ProductID = 4,
+                            ProductName = "ProductFour",
                             AlternateAddresses = Array.Empty<Address>( ),
-                            SupplierAddress = new Address { City = "C" }
+                            SupplierAddress = new Address { City = "D" }
+                        },
+                        new Product
+                        {
+                            ProductID = 5,
+                            ProductName = "ProductFive",
+                            AlternateAddresses = new Address[]
+                            {
+                                new Address { AddressID = 3, City = "CityThree" },
+                                new Address { AddressID = 4, City = "CityFour"  },
+                                new Address { AddressID = 5, City = "CityFive"  },
+                            },
+                            SupplierAddress = new Address { City = "E" }
                         }
                     }
                 }
@@ -917,7 +931,43 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void ExpandingChildCollectionWithTopAndSkipNoOrderByShouldReturnOrderedChildCollection()
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionWithOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3;$orderby=AddressID desc))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(3, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(5, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithTopAndSkipNoOrderBy()
         {
             const string query = "/CategoryModel?$expand=Products($skip=1;$top=2)";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
@@ -926,12 +976,13 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 Assert.Equal(2, collection.First().Products.First().ProductID);
                 Assert.Equal(3, collection.First().Products.Last().ProductID);
-                Assert.Empty(collection.Last().Products);
+                Assert.Equal(1, collection.Last().Products.Count);
+                Assert.Equal(5, collection.Last().Products.First().ProductID);
             }
         }
 
         [Fact]
-        public async void ExpandingChildCollectionSkipBeyondAllElementsNoOrderByShouldReturnEmptyChildCollection()
+        public async void ExpandChildCollectionSkipBeyondAllElementsNoOrderBy()
         {
             const string query = "/CategoryModel?$expand=Products($skip=3)";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
@@ -944,7 +995,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void SkipFirstOnRootNoOrderByShouldReturnOrderedCollection()
+        public async void SkipOnRootNoOrderBy()
         {
             const string query = "/CategoryModel?$skip=1";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
@@ -957,7 +1008,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void SkipBeyondAllElementsOnRootNoOrderByShouldReturnEmptyCollection()
+        public async void SkipBeyondAllElementsOnRootNoOrderBy()
         {
             const string query = "/CategoryModel?$skip=2";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));

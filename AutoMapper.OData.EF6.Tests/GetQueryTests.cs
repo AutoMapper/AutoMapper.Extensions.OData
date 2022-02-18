@@ -650,9 +650,16 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                         {
                             ProductID = 2,
                             ProductName = "ProductTwo",
-                            AlternateAddresses = new Address[0],
+                            AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "B" }
-                        }
+                        },
+                        new Product
+                        {
+                            ProductID = 3,
+                            ProductName = "ProductThree",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "C" }
+                        },
                     }
                 },
                 new Category
@@ -663,8 +670,22 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                     {
                         new Product
                         {
-                            AlternateAddresses = new Address[0],
-                            SupplierAddress = new Address { City = "C" }
+                            ProductID = 4,
+                            ProductName = "ProductFour",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "D" }
+                        },
+                        new Product
+                        {
+                            ProductID = 5,
+                            ProductName = "ProductFive",
+                            AlternateAddresses = new Address[]
+                            {
+                                new Address { AddressID = 3, City = "CityThree" },
+                                new Address { AddressID = 4, City = "CityFour"  },
+                                new Address { AddressID = 5, City = "CityFive"  },
+                            },
+                            SupplierAddress = new Address { City = "E" }
                         }
                     }
                 }
@@ -720,7 +741,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
             }
         }
 
@@ -802,7 +823,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
             }
         }
@@ -860,6 +881,95 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                 Assert.Equal("CategoryOne", collection.First().CategoryName);
                 Assert.Equal("ProductOne", collection.First().Products.First().ProductName);
                 Assert.Equal("CityTwo", collection.First().Products.First().AlternateAddresses.First().City);
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionWithOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3;$orderby=AddressID desc))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(3, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(5, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithTopAndSkipNoOrderBy()
+        {
+            const string query = "/CategoryModel?$expand=Products($skip=1;$top=2)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.First().Products.First().ProductID);
+                Assert.Equal(3, collection.First().Products.Last().ProductID);
+                Assert.Equal(1, collection.Last().Products.Count);
+                Assert.Equal(5, collection.Last().Products.First().ProductID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionSkipBeyondAllElementsNoOrderBy()
+        {
+            const string query = "/CategoryModel?$expand=Products($skip=3)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection.First().Products);
+                Assert.Empty(collection.Last().Products);
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+            }
+        }
+
+        [Fact]
+        public async void SkipBeyondAllElementsOnRootNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=2";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection);
             }
         }
 
