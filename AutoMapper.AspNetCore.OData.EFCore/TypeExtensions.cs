@@ -20,25 +20,20 @@ namespace AutoMapper.AspNet.OData
     {
         public static OrderBySetting FindSortableProperties(this Type type, ODataQueryContext context)
         {
-            if (context.ElementType is IEdmEntityType parentEntity)
+            if (context.ElementType is IEdmEntityType parent)
             {                
-                if (parentEntity.FullName().Equals(type.FullName, StringComparison.Ordinal))
-                {
-                    return FindProperties(parentEntity);
-                }
-
-                var child = FindEntity(parentEntity);
-                if (child is not null)
-                {
-                    return FindProperties(child);
-                }                
+                if (parent.FullName().Equals(type.FullName, StringComparison.Ordinal))                
+                    return FindProperties(parent);
+                
+                var child = FindEntity(type, parent);
+                if (child is not null)           
+                    return FindProperties(child);                           
             }
             return null;
 
-            IEdmEntityType FindEntity(IEdmEntityType declaringType)
+            static IEdmEntityType FindEntity(Type type, IEdmEntityType declaringType)
             {
                 var props = declaringType.DeclaredProperties
-                    .Where(p => p is IEdmNavigationProperty)
                     .Where(p => p.Type.Definition is IEdmCollectionType)
                     .Select(p => (IEdmCollectionType)p.Type.Definition)
                     .Where(p => p.ElementType.Definition is IEdmEntityType)
@@ -47,17 +42,15 @@ namespace AutoMapper.AspNet.OData
 
                 if (props.Any())
                 {
-                    var found = props
-                    .FirstOrDefault(p => p.FullName().Equals(type.FullName, StringComparison.Ordinal));
+                    var found = props.FirstOrDefault(p => 
+                        p.FullName().Equals(type.FullName, StringComparison.Ordinal));
 
                     if (found is not null)
-                    {
                         return found;
-                    }
-
+                    
                     foreach (var prop in props)
                     {
-                        return FindEntity(prop);
+                        return FindEntity(type, prop);
                     }
                 }
                 return null;
