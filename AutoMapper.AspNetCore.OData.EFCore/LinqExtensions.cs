@@ -155,8 +155,7 @@ namespace AutoMapper.AspNet.OData
         }        
 
         public static Expression GetQueryableMethod(this Expression expression,
-            ODataQueryContext context,
-            OrderByClause orderByClause, Type type, int? skip, int? top)
+            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top)
         {
             if (orderByClause is null && skip is null && top is null)
                 return null;
