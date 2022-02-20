@@ -1,36 +1,93 @@
 ﻿using LogicBuilder.Expressions.Utils;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace AutoMapper.AspNet.OData
 {
+    internal class OrderBySetting
+    {
+        public string Name { get; set; }
+        public OrderBySetting ThenBy { get; set; }
+    }
+
     internal static class TypeExtensions
     {
-        public static string FirstSortableProperty( this Type type )
-        {            
-            var allProperties = type
-                .GetProperties( BindingFlags.Public | BindingFlags.Instance )
-                .Where( p => p.PropertyType.IsLiteralType( ) );
+        public static OrderBySetting FindSortableProperties(this Type type, ODataQueryContext context)
+        {
+            if (context.ElementType is IEdmEntityType parentEntity)
+            {                
+                if (parentEntity.FullName().Equals(type.FullName, StringComparison.Ordinal))
+                {
+                    return FindProperties(parentEntity);
+                }
 
-            var attributeType = typeof(KeyAttribute);
-            var property = allProperties
-                .FirstOrDefault( p => Attribute.IsDefined( p, attributeType ) );
+                var child = FindEntity(parentEntity);
+                if (child is not null)
+                {
+                    return FindProperties(child);
+                }                
+            }
+            return null;
 
-            if ( property is not null )
-                return property.Name;            
+            IEdmEntityType FindEntity(IEdmEntityType declaringType)
+            {
+                var props = declaringType.DeclaredProperties
+                    .Where(p => p is IEdmNavigationProperty)
+                    .Where(p => p.Type.Definition is IEdmCollectionType)
+                    .Select(p => (IEdmCollectionType)p.Type.Definition)
+                    .Where(p => p.ElementType.Definition is IEdmEntityType)
+                    .Select(p => (IEdmEntityType)p.ElementType.Definition)
+                    .Distinct();
 
-            property = allProperties.SingleOrDefault( p => 
-                p.Name.Equals( "ID", StringComparison.OrdinalIgnoreCase )
-                || p.Name.Equals( $"{type.Name}ID", StringComparison.OrdinalIgnoreCase ) );
+                if (props.Any())
+                {
+                    var found = props
+                    .FirstOrDefault(p => p.FullName().Equals(type.FullName, StringComparison.Ordinal));
 
-            if ( property is not null )            
-                return property.Name;            
+                    if (found is not null)
+                    {
+                        return found;
+                    }
 
-            return allProperties.FirstOrDefault( )?.Name;
+                    foreach (var prop in props)
+                    {
+                        return FindEntity(prop);
+                    }
+                }
+                return null;
+            }
+
+            static OrderBySetting FindProperties(IEdmEntityType entity)
+            {
+                var properties = entity.Key().Any() switch
+                {
+                    true => entity.Key().Select(k => k.Name),
+                    false => entity.StructuralProperties()
+                        .Where(p => p.Type.IsPrimitive() && !p.Type.IsStream())
+                        .Select(p => p.Name)
+                        .OrderBy(n => n)
+                        .Take(1)
+                };
+                var orderBySettings = new OrderBySetting();
+                properties.Aggregate(orderBySettings, (settings, prop) =>
+                {
+                    if (settings.Name is null)
+                    {
+                        settings.Name = prop;
+                        return settings;
+                    }
+                    settings.ThenBy = new() { Name = prop };
+                    return settings.ThenBy;
+                });
+                return orderBySettings.Name is null ? null : orderBySettings;
+            }            
+                            
         }
 
         public static MemberInfo[] GetSelectedMembers(this Type parentType, List<string> selects)

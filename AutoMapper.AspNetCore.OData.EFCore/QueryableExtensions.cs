@@ -33,7 +33,7 @@ namespace AutoMapper.AspNet.OData
 
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
-        {
+        {            
             Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone);
@@ -139,7 +139,7 @@ namespace AutoMapper.AspNet.OData
                     .BuildIncludes<TModel>(options.SelectExpand.GetSelects())
                     .ToList(),
                 querySettings?.ProjectionSettings
-            ).UpdateQueryableExpression(expansions);
+            ).UpdateQueryableExpression(expansions, options.Context);
         }
 
         private static IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query,

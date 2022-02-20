@@ -2,9 +2,11 @@
 using LogicBuilder.Expressions.Utils;
 using LogicBuilder.Expressions.Utils.Expansions;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -123,12 +125,13 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetOrderByMethod<T>(this Expression expression,
             ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
-        {
+        {            
             if (NoQueryableMethod(options, oDataSettings))
                 return null;
 
             return expression.GetQueryableMethod
             (
+                options.Context,
                 options.OrderBy?.OrderByClause,
                 typeof(T),
                 options.Skip?.Value,
@@ -152,22 +155,23 @@ namespace AutoMapper.AspNet.OData
         }        
 
         public static Expression GetQueryableMethod(this Expression expression,
+            ODataQueryContext context,
             OrderByClause orderByClause, Type type, int? skip, int? top)
         {
             if (orderByClause is null && skip is null && top is null)
                 return null;
 
             if (orderByClause is null && (skip is not null || top is not null))
-            {
-                var propertyName = type.FirstSortableProperty();
+            {                       
+                var orderBySettings = type.FindSortableProperties(context);
 
-                if (propertyName is null)
+                if (orderBySettings is null)
                     return null;
 
-                return expression
-                    .GetOrderByCall(propertyName, nameof(Queryable.OrderBy))
-                    .GetSkipCall(skip)
-                    .GetTakeCall(top);
+               return expression
+                   .GetOrderByCall(orderBySettings)
+                   .GetSkipCall(skip)
+                   .GetTakeCall(top);
             }
 
             return expression
@@ -181,6 +185,27 @@ namespace AutoMapper.AspNet.OData
             && options.Top is null
             && options.Skip is null
             && oDataSettings?.PageSize is null;
+
+
+        private static Expression GetThenByCall(this Expression expression, OrderBySetting settings)
+        {
+            return settings.ThenBy is null
+                ? GetMethodCall()
+                : GetMethodCall().GetThenByCall(settings.ThenBy);
+
+            Expression GetMethodCall() =>
+                expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenBy));
+        }
+
+        private static Expression GetOrderByCall(this Expression expression, OrderBySetting settings)
+        {
+            return settings.ThenBy is null 
+                ? GetMethodCall()
+                : GetMethodCall().GetThenByCall(settings.ThenBy);
+
+            Expression GetMethodCall() => 
+                expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy));            
+        }
 
         private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)
         {
@@ -579,7 +604,7 @@ namespace AutoMapper.AspNet.OData
         }
 
         internal static IQueryable<TModel> UpdateQueryableExpression<TModel>(
-            this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions)
+            this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions, ODataQueryContext context)
         {
             List<List<ODataExpansionOptions>> filters = GetFilters();
             List<List<ODataExpansionOptions>> methods = GetQueryMethods();
@@ -618,7 +643,8 @@ namespace AutoMapper.AspNet.OData
                     methodList => projectionExpression = ChildCollectionOrderByUpdater.UpdaterExpansion
                     (
                         projectionExpression,
-                        methodList
+                        methodList,
+                        context
                     )
                 );
 
