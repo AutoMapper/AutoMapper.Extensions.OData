@@ -9,6 +9,8 @@ namespace AutoMapper.AspNet.OData
     {
         public static OrderBySetting FindSortableProperties(this ODataQueryContext context, Type type)
         {
+            context = context ?? throw new ArgumentNullException(nameof(context));
+
             if (context.ElementType is IEdmEntityType parent)
             {
                 if (parent.FullName().Equals(type.FullName, StringComparison.Ordinal))
