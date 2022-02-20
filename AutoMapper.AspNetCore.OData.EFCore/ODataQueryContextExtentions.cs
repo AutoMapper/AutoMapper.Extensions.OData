@@ -13,7 +13,7 @@ namespace AutoMapper.AspNet.OData
 
             if (context.ElementType is IEdmEntityType parent)
             {
-                if (parent.FullName().Equals(type.FullName, StringComparison.Ordinal))
+                if (parent.Name.Equals(type.Name, StringComparison.Ordinal))
                     return FindProperties(parent);
 
                 var child = FindEntity(type, parent);
@@ -34,7 +34,7 @@ namespace AutoMapper.AspNet.OData
                 if (props.Any())
                 {
                     var found = props.FirstOrDefault(p =>
-                        p.FullName().Equals(type.FullName, StringComparison.Ordinal));
+                        p.Name.Equals(type.Name, StringComparison.Ordinal));
 
                     if (found is not null)
                         return found;
