@@ -49,7 +49,7 @@ namespace AutoMapper.AspNet.OData
 
             static OrderBySetting FindProperties(IEdmEntityType entity)
             {
-                var properties = entity.Key().Any() switch
+                var propertyNames = entity.Key().Any() switch
                 {
                     true => entity.Key().Select(k => k.Name),
                     false => entity.StructuralProperties()
@@ -59,14 +59,14 @@ namespace AutoMapper.AspNet.OData
                         .Take(1)
                 };
                 var orderBySettings = new OrderBySetting();
-                properties.Aggregate(orderBySettings, (settings, prop) =>
+                propertyNames.Aggregate(orderBySettings, (settings, name) =>
                 {
                     if (settings.Name is null)
                     {
-                        settings.Name = prop;
+                        settings.Name = name;
                         return settings;
                     }
-                    settings.ThenBy = new() { Name = prop };
+                    settings.ThenBy = new() { Name = name };
                     return settings.ThenBy;
                 });
                 return orderBySettings.Name is null ? null : orderBySettings;
