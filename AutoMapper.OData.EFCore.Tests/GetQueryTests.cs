@@ -695,9 +695,24 @@ namespace AutoMapper.OData.EFCore.Tests
                         {
                             ProductID = 2,
                             ProductName = "ProductTwo",
-                            AlternateAddresses = new Address[0],
+                            AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "B" }
-                        }
+                        },
+                        new Product
+                        {
+                            ProductID = 3,
+                            ProductName = "ProductThree",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "C" }
+                        },
+                    },
+                    CompositeKeys = new CompositeKey[]
+                    {
+                        new CompositeKey{ ID1 = 1, ID2 = 5 },
+                        new CompositeKey{ ID1 = 1, ID2 = 4 },
+                        new CompositeKey{ ID1 = 1, ID2 = 3 },
+                        new CompositeKey{ ID1 = 1, ID2 = 2 },
+                        new CompositeKey{ ID1 = 1, ID2 = 1 },
                     }
                 },
                 new Category
@@ -708,9 +723,31 @@ namespace AutoMapper.OData.EFCore.Tests
                     {
                         new Product
                         {
-                            AlternateAddresses = new Address[0],
-                            SupplierAddress = new Address { City = "C" }
+                            ProductID = 4,
+                            ProductName = "ProductFour",
+                            AlternateAddresses = Array.Empty<Address>( ),
+                            SupplierAddress = new Address { City = "D" }
+                        },
+                        new Product
+                        {
+                            ProductID = 5,
+                            ProductName = "ProductFive",
+                            AlternateAddresses = new Address[]
+                            {
+                                new Address { AddressID = 3, City = "CityThree" },
+                                new Address { AddressID = 4, City = "CityFour"  },
+                                new Address { AddressID = 5, City = "CityFive"  },
+                            },
+                            SupplierAddress = new Address { City = "E" }
                         }
+                    },
+                    CompositeKeys = new CompositeKey[]
+                    {
+                        new CompositeKey{ ID1 = 1, ID2 = 9 },
+                        new CompositeKey{ ID1 = 2, ID2 = 5 },
+                        new CompositeKey{ ID1 = 2, ID2 = 2 },
+                        new CompositeKey{ ID1 = 3, ID2 = 3 },
+                        new CompositeKey{ ID1 = 3, ID2 = 4 },
                     }
                 }
             }.AsQueryable();
@@ -765,7 +802,7 @@ namespace AutoMapper.OData.EFCore.Tests
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
             }
         }
 
@@ -847,7 +884,7 @@ namespace AutoMapper.OData.EFCore.Tests
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(2, collection.First().Products.Count);
+                Assert.Equal(3, collection.First().Products.Count);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
             }
         }
@@ -909,6 +946,147 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionWithOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3;$orderby=AddressID desc))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(3, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3))";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Equal(5, collection.First().Products.First().ProductID);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
+                Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
+                Assert.Equal(5, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithTopAndSkipNoOrderBy()
+        {
+            const string query = "/CategoryModel?$expand=Products($skip=1;$top=2)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.First().Products.First().ProductID);
+                Assert.Equal(3, collection.First().Products.Last().ProductID);
+                Assert.Equal(1, collection.Last().Products.Count);
+                Assert.Equal(5, collection.Last().Products.First().ProductID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionSkipBeyondAllElementsNoOrderBy()
+        {
+            const string query = "/CategoryModel?$expand=Products($skip=3)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection.First().Products);
+                Assert.Empty(collection.Last().Products);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithSkipNoOrderByModelHasCompositeKey()
+        {
+            const string query = "/CategoryModel?$expand=CompositeKeys($skip=1)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                var first = collection.First().CompositeKeys.ToArray();
+                Assert.Equal(4, first.Length);
+                Assert.Equal((1, 2), (first[0].ID1, first[0].ID2));
+                Assert.Equal((1, 3), (first[1].ID1, first[1].ID2));
+                Assert.Equal((1, 4), (first[2].ID1, first[2].ID2));
+                Assert.Equal((1, 5), (first[3].ID1, first[3].ID2));
+
+                var second = collection.Last().CompositeKeys.ToArray();
+                Assert.Equal(4, second.Length);
+                Assert.Equal((2, 2), (second[0].ID1, second[0].ID2));
+                Assert.Equal((2, 5), (second[1].ID1, second[1].ID2));
+                Assert.Equal((3, 3), (second[2].ID1, second[2].ID2));
+                Assert.Equal((3, 4), (second[3].ID1, second[3].ID2));
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithSkipAndTopNoOrderByModelHasCompositeKey()
+        {
+            const string query = "/CategoryModel?$expand=CompositeKeys($skip=1;$top=2)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                var first = collection.First().CompositeKeys.ToArray();
+                Assert.Equal(2, first.Length);
+                Assert.Equal((1, 2), (first[0].ID1, first[0].ID2));
+                Assert.Equal((1, 3), (first[1].ID1, first[1].ID2));
+
+                var second = collection.Last().CompositeKeys.ToArray();
+                Assert.Equal(2, second.Length);
+                Assert.Equal((2, 2), (second[0].ID1, second[0].ID2));
+                Assert.Equal((2, 5), (second[1].ID1, second[1].ID2));
+            }
+        }
+
+        [Fact]
+        public async void SkipOnRootNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=1";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(1, collection.Count);
+                Assert.Equal(2, collection.First().CategoryID);
+            }
+        }
+
+        [Fact]
+        public async void SkipBeyondAllElementsOnRootNoOrderBy()
+        {
+            const string query = "/CategoryModel?$skip=2";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection);
+            }
+        }
+
+        [Fact]
         public async Task CancellationThrowsException()
         {
             var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
@@ -947,7 +1125,8 @@ namespace AutoMapper.OData.EFCore.Tests
             );
         }
 
-        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, 
+            IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
             return
             (

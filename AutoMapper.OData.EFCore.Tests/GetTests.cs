@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using AutoMapper.OData.EFCore.Tests.Binders;
 using Microsoft.AspNetCore.OData.Query.Expressions;
 using Xunit;
+using AutoMapper.OData.EFCore.Tests.Model;
 
 namespace AutoMapper.OData.EFCore.Tests
 {

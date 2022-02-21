@@ -58,13 +58,17 @@ namespace AutoMapper.OData.EF6.Tests.Data
     {
         public int CategoryID { get; set; }
         public string CategoryName { get; set; }
-
         public Product Product { get; set; }
-
         public ICollection<Product> Products { get; set; }
-
+        public ICollection<CompositeKey> CompositeKeys { get; set; }
         public IEnumerable<Product> EnumerableProducts { get; set; }
         public IQueryable<Product> QueryableProducts { get; set; }
+    }
+
+    public class CompositeKey
+    {
+        public int ID1 { get; set; }
+        public int ID2 { get; set; }
     }
 
     public class Address

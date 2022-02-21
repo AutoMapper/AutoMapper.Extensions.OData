@@ -25,6 +25,7 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Product, ProductModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<CompositeKey, CompositeKeyModel>();
         }
     }
 }

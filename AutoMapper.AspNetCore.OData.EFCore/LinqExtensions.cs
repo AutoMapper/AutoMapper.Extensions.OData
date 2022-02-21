@@ -121,13 +121,15 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Expression GetOrderByMethod<T>(this Expression expression, ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
-        {
+        public static Expression GetOrderByMethod<T>(this Expression expression,
+            ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
+        {            
             if (NoQueryableMethod(options, oDataSettings))
                 return null;
 
             return expression.GetQueryableMethod
             (
+                options.Context,
                 options.OrderBy?.OrderByClause,
                 typeof(T),
                 options.Skip?.Value,
@@ -148,32 +150,58 @@ namespace AutoMapper.AspNet.OData
                     ? options.Top.Value
                     : oDataSettings.PageSize;
             }
-        }
+        }        
 
-        private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
-            => options.OrderBy == null && options.Top == null && oDataSettings?.PageSize == null;
-
-        public static Expression GetQueryableMethod(this Expression expression, OrderByClause orderByClause, Type type, int? skip, int? top)
-        {
-            if (orderByClause == null && !top.HasValue)
+        public static Expression GetQueryableMethod(this Expression expression,
+            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top)
+        {            
+            if (orderByClause is null && skip is null && top is null)
                 return null;
 
-            if (orderByClause == null)
-            {
-                return Expression.Call
-                (
-                    expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
-                    "Take",
-                    new[] { type },
-                    expression,
-                    Expression.Constant(top.Value)
-                );
+            if (orderByClause is null && (skip is not null || top is not null))
+            {                       
+                var orderBySettings = context.FindSortableProperties(type);
+
+                if (orderBySettings is null)
+                    return null;
+
+               return expression
+                   .GetDefaultOrderByCall(orderBySettings)
+                   .GetSkipCall(skip)
+                   .GetTakeCall(top);
             }
 
             return expression
                 .GetOrderByCall(orderByClause)
                 .GetSkipCall(skip)
                 .GetTakeCall(top);
+        }
+
+        private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
+            => options.OrderBy is null
+            && options.Top is null
+            && options.Skip is null
+            && oDataSettings?.PageSize is null;
+
+
+        private static Expression GetDefaultThenByCall(this Expression expression, OrderBySetting settings)
+        {
+            return settings.ThenBy is null
+                ? GetMethodCall()
+                : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
+
+            Expression GetMethodCall() =>
+                expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenBy));
+        }
+
+        private static Expression GetDefaultOrderByCall(this Expression expression, OrderBySetting settings)
+        {
+            return settings.ThenBy is null 
+                ? GetMethodCall()
+                : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
+
+            Expression GetMethodCall() => 
+                expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy));            
         }
 
         private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)
@@ -572,7 +600,8 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        internal static IQueryable<TModel> UpdateQueryableExpression<TModel>(this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions)
+        internal static IQueryable<TModel> UpdateQueryableExpression<TModel>(
+            this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions, ODataQueryContext context)
         {
             List<List<ODataExpansionOptions>> filters = GetFilters();
             List<List<ODataExpansionOptions>> methods = GetQueryMethods();
@@ -611,7 +640,8 @@ namespace AutoMapper.AspNet.OData
                     methodList => projectionExpression = ChildCollectionOrderByUpdater.UpdaterExpansion
                     (
                         projectionExpression,
-                        methodList
+                        methodList,
+                        context
                     )
                 );
 
