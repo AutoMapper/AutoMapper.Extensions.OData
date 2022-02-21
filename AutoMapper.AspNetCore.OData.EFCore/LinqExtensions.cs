@@ -166,7 +166,7 @@ namespace AutoMapper.AspNet.OData
                     return null;
 
                return expression
-                   .GetOrderByCall(orderBySettings)
+                   .GetDefaultOrderByCall(orderBySettings)
                    .GetSkipCall(skip)
                    .GetTakeCall(top);
             }
@@ -184,21 +184,21 @@ namespace AutoMapper.AspNet.OData
             && oDataSettings?.PageSize is null;
 
 
-        private static Expression GetThenByCall(this Expression expression, OrderBySetting settings)
+        private static Expression GetDefaultThenByCall(this Expression expression, OrderBySetting settings)
         {
             return settings.ThenBy is null
                 ? GetMethodCall()
-                : GetMethodCall().GetThenByCall(settings.ThenBy);
+                : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
 
             Expression GetMethodCall() =>
                 expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenBy));
         }
 
-        private static Expression GetOrderByCall(this Expression expression, OrderBySetting settings)
+        private static Expression GetDefaultOrderByCall(this Expression expression, OrderBySetting settings)
         {
             return settings.ThenBy is null 
                 ? GetMethodCall()
-                : GetMethodCall().GetThenByCall(settings.ThenBy);
+                : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
 
             Expression GetMethodCall() => 
                 expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy));            
