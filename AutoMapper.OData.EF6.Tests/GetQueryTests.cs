@@ -660,6 +660,14 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                             AlternateAddresses = Array.Empty<Address>( ),
                             SupplierAddress = new Address { City = "C" }
                         },
+                    },
+                    CompositeKeys = new CompositeKey[]
+                    {
+                        new CompositeKey{ ID1 = 1, ID2 = 5 },
+                        new CompositeKey{ ID1 = 1, ID2 = 4 },
+                        new CompositeKey{ ID1 = 1, ID2 = 3 },
+                        new CompositeKey{ ID1 = 1, ID2 = 2 },
+                        new CompositeKey{ ID1 = 1, ID2 = 1 },
                     }
                 },
                 new Category
@@ -687,6 +695,14 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
                             },
                             SupplierAddress = new Address { City = "E" }
                         }
+                    },
+                    CompositeKeys = new CompositeKey[]
+                    {
+                        new CompositeKey{ ID1 = 1, ID2 = 9 },
+                        new CompositeKey{ ID1 = 2, ID2 = 5 },
+                        new CompositeKey{ ID1 = 2, ID2 = 2 },
+                        new CompositeKey{ ID1 = 3, ID2 = 3 },
+                        new CompositeKey{ ID1 = 3, ID2 = 4 },
                     }
                 }
             }.AsQueryable();
@@ -889,6 +905,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         {
             const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3;$orderby=AddressID desc))";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {
@@ -907,6 +924,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         {
             const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3))";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {
@@ -925,6 +943,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         {
             const string query = "/CategoryModel?$expand=Products($skip=1;$top=2)";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {
@@ -940,6 +959,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         {
             const string query = "/CategoryModel?$expand=Products($skip=3)";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {
@@ -949,10 +969,57 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         }
 
         [Fact]
+        public async void ExpandChildCollectionWithSkipNoOrderByModelHasCompositeKey()
+        {
+            const string query = "/CategoryModel?$expand=CompositeKeys($skip=1)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                var first = collection.First().CompositeKeys.ToArray();
+                Assert.Equal(4, first.Length);
+                Assert.Equal((1, 2), (first[0].ID1, first[0].ID2));
+                Assert.Equal((1, 3), (first[1].ID1, first[1].ID2));
+                Assert.Equal((1, 4), (first[2].ID1, first[2].ID2));
+                Assert.Equal((1, 5), (first[3].ID1, first[3].ID2));
+
+                var second = collection.Last().CompositeKeys.ToArray();
+                Assert.Equal(4, second.Length);
+                Assert.Equal((2, 2), (second[0].ID1, second[0].ID2));
+                Assert.Equal((2, 5), (second[1].ID1, second[1].ID2));
+                Assert.Equal((3, 3), (second[2].ID1, second[2].ID2));
+                Assert.Equal((3, 4), (second[3].ID1, second[3].ID2));
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithSkipAndTopNoOrderByModelHasCompositeKey()
+        {
+            const string query = "/CategoryModel?$expand=CompositeKeys($skip=1;$top=2)";
+            Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                var first = collection.First().CompositeKeys.ToArray();
+                Assert.Equal(2, first.Length);
+                Assert.Equal((1, 2), (first[0].ID1, first[0].ID2));
+                Assert.Equal((1, 3), (first[1].ID1, first[1].ID2));
+
+                var second = collection.Last().CompositeKeys.ToArray();
+                Assert.Equal(2, second.Length);
+                Assert.Equal((2, 2), (second[0].ID1, second[0].ID2));
+                Assert.Equal((2, 5), (second[1].ID1, second[1].ID2));
+            }
+        }
+
+        [Fact]
         public async void SkipOnRootNoOrderBy()
         {
             const string query = "/CategoryModel?$skip=1";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {
@@ -966,6 +1033,7 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         {
             const string query = "/CategoryModel?$skip=2";
             Test(await GetAsync<CategoryModel, Category>(query, GetCategories()));
+            Test(Get<CategoryModel, Category>(query, GetCategories()));
 
             static void Test(ICollection<CategoryModel> collection)
             {

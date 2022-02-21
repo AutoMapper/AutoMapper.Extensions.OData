@@ -13,8 +13,8 @@ namespace AutoMapper.OData.EFCore.Tests.Model
     {
         [Key]
         public int ProductID { get; set; }
-
         public string ProductName { get; set; }
+        [Key]
         public int SupplierID { get; set; }
         public int CategoryID { get; set; }
         public string QuantityPerUnit { get; set; }
@@ -62,13 +62,19 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         [Key]
         public int CategoryID { get; set; }
         public string CategoryName { get; set; }
-
         public ProductModel Product { get; set; }
-
         public ICollection<ProductModel> Products { get; set; }
-
+        public ICollection<CompositeKeyModel> CompositeKeys { get; set; }
         public IEnumerable<ProductModel> EnumerableProducts { get; set; }
         public IQueryable<ProductModel> QueryableProducts { get; set; }
+    }
+
+    public class CompositeKeyModel
+    {
+        [Key]
+        public int ID1 { get; set; }
+        [Key]
+        public int ID2 { get; set; }
     }
 
     public class AddressModel
