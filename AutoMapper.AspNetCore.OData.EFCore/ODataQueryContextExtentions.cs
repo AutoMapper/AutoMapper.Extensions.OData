@@ -12,7 +12,9 @@ namespace AutoMapper.AspNet.OData
             context = context ?? throw new ArgumentNullException(nameof(context));
 
             var entity = context.Model.FindDeclaredType(type.FullName) as IEdmEntityType;
-            return entity is not null ? FindProperties(entity) : null;
+            return entity is not null 
+                ? FindProperties(entity) 
+                : throw new InvalidOperationException($"The type '{type.FullName}' has not been declared in the entity data model.");
 
 
             static OrderBySetting FindProperties(IEdmEntityType entity)
