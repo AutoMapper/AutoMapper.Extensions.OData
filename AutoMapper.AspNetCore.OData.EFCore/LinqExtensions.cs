@@ -385,11 +385,20 @@ namespace AutoMapper.AspNet.OData
         {
             Type sourceType = expression.GetUnderlyingElementType();
             ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
+
+            Expression countSelector;
+
+            if (countNode.FilterClause is not null)
+            {
+                Type filterType = TypeExtensions.GetClrType(countNode.FilterClause.ItemType, TypeExtensions.GetEdmToClrTypeMappings());
+                LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType);
+                countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall(filterExpression);
+            }
+            else
+            {
+                countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall();
+            }
             
-            Type filterType = TypeExtensions.GetClrType(countNode.FilterClause.ItemType, TypeExtensions.GetEdmToClrTypeMappings());
-            LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType);
-            
-            Expression countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall(filterExpression);
             return Expression.Call
             (
                 expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
