@@ -221,7 +221,7 @@ namespace AutoMapper.AspNet.OData
                     case CountNode countNode:
                         return expression.GetOrderByCountCall
                         (
-                            countNode.GetPropertyPath(),
+                            countNode,
                             orderByClause.Direction == OrderByDirection.Ascending
                                 ? OrderBy
                                 : OrderByDescending,
@@ -256,7 +256,7 @@ namespace AutoMapper.AspNet.OData
                 {
                     CountNode countNode => expression.GetOrderByCountCall
                     (
-                        countNode.GetPropertyPath(),
+                        countNode,
                         orderByClause.Direction == OrderByDirection.Ascending
                             ? ThenBy
                             : ThenByDescending
@@ -381,11 +381,24 @@ namespace AutoMapper.AspNet.OData
             return Expression.Lambda(delegateType, body, param);//Resulting lambda expression for the selector.
         }
 
-        public static Expression GetOrderByCountCall(this Expression expression, string memberFullName, string methodName, string selectorParameterName = "a")
+        public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
             ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
-            Expression countSelector = param.MakeSelector(memberFullName).GetCountCall();
+
+            Expression countSelector;
+
+            if (countNode.FilterClause is not null)
+            {
+                Type filterType = TypeExtensions.GetClrType(countNode.FilterClause.ItemType, TypeExtensions.GetEdmToClrTypeMappings());
+                LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType);
+                countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall(filterExpression);
+            }
+            else
+            {
+                countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall();
+            }
+            
             return Expression.Call
             (
                 expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
