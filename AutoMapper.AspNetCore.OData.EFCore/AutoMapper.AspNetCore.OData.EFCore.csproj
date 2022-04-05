@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNetCore.OData.EFCore</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Supporting $skip and $top without $orderby.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adding filter to $orderby $count.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
 	<PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
