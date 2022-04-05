@@ -390,9 +390,10 @@ namespace AutoMapper.AspNet.OData
 
             if (countNode.FilterClause is not null)
             {
-                Type filterType = TypeExtensions.GetClrType(countNode.FilterClause.ItemType, TypeExtensions.GetEdmToClrTypeMappings());
+                string memberFullName = countNode.GetPropertyPath();
+                Type filterType = sourceType.GetMemberInfoFromFullName(memberFullName).GetMemberType().GetUnderlyingElementType();
                 LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType);
-                countSelector = param.MakeSelector(countNode.GetPropertyPath()).GetCountCall(filterExpression);
+                countSelector = param.MakeSelector(memberFullName).GetCountCall(filterExpression);
             }
             else
             {

@@ -566,6 +566,22 @@ namespace AutoMapper.OData.EF6.Tests
             }
         }
 
+        [Fact]
+        public async void OpsTenantOrderByFilteredCount()
+        {
+            Test(Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count($filter=Name eq 'One L1') desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count($filter=Name eq 'One L1') desc"));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.NotNull(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.Last().Buildings.Count);
+            }
+        }
+
         //System.NotSupportedException
         /*
          *  StackTrace:

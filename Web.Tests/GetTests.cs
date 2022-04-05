@@ -432,6 +432,23 @@ namespace Web.Tests
 
         [Theory]
         [InlineData("16324")]
+        [InlineData("16325")]
+        public async void OpsTenantOrderByFilteredCount(string port)
+        {
+            Test(await Get<OpsTenant>("/opstenant?$expand=Buildings&$orderby=Buildings/$count($filter=Name eq 'One L1') desc", port));
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.NotNull(collection.First().Buildings);
+                Assert.Equal("One", collection.First().Name);
+                Assert.Equal(2, collection.First().Buildings.Count);
+                Assert.Equal(3, collection.Last().Buildings.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData("16324")]
         //EF 6 seems to have a problem with circular reference Building/Tenant/Buildings
         //[InlineData("16325")]
         public async void CoreBuildingOrderByCountOfChildReferenceOfReference(string port)
