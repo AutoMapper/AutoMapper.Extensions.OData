@@ -506,14 +506,6 @@ namespace AutoMapper.AspNet.OData
             return node.SelectAndExpand.SelectedItems.GetExpansions(new HashSet<string>(node.SelectAndExpand.GetSelects()), type);
         }
 
-        private static bool ExpansionIsValid(this HashSet<string> siblingSelects, string expansion)
-        {
-            if (!siblingSelects.Any())
-                return true;
-
-            return siblingSelects.Contains(expansion);
-        }
-
         private static List<List<ODataExpansionOptions>> GetExpansions(this IEnumerable<SelectItem> selectedItems, HashSet<string> selects, Type parentType)
         {
             if (selectedItems == null)
@@ -522,9 +514,6 @@ namespace AutoMapper.AspNet.OData
             return selectedItems.OfType<ExpandedNavigationSelectItem>().Aggregate(new List<List<ODataExpansionOptions>>(), (listOfExpansionLists, next) =>
             {
                 string path = next.PathToNavigationProperty.FirstSegment.Identifier;//Only first segment is necessary because of the new syntax $expand=Builder($expand=City) vs $expand=Builder/City
-
-                if (!selects.ExpansionIsValid(path))/*If selects are defined then check to make sure the expansion is one of them.*/
-                    return listOfExpansionLists;
 
                 Type currentParentType = parentType.GetCurrentType();
                 Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
