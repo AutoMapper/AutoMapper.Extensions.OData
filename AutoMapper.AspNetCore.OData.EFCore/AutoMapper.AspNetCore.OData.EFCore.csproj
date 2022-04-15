@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNetCore.OData.EFCore</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Adding filter to $orderby $count.</PackageReleaseNotes>
+    <PackageReleaseNotes>1. Returning expansions not specified in $select. 2. Bugfix: Inherited members ignored.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
 	<PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
