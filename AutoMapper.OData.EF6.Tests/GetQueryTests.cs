@@ -188,11 +188,11 @@ namespace AutoMapper.OData.EF6.Tests
             }
         }
 
-        [Fact]//Similar to test below but works if $select=Buildings is added to the query
+        [Fact]
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy()
         {
-            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
-            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
+            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$select=Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc"));
 
             void Test(ICollection<OpsTenant> collection)
             {

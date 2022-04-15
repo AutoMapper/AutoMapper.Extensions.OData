@@ -207,12 +207,12 @@ namespace Web.Tests
             }
         }
 
-        [Theory]//Similar to test below but works if $select=Buildings is added to the query
+        [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy(string port)
         {
-            Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
+            Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -481,14 +481,14 @@ namespace Web.Tests
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
-        public async void OpsTenantSelectName(string port)
+        public async void OpsTenantSelectNameExpandBuildings(string port)
         {
             Test(await Get<OpsTenant>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name", port));
 
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.False(collection.First()?.Buildings?.Any() == true);
+                Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
                 Assert.Equal(default, collection.First().Identity);
             }
@@ -515,14 +515,16 @@ namespace Web.Tests
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
-        public async void BuildingSelectNameExpandBuilder_Builder_ShouldBeNull(string port)
+        public async void BuildingSelectNameExpandBuilder_BuilderNameShouldBeSam(string port)
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=name eq 'One L1'", port));
 
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
-                Assert.Null(collection.First().Builder);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal(default, collection.First().Builder.Id);
+                Assert.Null(collection.First().Builder.City);
                 Assert.Null(collection.First().Tenant);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -549,7 +551,7 @@ namespace Web.Tests
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
-        public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeNull_BuilderNameShouldeSam_BuilderIdShouldBeZero(string port)
+        public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeExpanded_BuilderNameShouldBeSam_BuilderIdShouldBeZero(string port)
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=name eq 'One L1'", port));
 
@@ -558,7 +560,8 @@ namespace Web.Tests
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
-                Assert.Null(collection.First().Builder.City);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal(1, collection.First().Builder.City.Id);
                 Assert.Equal("One L1", collection.First().Name);
                 Assert.Null(collection.First().Tenant);
             }
@@ -569,7 +572,7 @@ namespace Web.Tests
         [InlineData("16325")]
         public async void OpsTenantExpandBuildingsSelectNameAndBuilderExpandBuilderExpandCityFilterNeAndOrderBy_filterAndSortChildCollection(string port)
         {
-            Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Buildings,Name&$expand=Buildings($filter=Name ne 'Two L1';$orderby=Name;$select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
+            Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Name&$expand=Buildings($filter=Name ne 'Two L1';$orderby=Name;$select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
             void Test(ICollection<OpsTenant> collection)
             {

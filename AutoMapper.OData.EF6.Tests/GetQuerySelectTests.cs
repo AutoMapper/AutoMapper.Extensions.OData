@@ -45,7 +45,7 @@ namespace AutoMapper.OData.EF6.Tests
         }
 
         [Fact]
-        public async void OpsTenantSelectName()
+        public async void OpsTenantSelectNameExpandBuildings()
         {
             Test(Get<OpsTenant, TMandator>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name"));
             Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name"));
@@ -53,7 +53,7 @@ namespace AutoMapper.OData.EF6.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Null(collection.First().Buildings);
+                Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
                 Assert.Equal(default, collection.First().Identity);
             }
@@ -77,7 +77,7 @@ namespace AutoMapper.OData.EF6.Tests
         }
 
         [Fact]
-        public async void BuildingSelectNameExpandBuilder_Builder_ShouldBeNull()
+        public async void BuildingSelectNameExpandBuilder_BuilderNameShouldBeSam()
         {
             Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
             Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
@@ -85,7 +85,9 @@ namespace AutoMapper.OData.EF6.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
-                Assert.Null(collection.First().Builder);
+                Assert.Equal("Sam", collection.First().Builder.Name);
+                Assert.Equal(default, collection.First().Builder.Id);
+                Assert.Null(collection.First().Builder.City);
                 Assert.Null(collection.First().Tenant);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -109,7 +111,7 @@ namespace AutoMapper.OData.EF6.Tests
         }
 
         [Fact]
-        public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeNull_BuilderNameShouldeSam_BuilderIdShouldBeZero()
+        public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeExpanded_BuilderNameShouldBeSam_BuilderIdShouldBeZero()
         {
             Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
             Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
@@ -119,7 +121,8 @@ namespace AutoMapper.OData.EF6.Tests
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
-                Assert.Null(collection.First().Builder.City);
+                Assert.Equal("London", collection.First().Builder.City.Name);
+                Assert.Equal(1, collection.First().Builder.City.Id);
                 Assert.Equal("One L1", collection.First().Name);
                 Assert.Null(collection.First().Tenant);
             }
