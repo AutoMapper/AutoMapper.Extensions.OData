@@ -495,7 +495,7 @@ namespace AutoMapper.AspNet.OData
             if (clause?.SelectExpandClause == null)
                 return new List<List<ODataExpansionOptions>>();
 
-            return clause.SelectExpandClause.SelectedItems.GetExpansions(new HashSet<string>(clause.GetSelects()), parentType);
+            return clause.SelectExpandClause.SelectedItems.GetExpansions(parentType);
         }
 
         private static List<List<ODataExpansionOptions>> GetNestedExpansions(this ExpandedNavigationSelectItem node, Type type)
@@ -503,10 +503,10 @@ namespace AutoMapper.AspNet.OData
             if (node == null)
                 return new List<List<ODataExpansionOptions>>();
 
-            return node.SelectAndExpand.SelectedItems.GetExpansions(new HashSet<string>(node.SelectAndExpand.GetSelects()), type);
+            return node.SelectAndExpand.SelectedItems.GetExpansions(type);
         }
 
-        private static List<List<ODataExpansionOptions>> GetExpansions(this IEnumerable<SelectItem> selectedItems, HashSet<string> selects, Type parentType)
+        private static List<List<ODataExpansionOptions>> GetExpansions(this IEnumerable<SelectItem> selectedItems, Type parentType)
         {
             if (selectedItems == null)
                 return new List<List<ODataExpansionOptions>>();
