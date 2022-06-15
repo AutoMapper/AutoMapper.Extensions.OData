@@ -616,6 +616,27 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void MissingSearchBinderIsSilentlyIgnored()
+        {
+            int pageSize = 4;
+            string query = "/opstenant?$search=\"foo\"";
+
+            ODataQueryOptions<OpsTenant> options = ODataHelpers.GetODataQueryOptionsWithoutRoute<OpsTenant>
+            (
+                query,
+                serviceProvider
+            );
+
+            Test(Record.Exception(() => Get<OpsTenant, TMandator>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } })));
+            Test(await Record.ExceptionAsync(async () => await GetAsync<OpsTenant, TMandator>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } })));
+
+            void Test(Exception exception)
+            {
+                Assert.Null(exception);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantOrderByCountOfReference()
         {
             Test(Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));

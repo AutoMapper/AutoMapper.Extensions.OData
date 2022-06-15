@@ -2,6 +2,7 @@
 using LogicBuilder.Expressions.Utils;
 using LogicBuilder.Expressions.Utils.Expansions;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,8 @@ namespace AutoMapper.AspNet.OData
             HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
             TimeZoneInfo timeZone = null)
         {
-            if (options is null || options.Filter is null && options.Search is null)
+            var hasSearchBinder = options.Context.RequestContainer?.GetService(typeof(ISearchBinder)) is not null;
+            if (options is null || options.Filter is null && (options.Search is null || !hasSearchBinder))
             {
                 return null;
             }
@@ -85,7 +87,8 @@ namespace AutoMapper.AspNet.OData
             }
             
             Expression searchExpression = null;
-            if (options.Search is not null)
+            
+            if (options.Search is not null && hasSearchBinder)
             {
                 var raw = options.Search.ToSearchExpression<T>(handleNullPropagation, timeZone);
                 searchExpression = raw.Body.ReplaceParameter(raw.Parameters[0], parameter);

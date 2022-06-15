@@ -486,6 +486,27 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void MissingSearchBinderIsSilentlyIgnored()
+        {
+            int pageSize = 4;
+            string query = "/opstenant?$search=\"foo\"";
+
+            ODataQueryOptions<OpsTenant> options = ODataHelpers.GetODataQueryOptionsWithoutRoute<OpsTenant>
+            (
+                query,
+                serviceProvider
+            );
+
+            Test(Record.Exception(() => Get<OpsTenant, TMandator>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } })));
+            Test(await Record.ExceptionAsync(async () => await GetAsync<OpsTenant, TMandator>(query, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False, PageSize = pageSize } })));
+
+            void Test(Exception exception)
+            {
+                Assert.Null(exception);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantOrderByCountOfReference()
         {
             Test(Get<OpsTenant, TMandator>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc"));
@@ -638,6 +659,38 @@ namespace AutoMapper.OData.EFCore.Tests
             );
             return oDataQueryOptions;
             
+            static HttpRequest BuildRequest(HttpRequest request, Uri uri)
+            {
+                request.Method = "GET";
+                request.Host = new HostString(uri.Host, uri.Port);
+                request.Path = uri.LocalPath;
+                request.QueryString = new QueryString(uri.Query);
+
+                return request;
+            }
+
+        }
+
+        /// <returns>ODataQueryOptions initialized as if on a non-odata route</returns>
+        public static ODataQueryOptions<T> GetODataQueryOptionsWithoutRoute<T>(string queryString, IServiceProvider serviceProvider) where T : class
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+
+            builder.EntitySet<T>(typeof(T).Name);
+            IEdmModel model = builder.GetEdmModel();
+
+            var request = new DefaultHttpContext()
+            {
+                RequestServices = serviceProvider
+            }.Request;
+
+            var oDataQueryOptions = new ODataQueryOptions<T>
+            (
+                new ODataQueryContext(model, typeof(T), null),
+                BuildRequest(request, new Uri(BASEADDRESS + queryString))
+            );
+            return oDataQueryOptions;
+
             static HttpRequest BuildRequest(HttpRequest request, Uri uri)
             {
                 request.Method = "GET";
