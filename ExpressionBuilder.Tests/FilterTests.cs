@@ -2,7 +2,6 @@
 using AutoMapper.AspNet.OData;
 using ExpressionBuilder.Tests.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData;
@@ -1203,10 +1202,36 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
+        [InlineData("year(NullableDateOnlyProperty) eq 2015", "$it => ($it.NullableDateOnlyProperty.Value.Year == 2015)")]
+        [InlineData("month(NullableDateOnlyProperty) eq 12", "$it => ($it.NullableDateOnlyProperty.Value.Month == 12)")]
+        [InlineData("day(NullableDateOnlyProperty) eq 23", "$it => ($it.NullableDateOnlyProperty.Value.Day == 23)")]
+        public void DateOnlyFunctions_Nullable(string filterString, string expression)
+        {
+            //act
+            var filter = GetFilter<Product>(filterString);
+
+            //assert
+            AssertFilterStringIsCorrect(filter, expression);
+        }
+
+        [Theory]
         [InlineData("year(DateProperty) eq 2015", "$it => ($it.DateProperty.Year == 2015)")]
         [InlineData("month(DateProperty) eq 12", "$it => ($it.DateProperty.Month == 12)")]
         [InlineData("day(DateProperty) eq 23", "$it => ($it.DateProperty.Day == 23)")]
         public void DateFunctions_NonNullable(string filterString, string expression)
+        {
+            //act
+            var filter = GetFilter<Product>(filterString);
+
+            //assert
+            AssertFilterStringIsCorrect(filter, expression);
+        }
+
+        [Theory]
+        [InlineData("year(DateOnlyProperty) eq 2015", "$it => ($it.DateOnlyProperty.Year == 2015)")]
+        [InlineData("month(DateOnlyProperty) eq 12", "$it => ($it.DateOnlyProperty.Month == 12)")]
+        [InlineData("day(DateOnlyProperty) eq 23", "$it => ($it.DateOnlyProperty.Day == 23)")]
+        public void DateOnlyFunctions_NonNullable(string filterString, string expression)
         {
             //act
             var filter = GetFilter<Product>(filterString);
@@ -1229,6 +1254,19 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
+        [InlineData("hour(NullableTimeOnlyProperty) eq 10", "$it => ($it.NullableTimeOnlyProperty.Value.Hour == 10)")]
+        [InlineData("minute(NullableTimeOnlyProperty) eq 20", "$it => ($it.NullableTimeOnlyProperty.Value.Minute == 20)")]
+        [InlineData("second(NullableTimeOnlyProperty) eq 30", "$it => ($it.NullableTimeOnlyProperty.Value.Second == 30)")]
+        public void TimeOnlyFunctions_Nullable(string filterString, string expression)
+        {
+            //act
+            var filter = GetFilter<Product>(filterString);
+
+            //assert
+            AssertFilterStringIsCorrect(filter, expression);
+        }
+
+        [Theory]
         [InlineData("hour(TimeOfDayProperty) eq 10", "$it => ($it.TimeOfDayProperty.Hours == 10)")]
         [InlineData("minute(TimeOfDayProperty) eq 20", "$it => ($it.TimeOfDayProperty.Minutes == 20)")]
         [InlineData("second(TimeOfDayProperty) eq 30", "$it => ($it.TimeOfDayProperty.Seconds == 30)")]
@@ -1242,8 +1280,22 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
+        [InlineData("hour(TimeOnlyProperty) eq 10", "$it => ($it.TimeOnlyProperty.Hour == 10)")]
+        [InlineData("minute(TimeOnlyProperty) eq 20", "$it => ($it.TimeOnlyProperty.Minute == 20)")]
+        [InlineData("second(TimeOnlyProperty) eq 30", "$it => ($it.TimeOnlyProperty.Second == 30)")]
+        public void TimeOnlyFunctions_NonNullable(string filterString, string expression)
+        {
+            //act
+            var filter = GetFilter<Product>(filterString);
+
+            //assert
+            AssertFilterStringIsCorrect(filter, expression);
+        }
+
+        [Theory]
         [InlineData("fractionalseconds(DiscontinuedDate) eq 0.2", "$it => ((Convert($it.DiscontinuedDate.Value.Millisecond) / 1000) == 0.2)")]
         [InlineData("fractionalseconds(NullableTimeOfDayProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOfDayProperty.Value.Milliseconds) / 1000) == 0.2)")]
+        [InlineData("fractionalseconds(NullableTimeOnlyProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOnlyProperty.Value.Millisecond) / 1000) == 0.2)")]
         public void FractionalsecondsFunction_Nullable(string filterString, string expression)
         {
             //act
@@ -1256,6 +1308,7 @@ namespace ExpressionBuilder.Tests
         [Theory]
         [InlineData("fractionalseconds(NonNullableDiscontinuedDate) eq 0.2", "$it => ((Convert($it.NonNullableDiscontinuedDate.Millisecond) / 1000) == 0.2)")]
         [InlineData("fractionalseconds(TimeOfDayProperty) eq 0.2", "$it => ((Convert($it.TimeOfDayProperty.Milliseconds) / 1000) == 0.2)")]
+        [InlineData("fractionalseconds(TimeOnlyProperty) eq 0.2", "$it => ((Convert($it.TimeOnlyProperty.Millisecond) / 1000) == 0.2)")]
         public void FractionalsecondsFunction_NonNullable(string filterString, string expression)
         {
             //act

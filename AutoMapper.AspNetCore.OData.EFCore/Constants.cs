@@ -8,19 +8,26 @@ namespace AutoMapper.AspNet.OData
 {
     internal static class Constants
     {
-        public static HashSet<Type> DateRelatedTypes = new HashSet<Type>
+        public static HashSet<Type> DateRelatedTypes = new()
         {
             typeof(DateTimeOffset),
             typeof(DateTime),
-            typeof(Date)
+            typeof(Date),
+#if NET6_0
+            typeof(DateOnly)
+#endif
         };
 
-        public static HashSet<Type> DateTimeRelatedTypes = new HashSet<Type>
+        public static HashSet<Type> DateTimeRelatedTypes = new()
         {
             typeof(DateTimeOffset),
             typeof(DateTime),
             typeof(TimeSpan),
             typeof(TimeOfDay),
+#if NET6_0
+            typeof(TimeOnly),
+            typeof(DateOnly),
+#endif
             typeof(Date)
         };
 

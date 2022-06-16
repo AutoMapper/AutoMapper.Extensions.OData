@@ -589,8 +589,7 @@ namespace AutoMapper.AspNet.OData
                 left = new ConvertToNumericDateOperator(left);
                 right = new ConvertToNumericDateOperator(right);
             }
-
-            if (ShouldConvertToNumericTime(binaryOperatorNode))
+            else if (ShouldConvertToNumericTime(binaryOperatorNode))
             {
                 left = new ConvertToNumericTimeOperator(left);
                 right = new ConvertToNumericTimeOperator(right);
@@ -709,7 +708,17 @@ namespace AutoMapper.AspNet.OData
             );
 
             static bool ShouldConvert(Type leftType, Type rightType)
-                => BothTypesDateRelated(leftType, rightType) && (leftType == typeof(Date) || rightType == typeof(Date));
+                => BothTypesDateRelated(leftType, rightType)
+#if NET6_0
+                    && (
+                            leftType == typeof(Date)
+                            || rightType == typeof(Date)
+                            || leftType == typeof(DateOnly)
+                            || rightType == typeof(DateOnly)
+                       );
+#else
+                    && (leftType == typeof(Date) || rightType == typeof(Date));
+#endif
         }
 
         private bool ShouldConvertToNumericTime(BinaryOperatorNode binaryOperatorNode)
@@ -724,7 +733,17 @@ namespace AutoMapper.AspNet.OData
             );
 
             static bool ShouldConvert(Type leftType, Type rightType)
-                => BothTypesDateTimeRelated(leftType, rightType) && (leftType == typeof(TimeOfDay) || rightType == typeof(TimeOfDay));
+                => BothTypesDateTimeRelated(leftType, rightType)
+#if NET6_0
+                    && (
+                            leftType == typeof(TimeOfDay)
+                            || rightType == typeof(TimeOfDay)
+                            || leftType == typeof(TimeOnly)
+                            || rightType == typeof(TimeOnly)
+                       );
+#else
+                    && (leftType == typeof(TimeOfDay) || rightType == typeof(TimeOfDay));
+#endif
         }
 
         public IExpressionPart GetConstantOperandFilterPart(ConstantNode constantNode)
