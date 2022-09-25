@@ -1,6 +1,8 @@
 ﻿using LogicBuilder.Expressions.Utils;
+using Microsoft.AspNetCore.OData.Edm;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -67,13 +69,31 @@ namespace AutoMapper.AspNet.OData
             throw new ArgumentException($"Cannot find CLT type for EDM type {edmTypeStructure.FullName}");
         }
 
+        public static Type GetClrType(IEdmTypeReference edmTypeReference, IEdmModel edmModel, IDictionary<EdmTypeStructure, Type> typesCache)
+        {
+            if (edmTypeReference == null)
+                return typeof(object);
+
+            return edmModel.GetTypeMapper().GetClrType(edmModel, edmTypeReference, _AssemblyResolver);
+        }
+
+        private static IAssemblyResolver _assemblyResolver;
+        private static IAssemblyResolver _AssemblyResolver
+        {
+            get
+            {
+                _assemblyResolver ??= new AssemblyResolver();
+
+                return _assemblyResolver;
+            }
+        }
+
         private static IList<Type> _loadedTypes = null;
         public static IList<Type> LoadedTypes
         {
             get
             {
-                if (_loadedTypes == null)
-                    _loadedTypes = GetAllTypes(AppDomain.CurrentDomain.GetAssemblies().Distinct().ToList());
+                _loadedTypes ??= GetAllTypes(AppDomain.CurrentDomain.GetAssemblies().Distinct().ToList());
 
                 return _loadedTypes;
             }
@@ -105,6 +125,21 @@ namespace AutoMapper.AspNet.OData
         }
 
         public static Dictionary<EdmTypeStructure, Type> GetEdmToClrTypeMappings() => Constants.EdmToClrTypeMappings;
+
+        private class AssemblyResolver : IAssemblyResolver
+        {
+            private List<Assembly> _assemblides;
+            public IEnumerable<Assembly> Assemblies
+            {
+                get
+                {
+                    if (_assemblides == null)
+                        _assemblides = AppDomain.CurrentDomain.GetAssemblies().Distinct().ToList();
+
+                    return _assemblides;
+                }
+            }
+        }
 
     }
 }

@@ -3213,7 +3213,7 @@ namespace ExpressionBuilder.Tests
             => ODataHelpers.GetFilterClause<TModel>(queryOptions, serviceProvider, useFilterOption);
 
         private Expression<Func<TModel, bool>> GetFilterExpression<TModel>(FilterClause filterClause) where TModel : class
-            => (Expression<Func<TModel, bool>>)filterClause.GetFilterExpression(typeof(TModel));
+            => (Expression<Func<TModel, bool>>)filterClause.GetFilterExpression(typeof(TModel), ODataHelpers.GetODataQueryContext<TModel>());
     }
 
     public static class StringExtender

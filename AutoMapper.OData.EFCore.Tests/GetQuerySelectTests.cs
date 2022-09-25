@@ -60,8 +60,10 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void OpsTenantSelectNameExpandBuildings()
         {
-            Test(Get<OpsTenant, TMandator>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name"));
-            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name"));
+            string query = "/opstenant?$select=Name&$expand=Buildings&$orderby=Name";
+            Test(Get<OpsTenant, TMandator>(query));
+            Test(await GetAsync<OpsTenant, TMandator>(query));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -75,8 +77,10 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void OpsTenantExpandBuildingsFilterEqAndOrderBy_FirstBuildingHasValues()
         {
-            Test(Get<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
-            Test(await GetAsync<OpsTenant, TMandator>("/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc"));
+            string query = "/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc";
+            Test(Get<OpsTenant, TMandator>(query));
+            Test(await GetAsync<OpsTenant, TMandator>(query));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query));
 
             void Test(ICollection<OpsTenant> collection)
             {
@@ -92,8 +96,10 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingSelectNameExpandBuilder_BuilderNameShouldBeSam()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
+            string query = "/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'";
+            Test(Get<CoreBuilding, TBuilding>(query));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query));
+            Test(await GetUsingCustomNameSpace<CoreBuilding, TBuilding>(query));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -109,8 +115,10 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNamefilterEqAndOrderBy()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'"));
+            string query = "/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'";
+            Test(Get<CoreBuilding, TBuilding>(query));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query));
+            Test(await GetUsingCustomNameSpace<CoreBuilding, TBuilding>(query));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -126,8 +134,10 @@ namespace AutoMapper.OData.EFCore.Tests
         [Fact]
         public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeExpanded_BuilderNameShouldBeSam_BuilderIdShouldBeZero()
         {
-            Test(Get<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
-            Test(await GetAsync<CoreBuilding, TBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'"));
+            string query = "/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'";
+            Test(Get<CoreBuilding, TBuilding>(query));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query));
+            Test(await GetUsingCustomNameSpace<CoreBuilding, TBuilding>(query));
 
             void Test(ICollection<CoreBuilding> collection)
             {
@@ -163,7 +173,7 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
-        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null, string customNamespace = null) where TModel : class where TData : class
         {
             return
             (
@@ -178,36 +188,36 @@ namespace AutoMapper.OData.EFCore.Tests
                 return await dataQueryable.GetQueryAsync
                 (
                     mapper,
-                    options ?? GetODataQueryOptions<TModel>(query),
+                    options ?? GetODataQueryOptions<TModel>(query, customNamespace),
                     querySettings
                 );
             }
         }
 
-        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null, string customNamespace = null) where TModel : class where TData : class
         {
             return await GetAsync
             (
                 query,
                 serviceProvider.GetRequiredService<MyDbContext>().Set<TData>(),
                 options,
-                querySettings
+                querySettings,
+                customNamespace
             );
         }
 
-        private ODataQueryOptions _oDataQueryOptions;
-        private ODataQueryOptions<TModel> GetODataQueryOptions<TModel>(string query) where TModel : class
-        {
-            if (_oDataQueryOptions == null)
-            {
-                _oDataQueryOptions = ODataHelpers.GetODataQueryOptions<TModel>
-                (
-                    query,
-                    serviceProvider
-                );
-            }
+        private Task<ICollection<TModel>> GetUsingCustomNameSpace<TModel, TData>(string query,
+            ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+            => GetAsync<TModel, TData>(query, options, querySettings, "com.FooBar");
 
-            return (ODataQueryOptions<TModel>)_oDataQueryOptions;
+        private ODataQueryOptions<TModel> GetODataQueryOptions<TModel>(string query, string customNamespace = null) where TModel : class
+        {
+            return ODataHelpers.GetODataQueryOptions<TModel>
+            (
+                query,
+                serviceProvider,
+                customNamespace
+            );
         }
     }
 }

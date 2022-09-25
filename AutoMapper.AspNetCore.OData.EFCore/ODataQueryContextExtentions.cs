@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AutoMapper.AspNet.OData
@@ -11,11 +12,19 @@ namespace AutoMapper.AspNet.OData
         {
             context = context ?? throw new ArgumentNullException(nameof(context));
 
-            var entity = context.Model.FindDeclaredType(type.FullName) as IEdmEntityType;
+            var entity = GetEntity();
             return entity is not null 
                 ? FindProperties(entity) 
                 : throw new InvalidOperationException($"The type '{type.FullName}' has not been declared in the entity data model.");
 
+            IEdmEntityType GetEntity()
+            {
+                List<IEdmEntityType> entities = context.Model.SchemaElements.OfType<IEdmEntityType>().Where(e => e.Name == type.Name).ToList();
+                if (entities.Count == 1)
+                    return entities[0];
+
+                return null;
+            }
 
             static OrderBySetting FindProperties(IEdmEntityType entity)
             {
