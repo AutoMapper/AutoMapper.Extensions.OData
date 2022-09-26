@@ -8,6 +8,7 @@ using LogicBuilder.Expressions.Utils.ExpressionBuilder.Lambda;
 using LogicBuilder.Expressions.Utils.ExpressionBuilder.Logical;
 using LogicBuilder.Expressions.Utils.ExpressionBuilder.Operand;
 using LogicBuilder.Expressions.Utils.ExpressionBuilder.StringOperators;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
@@ -22,15 +23,15 @@ namespace AutoMapper.AspNet.OData
 {
     public class FilterHelper
     {
-        public FilterHelper(IDictionary<string, ParameterExpression> parameters, Type underlyingElementType)
+        public FilterHelper(IDictionary<string, ParameterExpression> parameters, Type underlyingElementType, ODataQueryContext context)
         {
             this.parameters = parameters;
-            parameterTypes.Push(underlyingElementType);
+            this.edmModel = context.Model;
         }
 
         private readonly IDictionary<string, ParameterExpression> parameters;
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
-        private readonly Stack<Type> parameterTypes = new Stack<Type>();
+        private readonly IEdmModel edmModel;
 
         public IExpressionPart GetFilterPart(QueryNode queryNode)
             => queryNode switch
@@ -497,7 +498,9 @@ namespace AutoMapper.AspNet.OData
                 => !(oDataEnum.Value ?? "").TryParseEnum(enumType, out object result) ? null : result;
 
         private Type GetClrType(IEdmTypeReference typeReference)
-            => TypeExtensions.GetClrType(typeReference, typesCache);
+            => this.edmModel == null
+                ? TypeExtensions.GetClrType(typeReference, typesCache)
+                : TypeExtensions.GetClrType(typeReference, edmModel, typesCache);
 
         private IExpressionPart GetSingleValuePropertyAccessFilterPart(SingleValuePropertyAccessNode singleValuePropertyAccesNode)
         {

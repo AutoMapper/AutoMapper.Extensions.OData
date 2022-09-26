@@ -14,7 +14,7 @@ namespace ExpressionBuilder.Tests
     public static class ODataHelpers
     {
         private static readonly IDictionary<Type, IEdmModel> cachedModels = new Dictionary<Type, IEdmModel>();
-        private static IEdmModel GetModel<T>(IServiceProvider serviceProvider) where T : class
+        private static IEdmModel GetModel<T>() where T : class
         {
             var modelType = typeof(T);
 
@@ -47,7 +47,7 @@ namespace ExpressionBuilder.Tests
 
         public static FilterClause GetFilterClause<T>(IDictionary<string, string> queryOptions, IServiceProvider serviceProvider, bool useFilterOption = false) where T : class
         {
-            IEdmModel model = GetModel<T>(serviceProvider);
+            IEdmModel model = GetModel<T>();
             IEdmEntityType productType = model.SchemaElements.OfType<IEdmEntityType>().Single(t => t.Name == typeof(T).Name);
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
 
@@ -76,9 +76,16 @@ namespace ExpressionBuilder.Tests
         public static FilterClause GetFilterClauseFromFilterOption(IEdmModel model, IEdmEntitySet entitySet, ODataQueryOptionParser parser, string filter)
         {
             ODataPath path = new ODataPath(new EntitySetSegment(entitySet));
-            ODataQueryContext context = new ODataQueryContext(model, typeof(DataTypes), path);
+            ODataQueryContext context = new(model, typeof(DataTypes), path);
 
             return new FilterQueryOption(filter, context, parser).FilterClause;
+        }
+
+        public static ODataQueryContext GetODataQueryContext<T>() where T : class
+        {
+            IEdmModel model = GetModel<T>();
+            IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
+            return new ODataQueryContext(model, typeof(T), new ODataPath(new EntitySetSegment(entitySet)));
         }
 
         public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, IRouteBuilder routeBuilder) where T : class

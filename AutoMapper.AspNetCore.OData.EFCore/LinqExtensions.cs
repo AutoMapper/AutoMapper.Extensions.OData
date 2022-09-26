@@ -172,7 +172,7 @@ namespace AutoMapper.AspNet.OData
             }
 
             return expression
-                .GetOrderByCall(orderByClause)
+                .GetOrderByCall(orderByClause, context)
                 .GetSkipCall(skip)
                 .GetTakeCall(top);
         }
@@ -204,14 +204,14 @@ namespace AutoMapper.AspNet.OData
                 expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy));            
         }
 
-        private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause)
+        private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause, ODataQueryContext context)
         {
             const string OrderBy = "OrderBy";
             const string OrderByDescending = "OrderByDescending";
 
             return orderByClause.ThenBy == null
                 ? GetMethodCall()
-                : GetMethodCall().GetThenByCall(orderByClause.ThenBy);
+                : GetMethodCall().GetThenByCall(orderByClause.ThenBy, context);
 
             Expression GetMethodCall()
             {
@@ -225,6 +225,7 @@ namespace AutoMapper.AspNet.OData
                             orderByClause.Direction == OrderByDirection.Ascending
                                 ? OrderBy
                                 : OrderByDescending,
+                            context,
                             orderByClause.RangeVariable.Name
                         );
                     default:
@@ -241,14 +242,14 @@ namespace AutoMapper.AspNet.OData
             }
         }
 
-        private static Expression GetThenByCall(this Expression expression, OrderByClause orderByClause)
+        private static Expression GetThenByCall(this Expression expression, OrderByClause orderByClause, ODataQueryContext context)
         {
             const string ThenBy = "ThenBy";
             const string ThenByDescending = "ThenByDescending";
 
             return orderByClause.ThenBy == null
                 ? GetMethodCall()
-                : GetMethodCall().GetThenByCall(orderByClause.ThenBy);
+                : GetMethodCall().GetThenByCall(orderByClause.ThenBy, context);
 
             Expression GetMethodCall()
             {
@@ -259,7 +260,8 @@ namespace AutoMapper.AspNet.OData
                         countNode,
                         orderByClause.Direction == OrderByDirection.Ascending
                             ? ThenBy
-                            : ThenByDescending
+                            : ThenByDescending, 
+                        context
                     ),
                     SingleValuePropertyAccessNode propertyNode => expression.GetOrderByCall
                     (
@@ -381,7 +383,13 @@ namespace AutoMapper.AspNet.OData
             return Expression.Lambda(delegateType, body, param);//Resulting lambda expression for the selector.
         }
 
+        [Obsolete("\"Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, ODataQueryContext context, string selectorParameterName = \"a\")\"")]
         public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, string selectorParameterName = "a")
+        {
+            return expression.GetOrderByCountCall(countNode, methodName, null, selectorParameterName);
+        }
+
+        public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, ODataQueryContext context, string selectorParameterName = "a")
         {
             Type sourceType = expression.GetUnderlyingElementType();
             ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
@@ -392,7 +400,7 @@ namespace AutoMapper.AspNet.OData
             {
                 string memberFullName = countNode.GetPropertyPath();
                 Type filterType = sourceType.GetMemberInfoFromFullName(memberFullName).GetMemberType().GetUnderlyingElementType();
-                LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType);
+                LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType, context);
                 countSelector = param.MakeSelector(memberFullName).GetCountCall(filterExpression);
             }
             else
@@ -563,14 +571,19 @@ namespace AutoMapper.AspNet.OData
             });
         }
 
-        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type)
+        [Obsolete("\"LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)\"")]
+        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type) 
+            => filterClause.GetFilterExpression(type, null);
+
+        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)
         {
             var parameters = new Dictionary<string, ParameterExpression>();
 
             return new FilterHelper
             (
                 parameters,
-                type
+                type,
+                context
             )
             .GetFilterPart(filterClause.Expression)
             .GetFilter(type, parameters, filterClause.RangeVariable.Name);
@@ -629,7 +642,8 @@ namespace AutoMapper.AspNet.OData
                     filterList => projectionExpression = ChildCollectionFilterUpdater.UpdaterExpansion
                     (
                         projectionExpression,
-                        filterList
+                        filterList,
+                        context
                     )
                 );
 

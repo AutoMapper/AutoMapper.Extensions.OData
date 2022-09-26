@@ -70,6 +70,7 @@ namespace WebAPI.OData.EF6
         private IEdmModel GetEdmModel()
         {
             var builder = new ODataConventionModelBuilder();
+            //builder.Namespace = "com.FooBar";
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
