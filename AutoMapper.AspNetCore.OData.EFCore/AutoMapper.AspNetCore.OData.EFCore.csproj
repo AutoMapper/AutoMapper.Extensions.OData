@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNetCore.OData.EFCore</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Supporting System.DateOnly and System.TimeOnly types.</PackageReleaseNotes>
+    <PackageReleaseNotes>Supporting custom namespaces.</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
 	<PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
