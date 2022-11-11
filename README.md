@@ -8,7 +8,27 @@ Creates LINQ expressions from ODataQueryOptions and executes the query.
 [![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNet.OData.EF6?label=AutoMapper.AspNet.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNet.OData.EF6/)  
 
 ## Usage
-To use, call the GetAsync or GetQueryAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
+To use:
+* Comfigure object maps with explicit expansion.
+* Call the GetAsync or GetQueryAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
+
+```c#
+    public class CoreBuildingMappings : AutoMapper.Profile
+    {
+        public CoreBuildingMappings()
+        {
+            CreateMap<TBuilding, CoreBuilding>()
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.LongName))
+                .ForMember(d => d.Tenant, o => o.MapFrom(s => s.Mandator))
+                .ForAllMembers(o => o.ExplicitExpansion());
+
+            CreateMap<TBuilder, OpsBuilder>()
+                .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<TCity, OpsCity>()
+                .ForAllMembers(o => o.ExplicitExpansion());
+        }
+    }
+```
 
 ```c#
 public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default);
