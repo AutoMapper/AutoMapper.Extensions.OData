@@ -9,7 +9,7 @@ Creates LINQ expressions from ODataQueryOptions and executes the query.
 
 ## Usage
 To use:
-* Comfigure object maps with explicit expansion.
+* Configure object maps with explicit expansion.
 * Call the GetAsync or GetQueryAsync extension method from your OData controller.  IMapper is an AutoMapper interface.
 
 ```c#
