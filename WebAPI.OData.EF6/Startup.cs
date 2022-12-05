@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using WebAPI.OData.EF6.Binders;
+using WebAPI.OData.EF6.Controllers;
 
 namespace WebAPI.OData.EF6
 {
@@ -72,6 +73,14 @@ namespace WebAPI.OData.EF6
             var builder = new ODataConventionModelBuilder();
             //builder.Namespace = "com.FooBar";
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
+            builder.EntityType<OpsTenant>()
+                .Collection
+                .Function(nameof(OpsTenantController.WithoutEnableQuery))
+                .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
+            builder.EntityType<OpsTenant>()
+                .Collection
+                .Function(nameof(OpsTenantController.WithEnableQuery))
+                .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using System.Threading.Tasks;
+using WebAPI.OData.EFCore.Attributes;
 
 namespace WebAPI.OData.EFCore.Controllers
 {
+    [Route("OpsTenant")]
     public class OpsTenantController : ODataController
     {
         private readonly IMapper _mapper;
@@ -21,29 +23,17 @@ namespace WebAPI.OData.EFCore.Controllers
 
         MyDbContext Repository { get; set; }
 
-
-        [HttpGet]
-        public async Task<IActionResult> Get(ODataQueryOptions<OpsTenant> options)
+        [HttpGet("WithoutEnableQuery")]
+        public async Task<IActionResult> WithoutEnableQuery(ODataQueryOptions<OpsTenant> options)
         {
             return Ok(await Repository.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
         }
-    }
 
-    public class CoreBuildingController : ODataController
-    {
-        private readonly IMapper _mapper;
-        public CoreBuildingController(MyDbContext repository, IMapper mapper)
+        [HttpGet("WithEnableQuery")]
+        [AutomapperEnableQuery(MaxExpansionDepth = 10)]
+        public async Task<IActionResult> WithEnableQuery(ODataQueryOptions<OpsTenant> options)
         {
-            Repository = repository;
-            _mapper = mapper;
-        }
-
-        MyDbContext Repository { get; set; }
-
-        [HttpGet]
-        public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
-        {
-            return Ok(await Repository.BuildingSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
+            return Ok(await Repository.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
         }
     }
 }

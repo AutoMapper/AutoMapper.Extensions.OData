@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using System.Threading.Tasks;
+using WebAPI.OData.EF6.Attributes;
 
 namespace WebAPI.OData.EF6.Controllers
 {
+    [Route("OpsTenant")]
     public class OpsTenantController : ODataController
     {
         private readonly IMapper _mapper;
@@ -20,28 +22,17 @@ namespace WebAPI.OData.EF6.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get(ODataQueryOptions<OpsTenant> options)
+        [HttpGet("WithoutEnableQuery")]
+        public async Task<IActionResult> WithoutEnableQuery(ODataQueryOptions<OpsTenant> options)
         {
             return Ok(await _context.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.Default } }));
         }
-    }
 
-    public class CoreBuildingController : ODataController
-    {
-        private readonly IMapper _mapper;
-        private readonly MyDbContext _context;
-
-        public CoreBuildingController(MyDbContext context, IMapper mapper)
+        [HttpGet("WithEnableQuery")]
+        [AutomapperEnableQuery(MaxExpansionDepth = 10)]
+        public async Task<IActionResult> WithEnableQuery(ODataQueryOptions<OpsTenant> options)
         {
-            _context = context;
-            _mapper = mapper;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
-        {
-            return Ok(await _context.BuildingSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.Default } }));
+            return Ok(await _context.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.Default } }));
         }
     }
 }
