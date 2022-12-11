@@ -62,6 +62,26 @@ Using `EnableQuery` with `AutoMapper.Extensions.OData` will result in some opera
 if `TMandator` has a total of two records then **without** `EnableQuery` applied to the controller action, the OData query `http://localhost:16324/opstenant?$skip=1&$top=1&$orderby=Name` will return one record as expected. However **with** `EnableQuery` applied
 no records will be returned because the skip operation has been applied twice.
 
+While `EnableQuery` will result in some operations being applied more than once, one can create a custom `EnableQueryAttribute` to ignore the `QueryOptions` that are applied by `AutoMapper.Extensions.OData`.
+
+```c#
+   public class AutomapperEnableQueryAttribute : EnableQueryAttribute
+    {
+        public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions)
+        {
+            var ignoreQueryOptions =
+                AllowedQueryOptions.Skip |
+                AllowedQueryOptions.Top |
+                AllowedQueryOptions.Filter |
+                AllowedQueryOptions.Expand |
+                AllowedQueryOptions.Select |
+                AllowedQueryOptions.OrderBy |
+                AllowedQueryOptions.Count;
+
+            return queryOptions.ApplyTo(queryable, ignoreQueryOptions);
+        }
+    }
+```
 
 <br><br>
 ### OData query examples:
