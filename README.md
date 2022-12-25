@@ -65,7 +65,7 @@ no records will be returned because the skip operation has been applied twice.
 While `EnableQuery` will result in some operations being applied more than once, one can create a custom `EnableQueryAttribute` to ignore the `QueryOptions` that are applied by `AutoMapper.Extensions.OData`.
 
 ```c#
-   public class AutomapperEnableQueryAttribute : EnableQueryAttribute
+   public class MyCustomEnableQueryAttribute : EnableQueryAttribute
     {
         public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions)
         {
