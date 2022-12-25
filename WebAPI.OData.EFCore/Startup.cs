@@ -70,13 +70,13 @@ namespace WebAPI.OData.EFCore
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntityType<OpsTenant>()
                 .Collection
-                .Function(nameof(OpsTenantController.WithoutEnableQuery))
-                .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
-            builder.EntityType<OpsTenant>()
-                .Collection
-                .Function(nameof(OpsTenantController.WithEnableQuery))
+                .Function(nameof(OpsTenantAllowApplyController.AllowApply))
                 .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
+            builder.EntityType<CoreBuilding>()
+                .Collection
+                .Function(nameof(CoreBuildingAllowApplyController.AllowApply))
+                .ReturnsCollectionFromEntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));
 

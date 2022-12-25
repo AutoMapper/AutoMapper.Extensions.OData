@@ -12,7 +12,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "opstenant/withoutenablequery?$top=5",
+      "launchUrl": "opstenant?$top=5",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
