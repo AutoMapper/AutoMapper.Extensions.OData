@@ -1,8 +1,6 @@
 ﻿using DAL.EFCore;
+using DAL.EFCore.Aggregation;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MigrationTool
 {
@@ -20,5 +18,19 @@ namespace MigrationTool
         public DbSet<TBuilder> Builder { get; set; }
 
         public DbSet<TCity> City { get; set; }
+
+        public DbSet<TblCategory> Categories { get; set; }
+
+        public DbSet<TblCurrency> Currencies { get; set; }
+
+        public DbSet<TblCustomer> Customers { get; set; }
+
+        public DbSet<TblProduct> Products { get; set; }
+
+        public DbSet<TblSales> Sales { get; set; }
+
+        public DbSet<TblSalesOrganization> SalesOrganizations { get; set; }
+
+        public DbSet<TblTime> Time { get; set; }
     }
 }

@@ -1,6 +1,8 @@
 using AutoMapper;
 using DAL.EF6;
+using DAL.EF6.Aggregation;
 using Domain.OData;
+using Domain.OData.Aggregation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
@@ -36,8 +38,13 @@ namespace WebAPI.OData.EF6
                 (
                     Configuration.GetConnectionString("DefaultConnection")
                 )
-            )
-            .AddSingleton<AutoMapper.IConfigurationProvider>
+            ).AddScoped
+            (
+                _ => new AggregationDbContext
+                (
+                    Configuration.GetConnectionString("DefaultConnection")
+                )
+            ).AddSingleton<AutoMapper.IConfigurationProvider>
             (
                 new MapperConfiguration(cfg =>
                 {
@@ -84,6 +91,7 @@ namespace WebAPI.OData.EF6
                 .ReturnsCollectionFromEntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));
+            builder.EntitySet<Sales>(nameof(Sales));
 
             return builder.GetEdmModel();
         }

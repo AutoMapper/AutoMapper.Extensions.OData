@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DAL.EFCore;
+using DAL.EFCore.Aggregation;
 using Domain.OData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,6 +30,7 @@ namespace WebAPI.OData.EFCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AggregationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers()
                 .AddOData(opt => opt.EnableQueryFeatures()
                     .AddRouteComponents("", GetEdmModel(), services => services.AddSingleton<ISearchBinder, OpsTenantSearchBinder>()));
