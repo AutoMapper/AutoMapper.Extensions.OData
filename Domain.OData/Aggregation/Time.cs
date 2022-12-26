@@ -1,7 +1,10 @@
-﻿namespace Domain.OData.Aggregation
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.OData.Aggregation
 {
     public class Time
     {
+        [Key]
         public string Date { get; set; }
 
         public string Month { get; set; }

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.OData.Aggregation
 {
     public class Product
     {
+        [Key]
         public string Id { get; set; }
 
         public Category Category { get; set; }
@@ -14,6 +16,6 @@ namespace Domain.OData.Aggregation
 
         public string Color { get; set; }
 
-        public float TaxRate { get; set; }
+        public decimal TaxRate { get; set; }
     }
 }

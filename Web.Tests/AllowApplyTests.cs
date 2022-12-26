@@ -594,9 +594,7 @@ namespace Web.Tests
 
             result.EnsureSuccessStatusCode();
 
-            var content = await result.Content.ReadAsStringAsync();
-
-            return JsonConvert.DeserializeObject<OData<TModel>>(content).Value;
+            return JsonConvert.DeserializeObject<OData<TModel>>(await result.Content.ReadAsStringAsync()).Value;
         }
     }
 }

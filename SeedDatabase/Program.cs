@@ -92,10 +92,10 @@ namespace SeedDatabase
 
             context.Products.AddRange(new[]
             {
-                new TblProduct { FldId ="P1", FldCategoryId = "PG1", FldName = "Sugar", FldColor ="White", FldTaxRate = "0.06" },
-                new TblProduct { FldId ="P2", FldCategoryId = "PG1", FldName = "Coffee", FldColor ="Brown", FldTaxRate = "0.06" },
-                new TblProduct { FldId ="P3", FldCategoryId = "PG2", FldName = "Paper", FldColor ="White", FldTaxRate = "0.14" },
-                new TblProduct { FldId ="P4", FldCategoryId = "PG2", FldName = "Pencil", FldColor ="Black", FldTaxRate = "0.14"}
+                new TblProduct { FldId ="P1", FldCategoryId = "PG1", FldName = "Sugar", FldColor ="White", FldTaxRate = 0.06m },
+                new TblProduct { FldId ="P2", FldCategoryId = "PG1", FldName = "Coffee", FldColor ="Brown", FldTaxRate = 0.06m },
+                new TblProduct { FldId ="P3", FldCategoryId = "PG2", FldName = "Paper", FldColor ="White", FldTaxRate = 0.14m },
+                new TblProduct { FldId ="P4", FldCategoryId = "PG2", FldName = "Pencil", FldColor ="Black", FldTaxRate = 0.14m }
             });
 
             context.Time.AddRange(new[]

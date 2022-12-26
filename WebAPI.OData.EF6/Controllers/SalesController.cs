@@ -10,6 +10,7 @@ using WebAPI.OData.EF6.Attributes;
 
 namespace WebAPI.OData.EF6.Controllers
 {
+    [Produces("application/json;odata.metadata=none")]
     public class SalesController : ODataController
     {
         private readonly IMapper _mapper;

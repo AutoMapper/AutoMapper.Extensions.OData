@@ -87,7 +87,7 @@ namespace MigrationTool.Migrations
                     FldCategoryId = table.Column<string>(nullable: false),
                     FldName = table.Column<string>(nullable: false),
                     FldColor = table.Column<string>(nullable: false),
-                    FldTaxRate = table.Column<string>(nullable: false)
+                    FldTaxRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -111,7 +111,7 @@ namespace MigrationTool.Migrations
                     FldProductId = table.Column<string>(nullable: false),
                     FldSalesOrganizationId = table.Column<string>(nullable: false),
                     FldCurrencyCode = table.Column<string>(nullable: false),
-                    FldAmount = table.Column<decimal>(nullable: false)
+                    FldAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {

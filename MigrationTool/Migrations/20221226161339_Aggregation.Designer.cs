@@ -10,7 +10,7 @@ using MigrationTool;
 namespace MigrationTool.Migrations
 {
     [DbContext(typeof(MigrationContext))]
-    [Migration("20221226124547_Aggregation")]
+    [Migration("20221226161339_Aggregation")]
     partial class Aggregation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,9 +83,8 @@ namespace MigrationTool.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FldTaxRate")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("FldTaxRate")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("FldId");
 

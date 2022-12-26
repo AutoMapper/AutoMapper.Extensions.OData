@@ -5,11 +5,14 @@ using Domain.OData.Aggregation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading.Tasks;
 using WebAPI.OData.EFCore.Attributes;
 
 namespace WebAPI.OData.EFCore.Controllers
 {
+    [Produces("application/json;odata.metadata=none")]
     public class SalesController : ODataController
     {
         private readonly IMapper _mapper;

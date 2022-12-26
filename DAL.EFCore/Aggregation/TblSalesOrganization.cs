@@ -12,9 +12,8 @@ namespace DAL.EFCore.Aggregation
         [Required]
         public string FldName { get; set; }
 
+        [ForeignKey(nameof(Superordinate))]
         public string FldSuperordinateId { get; set; }
-
-        [ForeignKey(nameof(FldSuperordinateId))]
         public virtual TblSalesOrganization Superordinate { get; set; }
     }
 }

@@ -9,34 +9,24 @@ namespace DAL.EF6.Aggregation
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int FldId { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(Customer))]
         public string FldCustomerId { get; set; }
-
-        [ForeignKey(nameof(FldCustomerId))]
         public virtual TblCustomer Customer { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(Time))]
         public string FldTimeId { get; set; }
-
-        [ForeignKey(nameof(FldTimeId))]
         public virtual TblTime Time { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(Product))]
         public string FldProductId { get; set; }
-
-        [ForeignKey(nameof(FldProductId))]
         public virtual TblProduct Product { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(SalesOrganization))]
         public string FldSalesOrganizationId { get; set; }
-
-        [ForeignKey(nameof(FldSalesOrganizationId))]
         public virtual TblSalesOrganization SalesOrganization { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(Currency))]
         public string FldCurrencyCode { get; set; }
-
-        [ForeignKey(nameof(FldCurrencyCode))]
         public virtual TblCurrency Currency { get; set; }
 
         [Required]

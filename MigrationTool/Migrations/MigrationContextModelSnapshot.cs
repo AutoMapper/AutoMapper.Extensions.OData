@@ -81,9 +81,8 @@ namespace MigrationTool.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FldTaxRate")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("FldTaxRate")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("FldId");
 

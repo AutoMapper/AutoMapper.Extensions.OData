@@ -10,10 +10,8 @@ namespace DAL.EFCore.Aggregation
         [Key]
         public string FldId { get; set; }
 
-        [Required]
+        [Required, ForeignKey(nameof(Category))]
         public string FldCategoryId { get; set; }
-
-        [ForeignKey(nameof(FldCategoryId))]
         public TblCategory Category { get; set; }
 
         public virtual ICollection<TblSales> Sales { get; set; }
@@ -24,7 +22,7 @@ namespace DAL.EFCore.Aggregation
         [Required]
         public string FldColor { get; set; }
 
-        [Required]
-        public string FldTaxRate { get; set; }
+        [Required, Column(TypeName = "decimal(18,2)")]
+        public decimal FldTaxRate { get; set; }
     }
 }
