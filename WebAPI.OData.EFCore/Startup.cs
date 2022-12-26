@@ -81,6 +81,7 @@ namespace WebAPI.OData.EFCore
                 .ReturnsCollectionFromEntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));
+            builder.EntitySet<Sales>(nameof(Sales));
 
             return builder.GetEdmModel();
         }
