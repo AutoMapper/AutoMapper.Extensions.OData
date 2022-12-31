@@ -8,6 +8,11 @@ namespace WebAPI.OData.EF6.Attributes
 {
     public class AllowApplyAttribute : EnableQueryAttribute
     {
+        public AllowApplyAttribute()
+        {
+            MaxExpansionDepth = 10;
+        }
+
         public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions)
         {
             var ignoreQueryOptions =

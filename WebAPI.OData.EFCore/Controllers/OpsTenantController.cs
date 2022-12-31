@@ -11,19 +11,39 @@ namespace WebAPI.OData.EFCore.Controllers
 {
     public class OpsTenantController : ODataController
     {
-        private readonly MyDbContext _repository;
         private readonly IMapper _mapper;
 
         public OpsTenantController(MyDbContext repository, IMapper mapper)
         {
-            _repository = repository;
+            Repository = repository;
             _mapper = mapper;
         }
+
+        MyDbContext Repository { get; set; }
+
 
         [HttpGet]
         public async Task<IActionResult> Get(ODataQueryOptions<OpsTenant> options)
         {
-            return Ok(await _repository.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
+            return Ok(await Repository.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
+        }
+    }
+
+    public class CoreBuildingController : ODataController
+    {
+        private readonly IMapper _mapper;
+        public CoreBuildingController(MyDbContext repository, IMapper mapper)
+        {
+            Repository = repository;
+            _mapper = mapper;
+        }
+
+        MyDbContext Repository { get; set; }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
+        {
+            return Ok(await Repository.BuildingSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.False } }));
         }
     }
 }

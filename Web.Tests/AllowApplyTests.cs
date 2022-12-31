@@ -12,11 +12,6 @@ namespace Web.Tests
 {
     public class AllowApplyTests
     {
-        public class OData<T>
-        {
-            public List<T> Value { get; set; }
-        }
-
         public AllowApplyTests()
         {
             Initialize();
@@ -594,7 +589,8 @@ namespace Web.Tests
 
             result.EnsureSuccessStatusCode();
 
-            return JsonConvert.DeserializeObject<OData<TModel>>(await result.Content.ReadAsStringAsync()).Value;
+            var content = await result.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<OData<TModel>>(content).Value;
         }
     }
 }

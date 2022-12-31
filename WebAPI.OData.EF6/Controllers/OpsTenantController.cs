@@ -26,4 +26,22 @@ namespace WebAPI.OData.EF6.Controllers
             return Ok(await _context.MandatorSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.Default } }));
         }
     }
+
+    public class CoreBuildingController : ODataController
+    {
+        private readonly IMapper _mapper;
+        private readonly MyDbContext _context;
+
+        public CoreBuildingController(MyDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(ODataQueryOptions<CoreBuilding> options)
+        {
+            return Ok(await _context.BuildingSet.GetQueryAsync(_mapper, options, new QuerySettings { ODataSettings = new ODataSettings { HandleNullPropagation = HandleNullPropagationOption.Default } }));
+        }
+    }
 }

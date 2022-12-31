@@ -12,18 +12,15 @@ namespace Web.Tests
 {
     public class GetTests
     {
-        public class OData<T>
-        {
-            public List<T> Value { get; set; }
-        }
-
         public GetTests()
         {
             Initialize();
         }
 
+        #region Fields
         private IServiceProvider serviceProvider;
         private IHttpClientFactory clientFactory;
+        #endregion Fields
 
         private void Initialize()
         {
@@ -31,9 +28,9 @@ namespace Web.Tests
             services.AddHttpClient();
             serviceProvider = services.BuildServiceProvider();
 
-            clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+            this.clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         }
-        
+
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
@@ -41,12 +38,12 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$search=One&$filter=Name eq 'Two'", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(0, collection.Count);
             }
         }
-        
+
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
@@ -54,14 +51,14 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$search=One&$filter=CreatedDate gt 2012-11-11T00:00:00.00Z&$expand=Buildings", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
         }
-        
+
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
@@ -69,7 +66,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$search=One&$expand=Buildings", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
@@ -84,7 +81,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$search=One", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
@@ -99,7 +96,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
@@ -114,7 +111,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(3, collection.First().Buildings.Count);
@@ -129,7 +126,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$filter=Name eq 'One'", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
@@ -144,7 +141,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$filter=CreatedDate gt 2012-11-11T00:00:00.00Z", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.Null(collection.First().Buildings);
@@ -159,7 +156,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(0, collection.Count);
             }
@@ -172,7 +169,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.Equal(3, collection.First().Buildings.Count);
@@ -187,7 +184,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
@@ -202,7 +199,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$filter=Name eq 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
@@ -217,7 +214,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Name&$expand=Buildings($select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(3, collection.First().Buildings.Count);
@@ -235,7 +232,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings($expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(3, collection.First().Buildings.Count);
@@ -252,7 +249,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=name eq 'One L1'", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -268,7 +265,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder,Tenant&$filter=Builder/Name eq 'Sam'&$orderby=Name asc", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -284,7 +281,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Name ne 'One L2'&$orderby=Name desc", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(4, collection.Count);
                 Assert.NotNull(collection.First().Builder.City);
@@ -297,9 +294,17 @@ namespace Web.Tests
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityFilterOnNestedNestedPropertyWithCount(string port)
         {
-            Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Builder/City/Name eq 'Leeds'&$count=true", port));
+            string query = "/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$filter=Builder/City/Name eq 'Leeds'&$count=true";
+            Test
+            (
+                await Get<CoreBuilding>
+                (
+                    query,
+                    port
+                )
+            );
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
@@ -313,7 +318,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
@@ -327,7 +332,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
                 Assert.Equal("Leeds", collection.First().Builder.City.Name);
@@ -341,7 +346,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($expand=City),Tenant&$orderby=Builder/Name", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
                 Assert.Equal("London", collection.First().Builder.City.Name);
@@ -354,9 +359,17 @@ namespace Web.Tests
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1WithCount(string port)
         {
-            Test(await Get<CoreBuilding>("/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true", port));
+            string query = "/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity&$count=true";
+            Test
+            (
+                await Get<CoreBuilding>
+                (
+                    query,
+                    port
+                )
+            );
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("London", collection.First().Builder.City.Name);
@@ -369,9 +382,17 @@ namespace Web.Tests
         [InlineData("16325")]
         public async void BuildingExpandBuilderTenantExpandCityOrderByBuilderNameSkip3Take1NoCount(string port)
         {
-            Test(await Get<CoreBuilding>("/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity", port));
+            string query = "/corebuilding?$skip=4&$top=1&$expand=Builder($expand=City),Tenant&$orderby=Name desc,Identity";
+            Test
+            (
+                await Get<CoreBuilding>
+                (
+                    query,
+                    port
+                )
+            );
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("London", collection.First().Builder.City.Name);
@@ -386,7 +407,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$select=Name", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
             }
@@ -399,7 +420,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$expand=Buildings&$orderby=Buildings/$count desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.NotNull(collection.First().Buildings);
@@ -416,7 +437,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$expand=Buildings&$orderby=Buildings/$count($filter=Name eq 'One L1') desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.NotNull(collection.First().Buildings);
@@ -433,8 +454,7 @@ namespace Web.Tests
         public async void CoreBuildingOrderByCountOfChildReferenceOfReference(string port)
         {
             Test(await Get<CoreBuilding>("/corebuilding?$expand=Tenant($expand=Buildings)&$orderby=Tenant/Buildings/$count desc", port));
-
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
                 Assert.NotNull(collection.First().Tenant.Buildings);
@@ -449,8 +469,7 @@ namespace Web.Tests
         public async void CoreBuildingOrderByPropertyOfChildReferenceOfReference(string port)
         {
             Test(await Get<CoreBuilding>("/corebuilding?$expand=Builder($expand=City)&$orderby=Builder/City/Name desc", port));
-
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
                 Assert.NotNull(collection.First().Builder.City);
@@ -466,7 +485,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$select=Name&$expand=Buildings&$orderby=Name", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
@@ -482,7 +501,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
@@ -500,7 +519,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=name eq 'One L1'", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -518,7 +537,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=name eq 'One L1'", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -536,7 +555,7 @@ namespace Web.Tests
         {
             Test(await Get<CoreBuilding>("/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=name eq 'One L1'", port));
 
-            static void Test(ICollection<CoreBuilding> collection)
+            void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -555,7 +574,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$select=Name&$expand=Buildings($filter=Name ne 'Two L1';$orderby=Name;$select=Name,Builder;$expand=Builder($select=Name,City;$expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(2, collection.First().Buildings.Count);
@@ -574,7 +593,7 @@ namespace Web.Tests
         {
             Test(await Get<OpsTenant>("/opstenant?$top=5&$expand=Buildings($filter=Name ne '';$orderby=Name desc;$expand=Builder($expand=City))&$filter=Name ne 'One'&$orderby=Name desc", port));
 
-            static void Test(ICollection<OpsTenant> collection)
+            void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(1, collection.Count);
                 Assert.Equal(3, collection.First().Buildings.Count);
@@ -587,7 +606,7 @@ namespace Web.Tests
 
         private async Task<ICollection<TModel>> Get<TModel>(string query, string port)
         {
-            HttpResponseMessage result = await clientFactory.CreateClient().GetAsync
+            HttpResponseMessage result = await this.clientFactory.CreateClient().GetAsync
             (
                 $"http://localhost:{port}{query}"
             );
@@ -596,5 +615,10 @@ namespace Web.Tests
 
             return JsonConvert.DeserializeObject<OData<TModel>>(await result.Content.ReadAsStringAsync()).Value;
         }
+    }
+
+    public class OData<T>
+    {
+        public List<T> Value { get; set; }
     }
 }

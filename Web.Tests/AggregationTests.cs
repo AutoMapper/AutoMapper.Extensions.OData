@@ -10,14 +10,8 @@ using Xunit;
 namespace Web.Tests
 {
     // Examples can be found at https://learn.microsoft.com/en-us/odata/client/grouping-and-aggregation
-
     public class AggregationTests
     {
-        public class OData<T>
-        {
-            public List<T> Value { get; set; }
-        }
-
         public AggregationTests()
         {
             Initialize();
@@ -91,7 +85,7 @@ namespace Web.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Nested complex properties cannot be part of the '$apply'-option (not yet supported)")]
         [InlineData("16324")]
         [InlineData("16325")]
         public async void AverageOnProductTaxRate(string port)
