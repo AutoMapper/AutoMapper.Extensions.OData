@@ -125,6 +125,12 @@ With a custom `EnableQueryAttribute` there is limited support for grouping and a
 
             base.OnActionExecuted(actionExecutedContext);
         }
+
+        private static bool IsSuccessStatusCode(int statusCode)
+        {
+            return statusCode >= 200 && statusCode < 300;
+        }
+    }
 ```
 
 <br><br>
