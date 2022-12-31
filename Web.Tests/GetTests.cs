@@ -30,7 +30,7 @@ namespace Web.Tests
 
             this.clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         }
-
+        
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
@@ -43,7 +43,7 @@ namespace Web.Tests
                 Assert.Equal(0, collection.Count);
             }
         }
-
+        
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
@@ -58,7 +58,7 @@ namespace Web.Tests
                 Assert.Equal("One", collection.First().Name);
             }
         }
-
+        
         [Theory]
         [InlineData("16324")]
         [InlineData("16325")]
