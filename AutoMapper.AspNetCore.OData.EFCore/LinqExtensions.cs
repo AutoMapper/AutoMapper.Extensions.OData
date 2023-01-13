@@ -571,22 +571,27 @@ namespace AutoMapper.AspNet.OData
             });
         }
 
-        [Obsolete("\"LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)\"")]
-        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type) 
-            => filterClause.GetFilterExpression(type, null);
-
         public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)
         {
             var parameters = new Dictionary<string, ParameterExpression>();
+            FilterHelper helper = new(parameters, context);
 
-            return new FilterHelper
-            (
-                parameters,
-                type,
-                context
-            )
-            .GetFilterPart(filterClause.Expression)
-            .GetFilter(type, parameters, filterClause.RangeVariable.Name);
+            return helper
+                .GetFilterPart(filterClause.Expression)
+                .GetFilter(type, parameters, helper.LiteralName)
+                .ReplaceThisParameter(type);
+        }
+
+        // Using a parameter with the name '$this' is illegal in 
+        // Cosmos DB.
+        private static LambdaExpression ReplaceThisParameter(this LambdaExpression lambda, Type parameterType)
+        {
+            ParameterExpression param = lambda.Parameters
+                .SingleOrDefault(p => p.Name == "$this");
+
+            return param is not null
+                ? (LambdaExpression)lambda.ReplaceParameter(param, Expression.Parameter(parameterType, "i0"))
+                : lambda;
         }
 
         private static Expression Unquote(this Expression exp)

@@ -168,6 +168,39 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void OpsTenantExpandBuildingsNestedFilterEqUsingThisParameterWithNoMatches()
+        {
+            const string query = "/opstenant?$expand=Buildings($filter=$this/Parameter eq 'FakeParameter')";
+            Test(Get<OpsTenant, TMandator>(query));
+            Test(await GetAsync<OpsTenant, TMandator>(query));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query));
+
+            static void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Empty(collection.First().Buildings);
+                Assert.Empty(collection.Last().Buildings);                
+            }
+        }
+
+        [Fact]
+        public async void OpsTenantExpandBuildingsNestedFilterEqUsingThisParameterWithMatches()
+        {
+            const string query = "/opstenant?$expand=Buildings($filter=$this/Name eq 'Two L1')&$orderby=Name desc";
+            Test(Get<OpsTenant, TMandator>(query));
+            Test(await GetAsync<OpsTenant, TMandator>(query));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query));
+
+            static void Test(ICollection<OpsTenant> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Single(collection.First().Buildings);
+                Assert.Equal("Two L1", collection.First().Buildings.First().Name);
+                Assert.Empty(collection.Last().Buildings);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantExpandBuildingsFilterNeAndOrderBy()
         {
             string query = "/opstenant?$top=5&$expand=Buildings&$filter=Name ne 'One'&$orderby=Name desc";

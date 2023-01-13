@@ -381,6 +381,40 @@ namespace ExpressionBuilder.Tests
         }
         #endregion NULL  handling
 
+        #region Using the This Literal
+        [Fact]
+        public void NestedSelectFilter_IntegerCollection_GreaterThanAndLessThanOperator()
+        {
+            var filter = GetSelectNestedFilter<Product, int>("AlternateIDs($filter=$this gt 5 and $this lt 100)");
+
+            AssertFilterStringIsCorrect(filter, "i0 => ((i0 > 5) AndAlso (i0 < 100))");
+
+            int[] values = new int[] { 1, 2, 3, 4, 5, 6, 200 };
+            Assert.Equal(new int[] { 6 }, values.Where(filter.Compile()).ToArray());
+        }
+
+        [Fact]
+        public void NestedSelectFilter_IntegerCollection_GreaterThanOperator()
+        {
+            var filter = GetSelectNestedFilter<Product, int>("AlternateIDs($filter=$this gt 5)");
+
+            AssertFilterStringIsCorrect(filter, "i0 => (i0 > 5)");
+
+            int[] values = new int[] { 1, 2, 3, 4, 5, 6, 200 };
+            Assert.Equal(new int[] { 6, 200 }, values.Where(filter.Compile()).ToArray());
+        }
+
+        [Fact]
+        public void NestedExpandFilter_EntityCollection_EqualsOperator()
+        {
+            var filter = GetExpandNestedFilter<Product, Address>("AlternateAddresses($filter=$this/City eq 'Redmond')");
+
+            AssertFilterStringIsCorrect(filter, "i0 => (i0.City == \"Redmond\")");
+        }
+
+
+        #endregion
+
         [Theory]
         [InlineData("indexof('hello', StringProp) gt UIntProp")]
         [InlineData("indexof('hello', StringProp) gt ULongProp")]
@@ -3196,6 +3230,42 @@ namespace ExpressionBuilder.Tests
 
         private bool RunFilter<TModel>(Expression<Func<TModel, bool>> filter, TModel instance)
             => filter.Compile().Invoke(instance);
+
+        private static Expression<Func<TElement, bool>> GetSelectNestedFilter<TModel, TElement>(string selectString) where TModel : class
+            => GetNestedFilter<TModel, TElement, PathSelectItem>
+               (
+                    new Dictionary<string, string> { ["$select"] = selectString }
+               );
+
+        private static Expression<Func<TElement, bool>> GetExpandNestedFilter<TModel, TElement>(string selectString) where TModel : class
+            => GetNestedFilter<TModel, TElement, ExpandedNavigationSelectItem>
+               (
+                    new Dictionary<string, string> { ["$expand"] = selectString }
+               );
+
+        private static Expression<Func<TElement, bool>> GetNestedFilter<TModel, TElement, TPath>(IDictionary<string, string> queryOptions)
+            where TModel : class
+            where TPath : SelectItem
+        {
+            var selectAndExpand = ODataHelpers.GetSelectExpandClause<TModel>(queryOptions);
+
+            var filterOption = selectAndExpand.SelectedItems                
+                .OfType<TPath>()
+                .Select(GetClause).First();
+
+            return (Expression<Func<TElement, bool>>)filterOption.GetFilterExpression
+            (
+                typeof(TElement),
+                ODataHelpers.GetODataQueryContext<TModel>()
+            );
+
+            static FilterClause GetClause(SelectItem item) => item switch
+            {
+                PathSelectItem select => select.FilterOption,
+                ExpandedNavigationSelectItem expand => expand.FilterOption,
+                _ => throw new NotSupportedException()
+            };
+        }
 
         private Expression<Func<TModel, bool>> GetFilter<TModel>(string filterString) where TModel : class
             => GetFilter<TModel>

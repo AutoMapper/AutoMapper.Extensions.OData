@@ -23,15 +23,27 @@ namespace AutoMapper.AspNet.OData
 {
     public class FilterHelper
     {
-        public FilterHelper(IDictionary<string, ParameterExpression> parameters, Type underlyingElementType, ODataQueryContext context)
-        {
-            this.parameters = parameters;
-            this.edmModel = context.Model;
-        }
-
         private readonly IDictionary<string, ParameterExpression> parameters;
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
         private readonly IEdmModel edmModel;
+        private string literalName;
+
+        public FilterHelper(IDictionary<string, ParameterExpression> parameters, ODataQueryContext context)
+        {
+            this.parameters = parameters;
+            this.edmModel = context.Model;
+            this.literalName = "$it";
+        }        
+
+        public string LiteralName
+        {
+            get => this.literalName;
+            private set => this.literalName = value switch
+            {
+                var literal when literal == "$it" || literal == "$this" => literal,
+                _ => this.literalName
+            };
+        }
 
         public IExpressionPart GetFilterPart(QueryNode queryNode)
             => queryNode switch
@@ -112,18 +124,26 @@ namespace AutoMapper.AspNet.OData
             );
 
         private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
-            => new ParameterOperator
+        {
+            var parameter = new ParameterOperator
             (
                 parameters,
                 nonResourceRangeVariableReferenceNode.RangeVariable.Name
             );
+            LiteralName = parameter.ParameterName;
+            return parameter;
+        }
 
         private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
-            => new ParameterOperator
+        {
+            var parameter = new ParameterOperator
             (
                 parameters,
                 resourceRangeVariableReferenceNode.RangeVariable.Name
             );
+            LiteralName = parameter.ParameterName;
+            return parameter;
+        }
 
         private bool IsTrueConstantExpression(SingleValueNode node)
         {
