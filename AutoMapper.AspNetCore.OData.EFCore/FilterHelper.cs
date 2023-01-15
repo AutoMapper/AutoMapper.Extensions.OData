@@ -23,27 +23,18 @@ namespace AutoMapper.AspNet.OData
 {
     public class FilterHelper
     {
+        private const string DollarThis = "$this";
+        private const string DollarIt = "$it";
+
         private readonly IDictionary<string, ParameterExpression> parameters;
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
         private readonly IEdmModel edmModel;
-        private string literalName;
 
         public FilterHelper(IDictionary<string, ParameterExpression> parameters, ODataQueryContext context)
         {
             this.parameters = parameters;
-            this.edmModel = context.Model;
-            this.literalName = "$it";
+            this.edmModel = context.Model;            
         }        
-
-        public string LiteralName
-        {
-            get => this.literalName;
-            private set => this.literalName = value switch
-            {
-                var literal when literal == "$it" || literal == "$this" => literal,
-                _ => this.literalName
-            };
-        }
 
         public IExpressionPart GetFilterPart(QueryNode queryNode)
             => queryNode switch
@@ -123,27 +114,19 @@ namespace AutoMapper.AspNet.OData
                 GetClrType(singleResourceCastNode.TypeReference)
             );
 
-        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
-        {
-            var parameter = new ParameterOperator
+        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode) =>
+            new ParameterOperator
             (
                 parameters,
-                nonResourceRangeVariableReferenceNode.RangeVariable.Name
+                ReplaceDollarThisParameter(nonResourceRangeVariableReferenceNode.RangeVariable.Name)
             );
-            LiteralName = parameter.ParameterName;
-            return parameter;
-        }
 
-        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
-        {
-            var parameter = new ParameterOperator
+        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode) =>
+            new ParameterOperator
             (
                 parameters,
-                resourceRangeVariableReferenceNode.RangeVariable.Name
+                ReplaceDollarThisParameter(resourceRangeVariableReferenceNode.RangeVariable.Name)
             );
-            LiteralName = parameter.ParameterName;
-            return parameter;
-        }
 
         private bool IsTrueConstantExpression(SingleValueNode node)
         {
@@ -787,5 +770,8 @@ namespace AutoMapper.AspNet.OData
                 GetFilterPart(inNode.Left),
                 GetFilterPart(inNode.Right)
             );
+
+        private static string ReplaceDollarThisParameter(string rangeVariableName) =>
+           rangeVariableName == DollarThis ? DollarIt : rangeVariableName;
     }
 }

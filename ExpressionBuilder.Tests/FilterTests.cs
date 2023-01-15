@@ -387,7 +387,7 @@ namespace ExpressionBuilder.Tests
         {
             var filter = GetSelectNestedFilter<Product, int>("AlternateIDs($filter=$this gt 5 and $this lt 100)");
 
-            AssertFilterStringIsCorrect(filter, "i0 => ((i0 > 5) AndAlso (i0 < 100))");
+            AssertFilterStringIsCorrect(filter, "$it => (($it > 5) AndAlso ($it < 100))");
 
             int[] values = new int[] { 1, 2, 3, 4, 5, 6, 200 };
             Assert.Equal(new int[] { 6 }, values.Where(filter.Compile()).ToArray());
@@ -398,7 +398,7 @@ namespace ExpressionBuilder.Tests
         {
             var filter = GetSelectNestedFilter<Product, int>("AlternateIDs($filter=$this gt 5)");
 
-            AssertFilterStringIsCorrect(filter, "i0 => (i0 > 5)");
+            AssertFilterStringIsCorrect(filter, "$it => ($it > 5)");
 
             int[] values = new int[] { 1, 2, 3, 4, 5, 6, 200 };
             Assert.Equal(new int[] { 6, 200 }, values.Where(filter.Compile()).ToArray());
@@ -409,7 +409,7 @@ namespace ExpressionBuilder.Tests
         {
             var filter = GetExpandNestedFilter<Product, Address>("AlternateAddresses($filter=$this/City eq 'Redmond')");
 
-            AssertFilterStringIsCorrect(filter, "i0 => (i0.City == \"Redmond\")");
+            AssertFilterStringIsCorrect(filter, "$it => ($it.City == \"Redmond\")");
         }
 
 
