@@ -23,18 +23,18 @@ namespace AutoMapper.AspNet.OData
 {
     public class FilterHelper
     {
+        public FilterHelper(IDictionary<string, ParameterExpression> parameters, Type underlyingElementType, ODataQueryContext context)
+        {
+            this.parameters = parameters;
+            this.edmModel = context.Model;
+        }
+
         private const string DollarThis = "$this";
         private const string DollarIt = "$it";
 
         private readonly IDictionary<string, ParameterExpression> parameters;
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
         private readonly IEdmModel edmModel;
-
-        public FilterHelper(IDictionary<string, ParameterExpression> parameters, ODataQueryContext context)
-        {
-            this.parameters = parameters;
-            this.edmModel = context.Model;            
-        }        
 
         public IExpressionPart GetFilterPart(QueryNode queryNode)
             => queryNode switch
@@ -114,15 +114,15 @@ namespace AutoMapper.AspNet.OData
                 GetClrType(singleResourceCastNode.TypeReference)
             );
 
-        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode) =>
-            new ParameterOperator
+        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode) 
+            => new ParameterOperator
             (
                 parameters,
                 ReplaceDollarThisParameter(nonResourceRangeVariableReferenceNode.RangeVariable.Name)
             );
 
-        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode) =>
-            new ParameterOperator
+        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode) 
+            => new ParameterOperator
             (
                 parameters,
                 ReplaceDollarThisParameter(resourceRangeVariableReferenceNode.RangeVariable.Name)
