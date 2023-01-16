@@ -38,6 +38,23 @@ namespace ExpressionBuilder.Tests
             }
         }
 
+        public static SelectExpandClause GetSelectExpandClause<T>(IDictionary<string, string> queryOptions) where T : class
+        {
+            IEdmModel model = GetModel<T>();
+            IEdmEntityType productType = model.SchemaElements.OfType<IEdmEntityType>().Single(t => t.Name == typeof(T).Name);
+            IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
+
+            ODataQueryOptionParser parser = new
+            (
+                model,
+                productType,
+                entitySet,
+                queryOptions
+            );
+
+            return parser.ParseSelectAndExpand();
+        }
+
         public static FilterClause GetFilterClause<T>(string filter, IServiceProvider serviceProvider) where T : class
             => GetFilterClause<T>
             (

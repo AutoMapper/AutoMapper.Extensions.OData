@@ -29,6 +29,9 @@ namespace AutoMapper.AspNet.OData
             this.edmModel = context.Model;
         }
 
+        private const string DollarThis = "$this";
+        private const string DollarIt = "$it";
+
         private readonly IDictionary<string, ParameterExpression> parameters;
         private static readonly IDictionary<EdmTypeStructure, Type> typesCache = TypeExtensions.GetEdmToClrTypeMappings();
         private readonly IEdmModel edmModel;
@@ -115,14 +118,14 @@ namespace AutoMapper.AspNet.OData
             => new ParameterOperator
             (
                 parameters,
-                nonResourceRangeVariableReferenceNode.RangeVariable.Name
+                ReplaceDollarThisParameter(nonResourceRangeVariableReferenceNode.RangeVariable.Name)
             );
 
         private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
             => new ParameterOperator
             (
                 parameters,
-                resourceRangeVariableReferenceNode.RangeVariable.Name
+                ReplaceDollarThisParameter(resourceRangeVariableReferenceNode.RangeVariable.Name)
             );
 
         private bool IsTrueConstantExpression(SingleValueNode node)
@@ -767,5 +770,8 @@ namespace AutoMapper.AspNet.OData
                 GetFilterPart(inNode.Left),
                 GetFilterPart(inNode.Right)
             );
+
+        private static string ReplaceDollarThisParameter(string rangeVariableName) =>
+           rangeVariableName == DollarThis ? DollarIt : rangeVariableName;
     }
 }
