@@ -114,14 +114,14 @@ namespace AutoMapper.AspNet.OData
                 GetClrType(singleResourceCastNode.TypeReference)
             );
 
-        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode) 
+        private IExpressionPart GetNonResourceRangeVariableReferenceNodeFilterPart(NonResourceRangeVariableReferenceNode nonResourceRangeVariableReferenceNode)
             => new ParameterOperator
             (
                 parameters,
                 ReplaceDollarThisParameter(nonResourceRangeVariableReferenceNode.RangeVariable.Name)
             );
 
-        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode) 
+        private IExpressionPart GetResourceRangeVariableReferenceNodeFilterPart(ResourceRangeVariableReferenceNode resourceRangeVariableReferenceNode)
             => new ParameterOperator
             (
                 parameters,

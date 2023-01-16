@@ -781,3 +781,4 @@ namespace AutoMapper.AspNet.OData
         public FilterClause FilterClause { get; set; }
     }
 }
+
