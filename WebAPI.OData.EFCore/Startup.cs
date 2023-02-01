@@ -2,6 +2,7 @@
 using DAL.EFCore;
 using DAL.EFCore.Aggregation;
 using Domain.OData;
+using Domain.OData.Aggregation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
