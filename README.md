@@ -57,11 +57,81 @@ public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this I
 ```
 
 <br><br>
-### Do not use the EnableQuery Attribute
+### Using the `EnableQueryAttribute`
 Using `EnableQuery` with `AutoMapper.Extensions.OData` will result in some operations being applied more than once e.g. in the [tests](https://github.com/AutoMapper/AutoMapper.Extensions.OData/blob/5b4a9c8bef4c408268603e4c2186ca65b930559c/AutoMapper.OData.EFCore.Tests/AllTests.cs#L342),
 if `TMandator` has a total of two records then **without** `EnableQuery` applied to the controller action, the OData query `http://localhost:16324/opstenant?$skip=1&$top=1&$orderby=Name` will return one record as expected. However **with** `EnableQuery` applied
 no records will be returned because the skip operation has been applied twice.
 
+While `EnableQuery` will result in some operations being applied more than once, one can create a custom `EnableQueryAttribute` to ignore the `QueryOptions` that are applied by `AutoMapper.Extensions.OData`.
+
+```c#
+   public class MyCustomEnableQueryAttribute : EnableQueryAttribute
+    {
+        public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions)
+        {
+            var ignoreQueryOptions =
+                AllowedQueryOptions.Skip |
+                AllowedQueryOptions.Top |
+                AllowedQueryOptions.Filter |
+                AllowedQueryOptions.Expand |
+                AllowedQueryOptions.Select |
+                AllowedQueryOptions.OrderBy |
+                AllowedQueryOptions.Count;
+
+            return queryOptions.ApplyTo(queryable, ignoreQueryOptions);
+        }
+    }
+```
+
+### Aggregation
+With a custom `EnableQueryAttribute` there is limited support for grouping and aggregation. Grouping and aggregation on navigation properties is not supported. Example can be found in the [`AggregationTests`](Web.Tests/AggregationTests.cs)
+
+```c#
+    public class AllowApplyAttribute : EnableQueryAttribute
+    {
+        public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions)
+        {
+            var ignoreQueryOptions =
+                AllowedQueryOptions.Skip |
+                AllowedQueryOptions.Top |
+                AllowedQueryOptions.Filter |
+                AllowedQueryOptions.Expand |
+                AllowedQueryOptions.Select |
+                AllowedQueryOptions.OrderBy |
+                AllowedQueryOptions.Count;
+
+            return queryOptions.ApplyTo(queryable, ignoreQueryOptions);
+        }
+
+        public override void OnActionExecuted(ActionExecutedContext actionExecutedContext)
+        {
+            if (actionExecutedContext is null)
+            {
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+            }
+
+            if (actionExecutedContext.HttpContext.Response != null &&
+                IsSuccessStatusCode(actionExecutedContext.HttpContext.Response.StatusCode) &&
+                actionExecutedContext.Result is ObjectResult content &&
+                content.Value != null &&
+                content.DeclaredType == null)
+            {
+                // To help the `ODataOutputFormatter` to determine the correct output class
+                // the `content.DeclaredType` needs to be set before appling the `$apply`-option
+                // so that a valid `OData`-result is produced
+                // https://github.com/OData/AspNetCoreOData/blob/4de92f52a346606a447ec4df96c5f3cd05642f50/src/Microsoft.AspNetCore.OData/Formatter/ODataOutputFormatter.cs#L127-L131
+                content.DeclaredType = content.Value.GetType();
+            }
+
+            base.OnActionExecuted(actionExecutedContext);
+        }
+
+        private static bool IsSuccessStatusCode(int statusCode)
+        {
+            return statusCode >= 200 && statusCode < 300;
+        }
+    }
+```
 
 <br><br>
 ### OData query examples:

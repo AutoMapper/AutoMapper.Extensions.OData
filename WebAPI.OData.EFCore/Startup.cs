@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using DAL.EFCore;
+using DAL.EFCore.Aggregation;
 using Domain.OData;
+using Domain.OData.Aggregation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
@@ -11,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using WebAPI.OData.EFCore.Binders;
-using WebAPI.OData.EFCore.Mappings;
+using WebAPI.OData.EFCore.Controllers;
 
 namespace WebAPI.OData.EFCore
 {
@@ -29,6 +31,7 @@ namespace WebAPI.OData.EFCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AggregationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers()
                 .AddOData(opt => opt.EnableQueryFeatures()
                     .AddRouteComponents("", GetEdmModel(), services => services.AddSingleton<ISearchBinder, OpsTenantSearchBinder>()));
@@ -68,9 +71,18 @@ namespace WebAPI.OData.EFCore
             var builder = new ODataConventionModelBuilder();
             //builder.Namespace = "com.FooBar";
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
+            builder.EntityType<OpsTenant>()
+                .Collection
+                .Function(nameof(OpsTenantAllowApplyController.AllowApply))
+                .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
+            builder.EntityType<CoreBuilding>()
+                .Collection
+                .Function(nameof(CoreBuildingAllowApplyController.AllowApply))
+                .ReturnsCollectionFromEntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));
+            builder.EntitySet<Sales>(nameof(Sales));
 
             return builder.GetEdmModel();
         }

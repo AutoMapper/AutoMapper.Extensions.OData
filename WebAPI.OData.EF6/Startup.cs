@@ -1,6 +1,8 @@
 using AutoMapper;
 using DAL.EF6;
+using DAL.EF6.Aggregation;
 using Domain.OData;
+using Domain.OData.Aggregation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using WebAPI.OData.EF6.Binders;
+using WebAPI.OData.EF6.Controllers;
 
 namespace WebAPI.OData.EF6
 {
@@ -35,8 +38,13 @@ namespace WebAPI.OData.EF6
                 (
                     Configuration.GetConnectionString("DefaultConnection")
                 )
-            )
-            .AddSingleton<AutoMapper.IConfigurationProvider>
+            ).AddScoped
+            (
+                _ => new AggregationDbContext
+                (
+                    Configuration.GetConnectionString("DefaultConnection")
+                )
+            ).AddSingleton<AutoMapper.IConfigurationProvider>
             (
                 new MapperConfiguration(cfg =>
                 {
@@ -72,9 +80,18 @@ namespace WebAPI.OData.EF6
             var builder = new ODataConventionModelBuilder();
             //builder.Namespace = "com.FooBar";
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
+            builder.EntityType<OpsTenant>()
+                .Collection
+                .Function(nameof(OpsTenantAllowApplyController.AllowApply))
+                .ReturnsCollectionFromEntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
+            builder.EntityType<CoreBuilding>()
+                .Collection
+                .Function(nameof(CoreBuildingAllowApplyController.AllowApply))
+                .ReturnsCollectionFromEntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));
             builder.EntitySet<OpsCity>(nameof(OpsCity));
+            builder.EntitySet<Sales>(nameof(Sales));
 
             return builder.GetEdmModel();
         }
