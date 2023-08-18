@@ -715,7 +715,7 @@ namespace AutoMapper.AspNet.OData
 
             static bool ShouldConvert(Type leftType, Type rightType)
                 => BothTypesDateRelated(leftType, rightType)
-#if NET6_0
+#if NET6_0 || NET7_0
                     && (
                             leftType == typeof(Date)
                             || rightType == typeof(Date)
@@ -740,7 +740,7 @@ namespace AutoMapper.AspNet.OData
 
             static bool ShouldConvert(Type leftType, Type rightType)
                 => BothTypesDateTimeRelated(leftType, rightType)
-#if NET6_0
+#if NET6_0 || NET7_0
                     && (
                             leftType == typeof(TimeOfDay)
                             || rightType == typeof(TimeOfDay)
