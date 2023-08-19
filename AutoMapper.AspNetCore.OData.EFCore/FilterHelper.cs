@@ -715,16 +715,12 @@ namespace AutoMapper.AspNet.OData
 
             static bool ShouldConvert(Type leftType, Type rightType)
                 => BothTypesDateRelated(leftType, rightType)
-#if NET6_0 || NET7_0
                     && (
                             leftType == typeof(Date)
                             || rightType == typeof(Date)
                             || leftType == typeof(DateOnly)
                             || rightType == typeof(DateOnly)
                        );
-#else
-                    && (leftType == typeof(Date) || rightType == typeof(Date));
-#endif
         }
 
         private bool ShouldConvertToNumericTime(BinaryOperatorNode binaryOperatorNode)
@@ -740,16 +736,12 @@ namespace AutoMapper.AspNet.OData
 
             static bool ShouldConvert(Type leftType, Type rightType)
                 => BothTypesDateTimeRelated(leftType, rightType)
-#if NET6_0 || NET7_0
                     && (
                             leftType == typeof(TimeOfDay)
                             || rightType == typeof(TimeOfDay)
                             || leftType == typeof(TimeOnly)
                             || rightType == typeof(TimeOnly)
                        );
-#else
-                    && (leftType == typeof(TimeOfDay) || rightType == typeof(TimeOfDay));
-#endif
         }
 
         public IExpressionPart GetConstantOperandFilterPart(ConstantNode constantNode)

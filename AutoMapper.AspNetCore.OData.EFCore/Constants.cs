@@ -13,9 +13,7 @@ namespace AutoMapper.AspNet.OData
             typeof(DateTimeOffset),
             typeof(DateTime),
             typeof(Date),
-#if NET6_0 || NET7_0
             typeof(DateOnly)
-#endif
         };
 
         public static HashSet<Type> DateTimeRelatedTypes = new()
@@ -24,10 +22,8 @@ namespace AutoMapper.AspNet.OData
             typeof(DateTime),
             typeof(TimeSpan),
             typeof(TimeOfDay),
-#if NET6_0 || NET7_0
             typeof(TimeOnly),
             typeof(DateOnly),
-#endif
             typeof(Date)
         };
 

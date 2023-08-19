@@ -11,7 +11,7 @@ namespace MigrationTool.Migrations
 {
     [DbContext(typeof(MigrationContext))]
     [Migration("20200918094359_initial")]
-    partial class initial
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
