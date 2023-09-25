@@ -12,8 +12,13 @@ using System.Threading.Tasks;
 
 namespace AutoMapper.AspNet.OData
 {
+    using System.Reflection;
+
     public static class QueryableExtensions
     {
+        private static readonly MethodInfo SetParametersMethodInfo =
+            Type.GetType("AutoMapper.QueryableExtensions.Impl.ParameterExpressionVisitor, AutoMapper").GetMethod("SetParameters", BindingFlags.Public | BindingFlags.Static);
+
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
@@ -153,7 +158,12 @@ namespace AutoMapper.AspNet.OData
             Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
 
             if (filter != null)
-                query = query.Where(f);
+            {
+                var parameterizedF = SetParametersMethodInfo.Invoke(
+                                         null,
+                                         new[] {projectionSettings?.Parameters, f}) as Expression<Func<TData, bool>>;
+                query = query.Where(parameterizedF ?? f);
+            }
 
             return mappedQueryFunc != null
                     ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
