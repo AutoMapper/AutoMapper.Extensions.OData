@@ -48,9 +48,12 @@ namespace AutoMapper.OData.EFCore.Tests.Model
 
         public SimpleEnumModel Ranking { get; set; }
 
+
         public CategoryModel Category { get; set; }
 
         public AddressModel SupplierAddress { get; set; }
+
+        public bool IsShippableToUser { get; set; }
 
         public int[] AlternateIDs { get; set; }
         public AddressModel[] AlternateAddresses { get; set; }
@@ -62,6 +65,7 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         [Key]
         public int CategoryID { get; set; }
         public string CategoryName { get; set; }
+        public bool IsFavorite { get; set; }
         public ProductModel Product { get; set; }
         public ICollection<ProductModel> Products { get; set; }
         public ICollection<CompositeKeyModel> CompositeKeys { get; set; }

@@ -864,7 +864,7 @@ namespace AutoMapper.OData.EFCore.Tests
                                 new Address { AddressID = 1, City = "CityOne" },
                                 new Address { AddressID = 2, City = "CityTwo"  },
                             },
-                            SupplierAddress = new Address { City = "A" }
+                            SupplierAddress = new Address { City = "A", State = "StateA" }
                         },
                         new Product
                         {
@@ -1184,6 +1184,318 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void FilteringOnRoot_ParameterizedProjectedProperty_WithMatches()
+        {
+            string query = "/CategoryModel?$filter=IsFavorite eq true";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    currentUserFavoriteCategory = 1,
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Single(collection);
+                Assert.Equal(1, collection.First().CategoryID);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnRoot_ParameterizedProjectedProperty_WithNoMatches()
+        {
+            string query = "/CategoryModel?$filter=IsFavorite eq true";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    currentUserFavoriteCategory = 3,
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection);
+            }
+        }
+
+        [Fact]
+        public async void FilteringByChildCollection_ParameterizedProjectedProperty_WithMatches()
+        {
+            string query = "/CategoryModel?$filter=Products/any(p:p/IsShippableToUser eq true)";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    currentUserState = "StateA",
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Single(collection);
+                Assert.Equal(1, collection.First().CategoryID);
+            }
+        }
+
+        [Fact]
+        public async void FilteringByChildCollection_ParameterizedProjectedProperty_WithNoMatches()
+        {
+            string query = "/CategoryModel?$filter=Products/any(p:p/IsShippableToUser eq true)";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    CurrentUserState = "StateZ",
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Empty(collection);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnChildCollection_ParameterizedProjectedProperty_WithMatches()
+        {
+            string query = "/CategoryModel?$expand=Products($filter=IsShippableToUser eq true)";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    currentUserState = "StateA",
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Single(
+                    collection.First(categoryModel => categoryModel.CategoryID == 1)
+                        .Products);
+                Assert.Contains(
+                    collection.First(categoryModel => categoryModel.CategoryID == 1)
+                        .Products,
+                    productModel => productModel.ProductID == 1 && productModel.IsShippableToUser);
+                Assert.Empty(
+                    collection.First(categoryModel => categoryModel.CategoryID == 2)
+                        .Products);
+            }
+        }
+
+        [Fact]
+        public async void FilteringOnChildCollection_ParameterizedProjectedProperty_WithNoMatches()
+        {
+            string query = "/CategoryModel?$expand=Products($filter=IsShippableToUser eq true)";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    CurrentUserState = "StateZ",
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Empty(
+                    collection.First(categoryModel => categoryModel.CategoryID == 1)
+                        .Products);
+                Assert.Empty(
+                    collection.First(categoryModel => categoryModel.CategoryID == 2)
+                        .Products);
+            }
+        }
+
+        [Fact]
         public async void SkipOnRootNoOrderByThenExpandAndSkipOnChildCollectionNoOrderByThenExpandSkipAndTopOnChildCollectionOfChildCollectionWithOrderBy()
         {
             const string query = "/CategoryModel?$skip=1&$expand=Products($skip=1;$expand=AlternateAddresses($skip=1;$top=3;$orderby=AddressID desc))";
@@ -1220,6 +1532,75 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
                 Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
                 Assert.Equal(5, collection.First().Products.First().AlternateAddresses.Last().AddressID);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollection_ParameterizedProjectedProperty()
+        {
+            string query = "/CategoryModel?$expand=Products";
+            var querySettings = new QuerySettings
+                {
+                    ProjectionSettings = new ProjectionSettings
+                        {
+                            Parameters = new
+                                {
+                                    currentUserFavoriteCategory = 1,
+                                    currentUserState = "StateA",
+                                },
+                        },
+                };
+
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories(),
+                    querySettings: querySettings
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Contains(
+                    collection,
+                    categoryModel => categoryModel.CategoryID == 1 && categoryModel.IsFavorite);
+                Assert.Contains(
+                    collection,
+                    categoryModel => categoryModel.CategoryID == 2 && !categoryModel.IsFavorite);
+                Assert.Contains(
+                    collection.First(categoryModel => categoryModel.CategoryID == 1)
+                        .Products,
+                    productModel => productModel.ProductID == 1 && productModel.IsShippableToUser);
+                Assert.All(
+                    collection.First(categoryModel => categoryModel.CategoryID == 1)
+                        .Products.Where(productModel => productModel.ProductID != 1),
+                    productModel => Assert.False(
+                        productModel.IsShippableToUser));
+                Assert.All(
+                    collection.First(categoryModel => categoryModel.CategoryID == 2)
+                        .Products,
+                    productModel => Assert.False(
+                        productModel.IsShippableToUser));
             }
         }
 
