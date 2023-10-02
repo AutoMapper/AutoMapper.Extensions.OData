@@ -26,10 +26,25 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
             CreateMap<DataTypes, DataTypesModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DerivedCategory, DerivedCategoryModel>()
+                .ForMember(
+                    categoryModel => categoryModel.IsFavorite,
+                    o => o.MapFrom(
+                        category => currentUserFavoriteCategory.HasValue
+                                    && category.CategoryID == currentUserFavoriteCategory.Value))
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DerivedProduct, DerivedProductModel>()
+                .ForMember(
+                    productModel => productModel.IsShippableToUser,
+                    o => o.MapFrom(
+                        product => !string.IsNullOrEmpty(currentUserState)
+                                   && product.SupplierAddress.State == currentUserState))
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DynamicProduct, DynamicProductModel>()
+                .ForMember(
+                    productModel => productModel.IsShippableToUser,
+                    o => o.MapFrom(
+                        product => !string.IsNullOrEmpty(currentUserState)
+                                   && product.SupplierAddress.State == currentUserState))
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Product, ProductModel>()
                 .ForMember(
