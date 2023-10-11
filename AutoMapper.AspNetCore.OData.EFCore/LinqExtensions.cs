@@ -524,6 +524,12 @@ namespace AutoMapper.AspNet.OData
                 string path = next.PathToNavigationProperty.FirstSegment.Identifier;//Only first segment is necessary because of the new syntax $expand=Builder($expand=City) vs $expand=Builder/City
 
                 Type currentParentType = parentType.GetCurrentType();
+
+                if (next.PathToNavigationProperty.FirstSegment is TypeSegment) {
+                    path = next.PathToNavigationProperty.LastSegment.Identifier;
+                    currentParentType = next.PathToNavigationProperty.FirstSegment.EdmType.GetType();
+                }
+
                 Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
                 Type elementType = memberType.GetCurrentType();
 
