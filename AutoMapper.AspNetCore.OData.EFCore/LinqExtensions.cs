@@ -11,6 +11,9 @@ using System.Reflection;
 
 namespace AutoMapper.AspNet.OData
 {
+    using Microsoft.OData.Edm;
+    using Microsoft.OData.ModelBuilder;
+
     public static class LinqExtensions
     {
         /// <summary>
@@ -498,23 +501,32 @@ namespace AutoMapper.AspNet.OData
             });
         }
 
-        public static List<List<ODataExpansionOptions>> GetExpansions(this SelectExpandQueryOption clause, Type parentType)
+        public static List<List<ODataExpansionOptions>> GetExpansions(
+            this SelectExpandQueryOption clause,
+            Type parentType,
+            IEdmModel edmModel)
         {
             if (clause?.SelectExpandClause == null)
                 return new List<List<ODataExpansionOptions>>();
 
-            return clause.SelectExpandClause.SelectedItems.GetExpansions(parentType);
+            return clause.SelectExpandClause.SelectedItems.GetExpansions(parentType, edmModel);
         }
 
-        private static List<List<ODataExpansionOptions>> GetNestedExpansions(this ExpandedNavigationSelectItem node, Type type)
+        private static List<List<ODataExpansionOptions>> GetNestedExpansions(
+            this ExpandedNavigationSelectItem node,
+            Type type,
+            IEdmModel edmModel)
         {
             if (node == null)
                 return new List<List<ODataExpansionOptions>>();
 
-            return node.SelectAndExpand.SelectedItems.GetExpansions(type);
+            return node.SelectAndExpand.SelectedItems.GetExpansions(type, edmModel);
         }
 
-        private static List<List<ODataExpansionOptions>> GetExpansions(this IEnumerable<SelectItem> selectedItems, Type parentType)
+        private static List<List<ODataExpansionOptions>> GetExpansions(
+            this IEnumerable<SelectItem> selectedItems,
+            Type parentType,
+            IEdmModel edmModel)
         {
             if (selectedItems == null)
                 return new List<List<ODataExpansionOptions>>();
@@ -525,9 +537,10 @@ namespace AutoMapper.AspNet.OData
 
                 Type currentParentType = parentType.GetCurrentType();
 
-                if (next.PathToNavigationProperty.FirstSegment is TypeSegment) {
+                if (next.PathToNavigationProperty.FirstSegment is TypeSegment) { //Handle cast in $expand
                     path = next.PathToNavigationProperty.LastSegment.Identifier;
-                    currentParentType = next.PathToNavigationProperty.FirstSegment.EdmType.GetType();
+                    ClrTypeAnnotation annotation = edmModel.GetAnnotationValue<ClrTypeAnnotation>(next.PathToNavigationProperty.FirstSegment.EdmType);
+                    currentParentType = annotation.ClrType;
                 }
 
                 Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
@@ -543,7 +556,7 @@ namespace AutoMapper.AspNet.OData
                     Selects = next.SelectAndExpand.GetSelects()
                 };
 
-                List<List<ODataExpansionOptions>> navigationItems = next.GetNestedExpansions(elementType).Select
+                List<List<ODataExpansionOptions>> navigationItems = next.GetNestedExpansions(elementType, edmModel).Select
                 (
                     expansions =>
                     {
