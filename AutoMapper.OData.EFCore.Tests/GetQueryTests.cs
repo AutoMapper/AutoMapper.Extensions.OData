@@ -964,6 +964,26 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async void CountingOnChildCollection()
+        {
+            string query = "/CategoryModel?$expand=Products($count=true)";
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories()
+                )
+            );
+            
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Single(collection);
+                Assert.Single(collection.First().Products);
+            }
+        }
+
+        [Fact]
         public async void FilteringOnRoot_AndChildCollection_WithNoMatches()
         {
             string query = "/CategoryModel?$top=5&$expand=Products($filter=ProductName ne '';$orderby=ProductName desc)&$filter=CategoryName ne ''&$orderby=CategoryName asc";

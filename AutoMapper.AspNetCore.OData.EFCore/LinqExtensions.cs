@@ -560,14 +560,14 @@ namespace AutoMapper.AspNet.OData
 
                 QueryOptions GetQuery()
                     => HasQuery()
-                        ? new QueryOptions(next.OrderByOption, (int?)next.SkipOption, (int?)next.TopOption)
+                        ? new QueryOptions(next.OrderByOption, (int?)next.SkipOption, (int?)next.TopOption, next.CountOption)
                         : null;
 
                 bool HasFilter()
                     => memberType.IsList() && next.FilterOption != null;
 
                 bool HasQuery()
-                    => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue);
+                    => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue || next.CountOption.HasValue);
             });
         }
 
@@ -731,7 +731,7 @@ namespace AutoMapper.AspNet.OData
                                     MemberName = next.MemberName,
                                     MemberType = next.MemberType,
                                     ParentType = next.ParentType,
-                                    QueryOptions = new QueryOptions(next.QueryOptions.OrderByClause, next.QueryOptions.Skip, next.QueryOptions.Top)
+                                    QueryOptions = new QueryOptions(next.QueryOptions.OrderByClause, next.QueryOptions.Skip, next.QueryOptions.Top, next.QueryOptions.Count)
                                 }
                             );//add expansion with query options
 
@@ -759,13 +759,15 @@ namespace AutoMapper.AspNet.OData
 
     public class QueryOptions
     {
-        public QueryOptions(OrderByClause orderByClause, int? skip, int? top)
+        public QueryOptions(OrderByClause orderByClause, int? skip, int? top, bool? count)
         {
             OrderByClause = orderByClause;
             Skip = skip;
             Top = top;
+            Count = count;
         }
 
+        public bool? Count { get; set; }
         public OrderByClause OrderByClause { get; set; }
         public int? Skip { get; set; }
         public int? Top { get; set; }
