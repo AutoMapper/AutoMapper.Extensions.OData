@@ -58,7 +58,7 @@
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[6.0.4,7.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.0,7.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.4" />
     <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
