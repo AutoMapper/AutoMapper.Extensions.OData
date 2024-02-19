@@ -1,4 +1,5 @@
 ﻿using AutoMapper.AspNet.OData;
+using AutoMapper.OData.EFCore.Tests.Binders;
 using AutoMapper.OData.EFCore.Tests.Data;
 using DAL.EFCore;
 using Domain.OData;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
@@ -18,54 +20,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper.OData.EFCore.Tests.Binders;
-using Microsoft.AspNetCore.OData.Query.Expressions;
 using Xunit;
-using AutoMapper.OData.EFCore.Tests.Model;
 
 namespace AutoMapper.OData.EFCore.Tests
 {
-    public class GetTests
+    public class GetTests : IClassFixture<GetTestsFixture>
     {
-        public GetTests()
+        private readonly GetTestsFixture _fixture;
+
+        public GetTests(GetTestsFixture fixture)
         {
-            Initialize();
+            _fixture = fixture;
+            serviceProvider = _fixture.ServiceProvider;
         }
 
         #region Fields
-        private IServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
         #endregion Fields
-
-        private void Initialize()
-        {
-            IServiceCollection services = new ServiceCollection();
-            IMvcCoreBuilder builder = new TestMvcCoreBuilder
-            {
-                Services = services
-            };
-            
-            builder.AddOData();
-            services.AddDbContext<MyDbContext>
-                (
-                    options =>
-                    {
-                        options.UseInMemoryDatabase("MyDbContext");
-                        options.UseInternalServiceProvider(new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider());
-                    },
-                    ServiceLifetime.Transient
-                )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
-                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
-                .AddRouting()
-                .AddLogging();
-
-            serviceProvider = services.BuildServiceProvider();
-
-            MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
-            context.Database.EnsureCreated();
-            DatabaseInitializer.SeedDatabase(context);
-        }
 
         [Fact]
         public async void OpsTenantCreatedOnFilterServerUTCTimeZone()
@@ -133,7 +104,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -149,7 +120,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two", collection.First().Name);
             }
@@ -165,8 +136,8 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
-                Assert.Equal(0, collection.First().Buildings.Count);
+                Assert.Single(collection);
+                Assert.Empty(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
         }
@@ -198,7 +169,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<OpsTenant> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(0, collection.First().Buildings.Count);
+                Assert.Empty(collection.First().Buildings);
                 Assert.Equal("Two", collection.First().Name);
             }
         }
@@ -213,8 +184,8 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
-                Assert.Equal(0, collection.First().Buildings.Count);
+                Assert.Single(collection);
+                Assert.Empty(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
         }
@@ -229,7 +200,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
@@ -247,7 +218,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal("One", collection.First().Tenant.Name);
                 Assert.Equal("One L1", collection.First().Name);
@@ -382,7 +353,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, options.Request.ODataFeature().TotalCount);
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -405,7 +376,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Null(options.Request.ODataFeature().TotalCount);
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -756,5 +727,42 @@ namespace AutoMapper.OData.EFCore.Tests
     {
         public ApplicationPartManager PartManager { get; set; }
         public IServiceCollection Services { get; set; }
+    }
+
+    public class GetTestsFixture
+    {
+        public GetTestsFixture()
+        {
+            IServiceCollection services = new ServiceCollection();
+            IMvcCoreBuilder builder = new TestMvcCoreBuilder
+            {
+                Services = services
+            };
+
+            builder.AddOData();
+            services.AddDbContext<MyDbContext>
+                (
+                    options => options.UseSqlServer
+                    (
+                        @"Server=(localdb)\mssqllocaldb;Database=GetTestsDatabase;ConnectRetryCount=0",
+                        options => options.EnableRetryOnFailure()
+                    ),
+                    ServiceLifetime.Transient
+                )
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
+                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
+                .AddRouting()
+                .AddLogging();
+
+            ServiceProvider = services.BuildServiceProvider();
+
+            MyDbContext context = ServiceProvider.GetRequiredService<MyDbContext>();
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
+            DatabaseInitializer.SeedDatabase(context);
+        }
+
+        internal IServiceProvider ServiceProvider;
     }
 }

@@ -18,47 +18,19 @@ using Xunit;
 
 namespace AutoMapper.OData.EFCore.Tests
 {
-    public class GetQueryTests
+    public class GetQueryTests : IClassFixture<GetQueryTestsFixture>
     {
-        public GetQueryTests()
+        private readonly GetQueryTestsFixture _fixture;
+
+        public GetQueryTests(GetQueryTestsFixture fixture)
         {
-            Initialize();
+            _fixture = fixture;
+            serviceProvider = _fixture.ServiceProvider;
         }
 
         #region Fields
-        private IServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
         #endregion Fields
-
-        private void Initialize()
-        {
-            IServiceCollection services = new ServiceCollection();
-            IMvcCoreBuilder builder = new TestMvcCoreBuilder
-            {
-                Services = services
-            };
-
-            builder.AddOData();
-            services.AddDbContext<MyDbContext>
-                (
-                    options =>
-                    {
-                        options.UseInMemoryDatabase("MyDbContext");
-                        options.UseInternalServiceProvider(new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider());
-                    },
-                    ServiceLifetime.Transient
-                )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
-                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
-                .AddRouting()
-                .AddLogging();
-            
-            serviceProvider = services.BuildServiceProvider();
-
-            MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
-            context.Database.EnsureCreated();
-            DatabaseInitializer.SeedDatabase(context);
-        }
 
         [Fact]
         public void IsConfigurationValid()
@@ -76,7 +48,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("One", collection.First().Name);
             }
         }
@@ -91,7 +63,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(0, collection.Count);
+                Assert.Empty(collection);
             }
         }
 
@@ -161,7 +133,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -210,7 +182,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two", collection.First().Name);
             }
@@ -226,7 +198,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Null(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -258,7 +230,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(0, collection.Count);
+                Assert.Empty(collection);
             }
         }
 
@@ -304,7 +276,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Null(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -320,7 +292,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
@@ -339,7 +311,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
@@ -403,7 +375,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("One L1", collection.First().Name);
                 Assert.Equal(buildingParameterValue, collection.First().Parameter);
                 Assert.Equal("Sam", collection.First().Builder.Name);
@@ -421,7 +393,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal("One", collection.First().Tenant.Name);
                 Assert.Equal("One L1", collection.First().Name);
@@ -439,7 +411,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal("One", collection.First().Tenant.Name);
                 Assert.Equal("One L1", collection.First().Name);
@@ -574,7 +546,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, options.Request.ODataFeature().TotalCount);
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -597,7 +569,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Null(options.Request.ODataFeature().TotalCount);
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -1141,7 +1113,7 @@ namespace AutoMapper.OData.EFCore.Tests
             static void Test(ICollection<CategoryModel> collection)
             {
                 Assert.Equal(2, collection.Count);
-                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Single(collection.First().Products);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
             }
         }
@@ -1193,9 +1165,9 @@ namespace AutoMapper.OData.EFCore.Tests
 
             static void Test(ICollection<CategoryModel> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().CategoryID);
-                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Single(collection.First().Products);
                 Assert.Equal(5, collection.First().Products.First().ProductID);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
                 Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
@@ -1213,9 +1185,9 @@ namespace AutoMapper.OData.EFCore.Tests
 
             static void Test(ICollection<CategoryModel> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().CategoryID);
-                Assert.Equal(1, collection.First().Products.Count);
+                Assert.Single(collection.First().Products);
                 Assert.Equal(5, collection.First().Products.First().ProductID);
                 Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Length);
                 Assert.Equal(4, collection.First().Products.First().AlternateAddresses.First().AddressID);
@@ -1235,7 +1207,7 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 Assert.Equal(2, collection.First().Products.First().ProductID);
                 Assert.Equal(3, collection.First().Products.Last().ProductID);
-                Assert.Equal(1, collection.Last().Products.Count);
+                Assert.Single(collection.Last().Products);
                 Assert.Equal(5, collection.Last().Products.First().ProductID);
             }
         }
@@ -1313,7 +1285,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             static void Test(ICollection<CategoryModel> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().CategoryID);
             }
         }
@@ -1422,5 +1394,42 @@ namespace AutoMapper.OData.EFCore.Tests
                 customNamespace
             );
         }
+    }
+
+    public class GetQueryTestsFixture
+    {
+        public GetQueryTestsFixture()
+        {
+            IServiceCollection services = new ServiceCollection();
+            IMvcCoreBuilder builder = new TestMvcCoreBuilder
+            {
+                Services = services
+            };
+
+            builder.AddOData();
+            services.AddDbContext<MyDbContext>
+                (
+                    options => options.UseSqlServer
+                    (
+                        @"Server=(localdb)\mssqllocaldb;Database=GetQueryTestsDatabase;ConnectRetryCount=0",
+                        options => options.EnableRetryOnFailure()
+                    ),
+                    ServiceLifetime.Transient
+                )
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
+                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
+                .AddRouting()
+                .AddLogging();
+
+            ServiceProvider = services.BuildServiceProvider();
+
+            MyDbContext context = ServiceProvider.GetRequiredService<MyDbContext>();
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
+            DatabaseInitializer.SeedDatabase(context);
+        }
+
+        internal IServiceProvider ServiceProvider;
     }
 }

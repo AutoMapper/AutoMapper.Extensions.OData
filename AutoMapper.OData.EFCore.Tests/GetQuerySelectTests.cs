@@ -15,47 +15,19 @@ using Xunit;
 
 namespace AutoMapper.OData.EFCore.Tests
 {
-    public class GetQuerySelectTests
+    public class GetQuerySelectTests : IClassFixture<GetQuerySelectTestsFixture>
     {
-        public GetQuerySelectTests()
+        private readonly GetQuerySelectTestsFixture _fixture;
+
+        public GetQuerySelectTests(GetQuerySelectTestsFixture fixture)
         {
-            Initialize();
+            _fixture = fixture;
+            serviceProvider = _fixture.ServiceProvider;
         }
 
         #region Fields
-        private IServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
         #endregion Fields
-
-        private void Initialize()
-        {
-            IServiceCollection services = new ServiceCollection();
-            IMvcCoreBuilder builder = new TestMvcCoreBuilder
-            {
-                Services = services
-            };
-
-            builder.AddOData();
-            services.AddDbContext<MyDbContext>
-                (
-                    options =>
-                    {
-                        options.UseInMemoryDatabase("MyDbContext");
-                        options.UseInternalServiceProvider(new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider());
-                    },
-                    ServiceLifetime.Transient
-                )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
-                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
-                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
-                .AddRouting()
-                .AddLogging();
-
-            serviceProvider = services.BuildServiceProvider();
-
-            MyDbContext context = serviceProvider.GetRequiredService<MyDbContext>();
-            context.Database.EnsureCreated();
-            DatabaseInitializer.SeedDatabase(context);
-        }
 
         [Fact]
         public async void OpsTenantSelectNameExpandBuildings()
@@ -84,7 +56,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Name);
                 Assert.NotEqual(default, collection.First().Buildings.First().Identity);
@@ -103,7 +75,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -122,7 +94,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -141,7 +113,7 @@ namespace AutoMapper.OData.EFCore.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Equal("London", collection.First().Builder.City.Name);
@@ -219,5 +191,42 @@ namespace AutoMapper.OData.EFCore.Tests
                 customNamespace
             );
         }
+    }
+
+    public class GetQuerySelectTestsFixture
+    {
+        public GetQuerySelectTestsFixture()
+        {
+            IServiceCollection services = new ServiceCollection();
+            IMvcCoreBuilder builder = new TestMvcCoreBuilder
+            {
+                Services = services
+            };
+
+            builder.AddOData();
+            services.AddDbContext<MyDbContext>
+                (
+                    options => options.UseSqlServer
+                    (
+                        @"Server=(localdb)\mssqllocaldb;Database=GetQuerySelectTestsatabase;ConnectRetryCount=0",
+                        options => options.EnableRetryOnFailure()
+                    ),
+                    ServiceLifetime.Transient
+                )
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
+                .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
+                .AddRouting()
+                .AddLogging();
+
+            ServiceProvider = services.BuildServiceProvider();
+
+            MyDbContext context = ServiceProvider.GetRequiredService<MyDbContext>();
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
+            DatabaseInitializer.SeedDatabase(context);
+        }
+
+        internal IServiceProvider ServiceProvider;
     }
 }
