@@ -2636,7 +2636,7 @@ namespace ExpressionBuilder.Tests
             var exception = Assert.Throws<ArgumentNullException>(() => GetFilter<Product>(filterString));
             Assert.Equal
             (
-                "Value cannot be null. (Parameter 'qualifiedName')",
+                "Value cannot be null. (Parameter 'typeName')",
                 exception.Message
             );
         }

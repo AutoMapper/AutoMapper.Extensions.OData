@@ -6,7 +6,7 @@
     <PackageId>AutoMapper.AspNetCore.OData.EFCore</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Supporting AutoMapper v12.</PackageReleaseNotes>
+    <PackageReleaseNotes>Supporting AutoMapper v13 (EF Core only).</PackageReleaseNotes>
     <PackageTags>linq expressions odata efcore</PackageTags>
 	<PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/AutoMapper/AutoMapper.Extensions.OData</RepositoryUrl>
@@ -28,14 +28,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[6.0.4,7.0.0)" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[7.0.0,8.0.0)" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.0,7.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.6" />
-    <PackageReference Include="MinVer" Version="2.5.0">
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.4" />
+    <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
@@ -47,7 +47,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
 	</ItemGroup>
   
   <ItemGroup>
