@@ -229,7 +229,7 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(IQueryable<CoreBuilding> queryable)
             {
                 string sqlQuery = queryable.ToQueryString();
-                Assert.Contains("LIKE N'%Two L2%'", queryable.ToQueryString());           
+                Assert.Contains("LIKE N'%Two L2%'", sqlQuery);           
                 Assert.DoesNotContain("DECLARE", sqlQuery);
                 Assert.DoesNotContain("ESCAPE", sqlQuery);
             }
