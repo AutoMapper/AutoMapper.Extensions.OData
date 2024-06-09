@@ -33,5 +33,13 @@ namespace AutoMapper.AspNet.OData
         /// Default is null.
         /// </value>
         public TimeZoneInfo TimeZone { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether constants should be parameterized.
+        /// </summary>
+        /// <value>
+        /// Default is true.
+        /// </value>
+        public bool EnableConstantParameterization { get; set; } = true;
     }
 }
