@@ -218,7 +218,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Null(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
-        }        
+        }
 
         [Fact]
         public async void OpsTenantFilterLtDateNoExpand()
@@ -1339,7 +1339,7 @@ namespace AutoMapper.OData.EFCore.Tests
         {
             var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GetAsync<CoreBuilding, TBuilding>("/corebuilding?$count=true", querySettings: new QuerySettings { AsyncSettings = new AsyncSettings { CancellationToken = cancelledToken } }));
-        }        
+        }
 
         private ICollection<TModel> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
