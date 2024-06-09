@@ -218,37 +218,7 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Null(collection.First().Buildings);
                 Assert.Equal("One", collection.First().Name);
             }
-        }
-
-        [Fact]
-        public void BuildingsFilterNameDisableConstantParameterization()
-        {
-            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
-            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = false } }));
-
-            void Test(IQueryable<CoreBuilding> queryable)
-            {
-                string sqlQuery = queryable.ToQueryString();
-                Assert.Contains("LIKE N'%Two L2%'", sqlQuery);           
-                Assert.DoesNotContain("DECLARE", sqlQuery);
-                Assert.DoesNotContain("ESCAPE", sqlQuery);
-            }
-        }
-
-        [Fact]
-        public void BuildingsFilterNameEnableConstantParameterization()
-        {
-            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
-            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = true } }));
-
-            void Test(IQueryable<CoreBuilding> queryable)
-            {
-                string sqlQuery = queryable.ToQueryString();
-                Assert.DoesNotContain("LIKE N'%Two L2%'", sqlQuery);
-                Assert.Contains("DECLARE", sqlQuery);
-                Assert.Contains("ESCAPE", sqlQuery);
-            }
-        }
+        }        
 
         [Fact]
         public async void OpsTenantFilterLtDateNoExpand()
@@ -766,6 +736,36 @@ namespace AutoMapper.OData.EFCore.Tests
             {
                 Assert.Equal(3, collection.Count);
                 Assert.Null(options.Request.ODataFeature().NextLink);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameDisableConstantParameterization()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = false } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("LIKE N'%Two L2%'", sqlQuery);
+                Assert.DoesNotContain("DECLARE", sqlQuery);
+                Assert.DoesNotContain("ESCAPE", sqlQuery);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameEnableConstantParameterization()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = true } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.DoesNotContain("LIKE N'%Two L2%'", sqlQuery);
+                Assert.Contains("DECLARE", sqlQuery);
+                Assert.Contains("ESCAPE", sqlQuery);
             }
         }
 
