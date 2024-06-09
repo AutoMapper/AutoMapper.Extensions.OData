@@ -71,7 +71,7 @@ namespace AutoMapper.OData.EF6.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Name);
                 Assert.NotEqual(default, collection.First().Buildings.First().Identity);
@@ -90,7 +90,7 @@ namespace AutoMapper.OData.EF6.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -109,7 +109,7 @@ namespace AutoMapper.OData.EF6.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -128,7 +128,7 @@ namespace AutoMapper.OData.EF6.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Equal("London", collection.First().Builder.City.Name);
