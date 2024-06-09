@@ -221,6 +221,36 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public void BuildingsFilterNameDisableConstantParameterization()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = false } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("LIKE N'%Two L2%'", queryable.ToQueryString());           
+                Assert.DoesNotContain("DECLARE", sqlQuery);
+                Assert.DoesNotContain("ESCAPE", sqlQuery);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameEnableConstantParameterization()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnableConstantParameterization = true } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.DoesNotContain("LIKE N'%Two L2%'", sqlQuery);
+                Assert.Contains("DECLARE", sqlQuery);
+                Assert.Contains("ESCAPE", sqlQuery);
+            }
+        }
+
+        [Fact]
         public async void OpsTenantFilterLtDateNoExpand()
         {
             string query = "/opstenant?$filter=CreatedDate lt 2012-11-11T12:00:00.00Z";
@@ -1309,7 +1339,7 @@ namespace AutoMapper.OData.EFCore.Tests
         {
             var cancelledToken = new CancellationTokenSource(TimeSpan.Zero).Token;
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GetAsync<CoreBuilding, TBuilding>("/corebuilding?$count=true", querySettings: new QuerySettings { AsyncSettings = new AsyncSettings { CancellationToken = cancelledToken } }));
-        }
+        }        
 
         private ICollection<TModel> Get<TModel, TData>(string query, IQueryable<TData> dataQueryable, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
@@ -1332,15 +1362,27 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
+        private IQueryable<TModel> GetQuery<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
+        {
+            return DoGet
+            (
+                serviceProvider.GetRequiredService<IMapper>()
+            );
+
+            IQueryable<TModel> DoGet(IMapper mapper)
+            {
+                return serviceProvider.GetRequiredService<MyDbContext>().Set<TData>().GetQuery
+                (
+                    mapper,
+                    options ?? GetODataQueryOptions<TModel>(query),
+                    querySettings
+                );
+            };
+        }
+
         private ICollection<TModel> Get<TModel, TData>(string query, ODataQueryOptions<TModel> options = null, QuerySettings querySettings = null) where TModel : class where TData : class
         {
-            return Get
-            (
-                query,
-                serviceProvider.GetRequiredService<MyDbContext>().Set<TData>(),
-                options,
-                querySettings
-            );
+            return GetQuery<TModel, TData>(query, options, querySettings).ToList();
         }
 
         private async Task<ICollection<TModel>> GetAsync<TModel, TData>(string query, 
