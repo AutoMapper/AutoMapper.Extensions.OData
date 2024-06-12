@@ -40,7 +40,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(0, collection.Count);
+                Assert.Empty(collection);
             }
         }
         
@@ -53,7 +53,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -68,7 +68,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -83,7 +83,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -98,7 +98,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -113,7 +113,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two", collection.First().Name);
             }
@@ -128,7 +128,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -158,7 +158,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(0, collection.Count);
+                Assert.Empty(collection);
             }
         }
 
@@ -201,7 +201,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.False(collection.First()?.Buildings?.Any() == true);
                 Assert.Equal("One", collection.First().Name);
             }
@@ -216,7 +216,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
@@ -234,7 +234,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
                 Assert.NotNull(collection.First().Buildings.First().Builder.City);
@@ -251,7 +251,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal("One", collection.First().Tenant.Name);
                 Assert.Equal("One L1", collection.First().Name);
@@ -371,7 +371,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -394,7 +394,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("One L1", collection.First().Name);
             }
@@ -503,7 +503,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.NotNull(collection.First().Buildings.First().Name);
                 Assert.NotEqual(default, collection.First().Buildings.First().Identity);
@@ -521,7 +521,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -539,7 +539,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Null(collection.First().Builder.City);
@@ -557,7 +557,7 @@ namespace Web.Tests
 
             void Test(ICollection<CoreBuilding> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal("Sam", collection.First().Builder.Name);
                 Assert.Equal(default, collection.First().Builder.Id);
                 Assert.Equal("London", collection.First().Builder.City.Name);
@@ -576,7 +576,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(2, collection.First().Buildings.Count);
                 Assert.Equal("Two L2", collection.First().Buildings.First().Name);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
@@ -595,7 +595,7 @@ namespace Web.Tests
 
             void Test(ICollection<OpsTenant> collection)
             {
-                Assert.Equal(1, collection.Count);
+                Assert.Single(collection);
                 Assert.Equal(3, collection.First().Buildings.Count);
                 Assert.Equal("Two L3", collection.First().Buildings.First().Name);
                 Assert.NotNull(collection.First().Buildings.First().Builder);
