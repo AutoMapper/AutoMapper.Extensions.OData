@@ -33,14 +33,20 @@ namespace AutoMapper.AspNet.OData
         /// <typeparam name="T"></typeparam>
         /// <param name="filterOption"></param>
         /// <returns></returns>
-        public static Expression<Func<T, bool>> ToFilterExpression<T>(this FilterQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default, TimeZoneInfo timeZone = null)
+        public static Expression<Func<T, bool>> ToFilterExpression<T>(
+            this FilterQueryOption filterOption,
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
+            TimeZoneInfo timeZone = null,
+            bool enableConstantParameterization = true)
         {
             if (filterOption == null)
                 return null;
 
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
 
-            queryable = filterOption.ApplyTo(queryable, new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone });
+            queryable = filterOption.ApplyTo(
+                queryable,
+                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization });
 
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
@@ -53,13 +59,19 @@ namespace AutoMapper.AspNet.OData
         /// <typeparam name="T"></typeparam>
         /// <param name="filterOption"></param>
         /// <returns></returns>
-        public static Expression<Func<T, bool>> ToSearchExpression<T>(this SearchQueryOption filterOption, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default, TimeZoneInfo timeZone = null)
+        public static Expression<Func<T, bool>> ToSearchExpression<T>(
+            this SearchQueryOption filterOption,            
+            HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
+            TimeZoneInfo timeZone = null,
+            bool enableConstantParameterization = true)
         {
             if (filterOption == null)
                 return null;
 
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
-            queryable = filterOption.ApplyTo(queryable, new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone });
+            queryable = filterOption.ApplyTo(
+                queryable,
+                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization });
 
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
@@ -68,7 +80,8 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression<Func<T, bool>> ToFilterExpression<T>(this ODataQueryOptions<T> options,
             HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
-            TimeZoneInfo timeZone = null)
+            TimeZoneInfo timeZone = null,
+            bool enableConstantParameterization = true)
         {
             if (options is null || options.Filter is null && options.Search is null)
             {
@@ -80,14 +93,14 @@ namespace AutoMapper.AspNet.OData
             Expression filterExpression = null;
             if (options.Filter is not null)
             {
-                var raw = options.Filter.ToFilterExpression<T>(handleNullPropagation, timeZone);
+                var raw = options.Filter.ToFilterExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization);
                 filterExpression = raw.Body.ReplaceParameter(raw.Parameters[0], parameter);
             }
 
             Expression searchExpression = null;
             if (options.Search is not null)
             {
-                var raw = options.Search.ToSearchExpression<T>(handleNullPropagation, timeZone);
+                var raw = options.Search.ToSearchExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization);
                 searchExpression = raw.Body.ReplaceParameter(raw.Parameters[0], parameter);
             }
 
