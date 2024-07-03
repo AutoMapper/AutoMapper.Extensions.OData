@@ -15,6 +15,8 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Category, CategoryModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<SuperCategory, SuperCategoryModel>()
+                .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DataTypes, DataTypesModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DerivedCategory, DerivedCategoryModel>()
