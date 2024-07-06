@@ -26,7 +26,7 @@ namespace AutoMapper.AspNet.OData.Visitors
 
             return Expression.MemberInit
             (
-                Expression.New(node.Type),
+                Expression.New(node.NewExpression.Constructor, node.NewExpression.Arguments),
                 node.Bindings.OfType<MemberAssignment>().Aggregate
                 (
                     new List<MemberBinding>(),

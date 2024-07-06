@@ -69,6 +69,19 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         public IQueryable<ProductModel> QueryableProducts { get; set; }
     }
 
+    public class SuperCategoryModel
+    {
+        public SuperCategoryModel(string superCategoryName)
+        {
+            SuperCategoryName = superCategoryName;
+        }
+
+        [Key]
+        public int SuperCategoryID { get; set; }
+        public string SuperCategoryName { get; set; }
+        public IEnumerable<CategoryModel> Categories { get; set; }
+    }
+
     public class CompositeKeyModel
     {
         [Key]

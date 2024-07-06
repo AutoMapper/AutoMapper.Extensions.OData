@@ -1334,6 +1334,51 @@ namespace AutoMapper.OData.EFCore.Tests
             }
         }
 
+        private IQueryable<SuperCategory> GetSuperCategories()
+         => new SuperCategory[]
+            {
+                new SuperCategory("SuperCategoryOne")
+                {
+                    SuperCategoryID = 1,
+                    Categories = GetCategories()
+                },
+                new SuperCategory("SuperCategoryTwo")
+                {
+                    SuperCategoryID = 2,
+                    Categories = Enumerable.Empty<Category>()
+                }
+            }.AsQueryable();
+
+        [Fact]
+        public async void ExpandChildCollectionWithNoDefaultConstructorNoFilter()
+        {
+            const string query = "/SuperCategoryModel?$expand=Categories";
+            Test(await GetAsync<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+            Test(await GetUsingCustomNameSpace<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+            Test(Get<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+
+            static void Test(ICollection<SuperCategoryModel> collection)
+            {
+                Assert.NotEmpty(collection.First().Categories);
+                Assert.Empty(collection.Last().Categories);
+            }
+        }
+
+        [Fact]
+        public async void ExpandChildCollectionWithNoDefaultConstructorNestedFilter()
+        {
+            const string query = "/SuperCategoryModel?$expand=Categories($filter=CategoryName eq 'CategoryOne')";
+            Test(await GetAsync<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+            Test(await GetUsingCustomNameSpace<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+            Test(Get<SuperCategoryModel, SuperCategory>(query, GetSuperCategories()));
+
+            static void Test(ICollection<SuperCategoryModel> collection)
+            {
+                Assert.Single(collection.First().Categories);
+                Assert.Empty(collection.Last().Categories);
+            }
+        }
+
         [Fact]
         public async Task CancellationThrowsException()
         {
