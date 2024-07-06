@@ -35,7 +35,8 @@ namespace AutoMapper.AspNet.OData.Visitors
                     expansion.QueryOptions.OrderByClause,
                     elementType,
                     expansion.QueryOptions.Skip,
-                    expansion.QueryOptions.Top
+                    expansion.QueryOptions.Top,
+                    expansion.QueryOptions.Count
                 );
             }
 
