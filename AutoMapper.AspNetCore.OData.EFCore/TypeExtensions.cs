@@ -1,12 +1,9 @@
 ﻿using LogicBuilder.Expressions.Utils;
 using Microsoft.AspNetCore.OData.Edm;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -21,6 +18,17 @@ namespace AutoMapper.AspNet.OData
 
             return selects.Select(select => parentType.GetMemberInfo(select)).ToArray();
         }
+        
+        public static IEnumerable<string> GetLiteralLists(this Type type)
+        {
+            foreach (var member in type.GetMemberInfos())
+            {
+                if (member.MemberType is not (MemberTypes.Field or MemberTypes.Property)) continue;
+
+                if (member.GetMemberType().IsListLiteral())
+                    yield return member.Name;
+            }
+        }
 
         private static MemberInfo[] GetValueTypeMembers(this Type parentType)
         {
@@ -32,6 +40,19 @@ namespace AutoMapper.AspNet.OData
                 info => (info.MemberType == MemberTypes.Field || info.MemberType == MemberTypes.Property)
                 && info.GetMemberType().IsLiteralType()
             ).ToArray();
+        }
+        
+        private static bool IsListLiteral(this Type type)
+        {
+            // Check if type is a List
+            if (!type.IsList()) return false;
+
+            // If not generic, check if it's a literal type (i.e. string[])
+            if (!type.IsGenericType) return type.GetElementType().IsLiteralType();
+
+            // Extract the type T from List<T> and check if it's a literal type
+            var firstGenericArgument = type.GetGenericArguments().First();
+            return firstGenericArgument.IsLiteralType();
         }
 
         private static MemberInfo[] GetMemberInfos(this Type parentType) 

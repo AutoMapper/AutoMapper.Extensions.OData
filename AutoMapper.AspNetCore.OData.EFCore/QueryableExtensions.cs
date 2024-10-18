@@ -132,6 +132,10 @@ namespace AutoMapper.AspNet.OData
         {
             
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
+            
+            var selects = options.SelectExpand.GetSelects();
+            var literalLists = typeof(TModel).GetLiteralLists();
+            var includes = selects.Union(literalLists).ToList();
 
             return query.GetQuery
             (
@@ -140,7 +144,7 @@ namespace AutoMapper.AspNet.OData
                 options.GetQueryableExpression(querySettings?.ODataSettings),
                 expansions
                     .Select(list => new List<Expansion>(list))
-                    .BuildIncludes<TModel>(options.SelectExpand.GetSelects())
+                    .BuildIncludes<TModel>(includes)
                     .ToList(),
                 querySettings?.ProjectionSettings
             ).UpdateQueryableExpression(expansions, options.Context);
