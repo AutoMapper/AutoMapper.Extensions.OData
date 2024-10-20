@@ -25,6 +25,8 @@ namespace DAL.EFCore
         public TBuilder Builder { get; set; }
 
         public TMandator Mandator { get; set; }
+        
+        public string[] Parameters { get; set; }
 
         [ForeignKey("Mandator")]
         [Column("fkMandatorID")]

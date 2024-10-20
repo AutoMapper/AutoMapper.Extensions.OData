@@ -450,6 +450,23 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal("Two L3", collection.First().Name);
             }
         }
+        
+        [Fact]
+        public async void GetBuildings_ShouldReturnParametersLiteralList()
+        {
+            const string query = "/corebuilding";
+            Test(Get<CoreBuilding, TBuilding>(query));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query));
+            Test(await GetUsingCustomNameSpace<CoreBuilding, TBuilding>(query));
+            
+            return;
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Equal(5, collection.Count);
+                Assert.True(collection.All(coreBuilding => coreBuilding.Parameters.Length is 2));
+            }
+        }
 
         [Fact]
         public async void BuildingExpandBuilderTenantExpandCityFilterOnNestedNestedPropertyWithCount()
@@ -586,6 +603,34 @@ namespace AutoMapper.OData.EFCore.Tests
             void Test(ICollection<CoreBuilding> collection)
             {
                 Assert.Equal(5, collection.Count);
+            }
+        }
+        
+        [Fact]
+        public async void BuildingSelectName_OtherPropertiesShouldNotBeUnset()
+        {
+            const string query = "/corebuilding?$select=Name";
+            Test(Get<CoreBuilding, TBuilding>(query));
+            Test(await GetAsync<CoreBuilding, TBuilding>(query));
+            Test(await GetUsingCustomNameSpace<CoreBuilding, TBuilding>(query));
+            
+            return;
+
+            void Test(ICollection<CoreBuilding> collection)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.Equal(5, collection.Count);
+                    foreach (var coreBuilding in collection)
+                    {
+                        Assert.NotNull(coreBuilding.Name);
+                        Assert.Null(coreBuilding.Parameters);
+                        Assert.Null(coreBuilding.Parameter);
+                        Assert.Null(coreBuilding.Tenant);
+                        Assert.Null(coreBuilding.Builder);
+                        Assert.Equivalent(Guid.Empty, coreBuilding.Identity);
+                    }
+                });
             }
         }
 

@@ -28,8 +28,8 @@ namespace AutoMapper.OData.EFCore.Tests.Data
                 CreatedDate = new DateTime(2012, 12, 12),
                 Buildings = new List<TBuilding>
                 {
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L1", BuilderId = builders.First(b => b.Name == "Sam").Id },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L2", BuilderId = builders.First(b => b.Name == "Sam").Id  }
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L1", BuilderId = builders.First(b => b.Name == "Sam").Id, Parameters = new []{"Param A", "Param B"}},
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "One L2", BuilderId = builders.First(b => b.Name == "Sam").Id, Parameters = new []{"Param A", "Param B"}}
                 }
             });
             context.MandatorSet.Add(new TMandator
@@ -39,9 +39,9 @@ namespace AutoMapper.OData.EFCore.Tests.Data
                 CreatedDate = new DateTime(2012, 12, 12),
                 Buildings = new List<TBuilding>
                 {
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L1", BuilderId = builders.First(b => b.Name == "John").Id  },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L2", BuilderId = builders.First(b => b.Name == "Mark").Id  },
-                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L3", BuilderId = builders.First(b => b.Name == "Mark").Id  }
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L1", BuilderId = builders.First(b => b.Name == "John").Id, Parameters = new []{"Param A", "Param B"}  },
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L2", BuilderId = builders.First(b => b.Name == "Mark").Id, Parameters = new []{"Param A", "Param B"}  },
+                    new TBuilding { Identity =  Guid.NewGuid(), LongName = "Two L3", BuilderId = builders.First(b => b.Name == "Mark").Id, Parameters = new []{"Param A", "Param B"}  }
                 }
             });
             context.SaveChanges();

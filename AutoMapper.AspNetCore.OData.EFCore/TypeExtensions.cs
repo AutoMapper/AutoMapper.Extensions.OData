@@ -18,17 +18,6 @@ namespace AutoMapper.AspNet.OData
 
             return selects.Select(select => parentType.GetMemberInfo(select)).ToArray();
         }
-        
-        public static IEnumerable<string> GetLiteralLists(this Type type)
-        {
-            foreach (var member in type.GetMemberInfos())
-            {
-                if (member.MemberType is not (MemberTypes.Field or MemberTypes.Property)) continue;
-
-                if (member.GetMemberType().IsListLiteral())
-                    yield return member.Name;
-            }
-        }
 
         private static MemberInfo[] GetValueTypeMembers(this Type parentType)
         {
@@ -38,7 +27,7 @@ namespace AutoMapper.AspNet.OData
             return parentType.GetMemberInfos().Where
             (
                 info => (info.MemberType == MemberTypes.Field || info.MemberType == MemberTypes.Property)
-                && info.GetMemberType().IsLiteralType()
+                        && (info.GetMemberType().IsLiteralType() || info.GetMemberType() == typeof(byte[]) || info.GetMemberType().IsListLiteral())
             ).ToArray();
         }
         

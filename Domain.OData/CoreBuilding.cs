@@ -10,6 +10,7 @@ namespace Domain.OData
         public OpsBuilder Builder { get; set; }
         public OpsTenant Tenant { get; set; }
         public string Parameter { get; set; }
+        public string[] Parameters { get; set; }
     }
 
     public abstract class BaseCoreBuilding
