@@ -48,6 +48,7 @@
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\MethodAppender.cs" Link="Visitors\MethodAppender.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ProjectionVisitor.cs" Link="Visitors\ProjectionVisitor.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ParameterReplacer.cs" Link="Visitors\ParameterReplacer.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Visitors\ReplaceExpressionVisitor.cs" Link="Visitors\ReplaceExpressionVisitor.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +58,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[6.0.4,7.0.0)" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
-    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.3,7.0.0)" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.4" />
     <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>

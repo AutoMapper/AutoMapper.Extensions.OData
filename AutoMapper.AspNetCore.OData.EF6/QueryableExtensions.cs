@@ -197,7 +197,7 @@ namespace AutoMapper.AspNet.OData
                     .BuildIncludes<TModel>(options.SelectExpand.GetSelects())
                     .ToList(),
                 querySettings?.ProjectionSettings
-            ).UpdateQueryableExpression(expansions, options.Context);
+            ).UpdateQueryableExpression(expansions, options.Context, mapper);
         }
 
         private static IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query,
