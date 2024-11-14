@@ -630,7 +630,7 @@ namespace AutoMapper.AspNet.OData
         }
 
         internal static IQueryable<TModel> UpdateQueryableExpression<TModel>(
-            this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions, ODataQueryContext context)
+            this IQueryable<TModel> query, List<List<ODataExpansionOptions>> expansions, ODataQueryContext context, IMapper mapper)
         {
             List<List<ODataExpansionOptions>> filters = GetFilters();
             List<List<ODataExpansionOptions>> methods = GetQueryMethods();
@@ -643,7 +643,7 @@ namespace AutoMapper.AspNet.OData
             if (methods.Any())
                 expression = UpdateProjectionMethodExpression(expression);
 
-            if (filters.Any())//do filter last so it runs before a Skip or Take call.
+            if (filters.Any())
                 expression = UpdateProjectionFilterExpression(expression);
 
             return query.Provider.CreateQuery<TModel>(expression);
@@ -656,7 +656,8 @@ namespace AutoMapper.AspNet.OData
                     (
                         projectionExpression,
                         filterList,
-                        context
+                        context,
+                        mapper
                     )
                 );
 

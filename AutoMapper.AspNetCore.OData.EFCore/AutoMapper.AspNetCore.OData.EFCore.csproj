@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[7.0.0,8.0.0)" />
-    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[7.0.2,8.0.0)" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.3,7.0.0)" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.4" />
     <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>

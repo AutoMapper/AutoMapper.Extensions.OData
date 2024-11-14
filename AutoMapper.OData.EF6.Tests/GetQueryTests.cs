@@ -1096,6 +1096,43 @@ Result Message:	System.NotSupportedException : The type 'Domain.OData.CoreBuildi
         }
 
         [Fact]
+        public async void Filtering_On_Members_Not_Selected_In_Chiled_Collections()
+        {
+            string query = "/CategoryModel?$top=5&$expand=Products($select=ProductID;$filter=ProductName ne '';$top=1;$expand=AlternateAddresses($select=State;$filter=City ne ''))&$filter=CategoryName ne ''";
+            Test
+            (
+                Get<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetAsync<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories()
+                )
+            );
+            Test
+            (
+                await GetUsingCustomNameSpace<CategoryModel, Category>
+                (
+                    query,
+                    GetCategories()
+                )
+            );
+
+            static void Test(ICollection<CategoryModel> collection)
+            {
+                Assert.Equal(2, collection.Count);
+                Assert.Single(collection.First().Products);
+                Assert.Equal(2, collection.First().Products.First().AlternateAddresses.Count());
+            }
+        }
+
+        [Fact]
         public async void FilteringOnRoot_ChildCollection_AndChildCollectionOfChildCollection_WithNoMatches_SortRoot_AndChildCollection_AndChildCollectionOfChildCollection()
         {
             string query = "/CategoryModel?$top=5&$expand=Products($filter=SupplierAddress/City ne '';$orderby=ProductName;$expand=AlternateAddresses($filter=City ne '';$orderby=City desc),SupplierAddress)&$filter=CategoryName ne ''&$orderby=CategoryName asc";
