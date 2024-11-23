@@ -123,10 +123,8 @@ namespace AutoMapper.AspNet.OData
         /// <returns></returns>
         public static Expression<Func<IQueryable<T>, IQueryable<T>>> GetQueryableExpression<T>(this ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
-            if (NoQueryableMethod(options, oDataSettings))
-                return null;
-
-            ParameterExpression param = Expression.Parameter(typeof(IQueryable<T>), "q");
+            if (NoQueryableMethod(options, oDataSettings)) return null;
+            var param = Expression.Parameter(typeof(IQueryable<T>), "q");
 
             return Expression.Lambda<Func<IQueryable<T>, IQueryable<T>>>
             (
@@ -134,19 +132,18 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
-        public static Expression GetOrderByMethod<T>(this Expression expression,
+        private static Expression GetOrderByMethod<T>(this Expression expression,
             ODataQueryOptions<T> options, ODataSettings oDataSettings = null)
         {
-            if (NoQueryableMethod(options, oDataSettings))
-                return null;
-
+            if (NoQueryableMethod(options, oDataSettings)) return null;
             return expression.GetQueryableMethod
             (
                 options.Context,
                 options.OrderBy?.OrderByClause,
                 typeof(T),
                 options.Skip?.Value,
-                GetPageSize()
+                GetPageSize(),
+                oDataSettings
             );
 
             int? GetPageSize()
@@ -166,8 +163,30 @@ namespace AutoMapper.AspNet.OData
         }
 
         public static Expression GetQueryableMethod(this Expression expression,
-            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top)
+            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top,
+            ODataSettings? oDataSettings = null)
         {
+            if (oDataSettings?.AlwaysSortByPrimaryKey is true)
+            {
+                var orderBySettings = context.FindSortableProperties(type, OrderByDirection.Descending);
+                if (orderBySettings is null) return null;
+                
+                return orderByClause switch
+                {
+                    null when skip is null && top is null => expression
+                        .GetDefaultOrderByCall(orderBySettings),
+                    null => expression
+                        .GetDefaultOrderByCall(orderBySettings)
+                        .GetSkipCall(skip)
+                        .GetTakeCall(top),
+                    _ => expression
+                        .GetOrderByCall(orderByClause, context)
+                        .GetDefaultThenByCall(orderBySettings)
+                        .GetSkipCall(skip)
+                        .GetTakeCall(top)
+                };
+            }
+            
             if (orderByClause is null && skip is null && top is null)
                 return null;
 
@@ -189,22 +208,26 @@ namespace AutoMapper.AspNet.OData
                 .GetSkipCall(skip)
                 .GetTakeCall(top);
         }
-
+        
         private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
             => options.OrderBy is null
-            && options.Top is null
-            && options.Skip is null
-            && oDataSettings?.PageSize is null;
-
-
+               && options.Top is null
+               && options.Skip is null
+               && oDataSettings?.PageSize is null
+               && (oDataSettings is null || oDataSettings.AlwaysSortByPrimaryKey is false);
+        
         private static Expression GetDefaultThenByCall(this Expression expression, OrderBySetting settings)
         {
             return settings.ThenBy is null
                 ? GetMethodCall()
                 : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
 
-            Expression GetMethodCall() =>
-                expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenBy));
+            Expression GetMethodCall()
+            {
+                return settings.Direction is OrderByDirection.Ascending
+                    ? expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenBy))
+                    : expression.GetOrderByCall(settings.Name, nameof(Queryable.ThenByDescending));
+            }
         }
 
         private static Expression GetDefaultOrderByCall(this Expression expression, OrderBySetting settings)
@@ -213,8 +236,12 @@ namespace AutoMapper.AspNet.OData
                 ? GetMethodCall()
                 : GetMethodCall().GetDefaultThenByCall(settings.ThenBy);
 
-            Expression GetMethodCall() =>
-                expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy));
+            Expression GetMethodCall()
+            {
+                return settings.Direction is OrderByDirection.Ascending
+                    ? expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderBy))
+                    : expression.GetOrderByCall(settings.Name, nameof(Queryable.OrderByDescending));
+            }
         }
 
         private static Expression GetOrderByCall(this Expression expression, OrderByClause orderByClause, ODataQueryContext context)

@@ -3,18 +3,20 @@ using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.OData.UriParser;
 
 namespace AutoMapper.AspNet.OData
 {
     internal static class ODataQueryContextExtentions
     {
-        public static OrderBySetting FindSortableProperties(this ODataQueryContext context, Type type)
+        public static OrderBySetting FindSortableProperties(this ODataQueryContext context, Type type,
+            OrderByDirection orderByDirection = OrderByDirection.Ascending)
         {
             context = context ?? throw new ArgumentNullException(nameof(context));
 
             var entity = GetEntity();
             return entity is not null 
-                ? FindProperties(entity) 
+                ? FindProperties(entity, orderByDirection) 
                 : throw new InvalidOperationException($"The type '{type.FullName}' has not been declared in the entity data model.");
 
             IEdmEntityType GetEntity()
@@ -26,7 +28,7 @@ namespace AutoMapper.AspNet.OData
                 return null;
             }
 
-            static OrderBySetting FindProperties(IEdmEntityType entity)
+            static OrderBySetting FindProperties(IEdmEntityType entity, OrderByDirection orderByDirection)
             {
                 var propertyNames = entity.Key().Any() switch
                 {
@@ -43,9 +45,10 @@ namespace AutoMapper.AspNet.OData
                     if (settings.Name is null)
                     {
                         settings.Name = name;
+                        settings.Direction = orderByDirection;
                         return settings;
                     }
-                    settings.ThenBy = new() { Name = name };
+                    settings.ThenBy = new() { Name = name, Direction = orderByDirection };
                     return settings.ThenBy;
                 });
                 return orderBySettings.Name is null ? null : orderBySettings;
