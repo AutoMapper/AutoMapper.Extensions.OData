@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+	<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <RootNamespace>AutoMapper.AspNet.OData</RootNamespace>
     <PackageId>AutoMapper.AspNetCore.OData.EF6</PackageId>
     <Description>Creates LINQ expressions from ODataQueryOptions and executes the query.</Description>
@@ -57,16 +57,16 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[6.0.4,7.0.0)" />
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
-    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="[6.0.3,7.0.0)" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.4" />
-    <PackageReference Include="MinVer" Version="4.3.0">
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
+    <PackageReference Include="LogicBuilder.Expressions.Utils" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.1.1" />
+    <PackageReference Include="MinVer" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
