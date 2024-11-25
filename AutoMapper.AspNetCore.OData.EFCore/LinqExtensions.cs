@@ -146,7 +146,8 @@ namespace AutoMapper.AspNet.OData
                 options.OrderBy?.OrderByClause,
                 typeof(T),
                 options.Skip?.Value,
-                GetPageSize()
+                GetPageSize(),
+                options.Count?.Value
             );
 
             int? GetPageSize()
@@ -166,12 +167,12 @@ namespace AutoMapper.AspNet.OData
         }
 
         public static Expression GetQueryableMethod(this Expression expression,
-            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top)
+            ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top, bool? count)
         {
-            if (orderByClause is null && skip is null && top is null)
+            if (orderByClause is null && skip is null && top is null && count is null)
                 return null;
 
-            if (orderByClause is null && (skip is not null || top is not null))
+            if (orderByClause is null && (skip is not null || top is not null || count is not null))
             {
                 var orderBySettings = context.FindSortableProperties(type);
 
@@ -181,13 +182,15 @@ namespace AutoMapper.AspNet.OData
                 return expression
                     .GetDefaultOrderByCall(orderBySettings)
                     .GetSkipCall(skip)
-                    .GetTakeCall(top);
+                    .GetTakeCall(top)
+                    .GetCountCall(count);
             }
 
             return expression
                 .GetOrderByCall(orderByClause, context)
                 .GetSkipCall(skip)
-                .GetTakeCall(top);
+                .GetTakeCall(top)
+                .GetCountCall(count);
         }
 
         private static bool NoQueryableMethod(ODataQueryOptions options, ODataSettings oDataSettings)
@@ -345,6 +348,20 @@ namespace AutoMapper.AspNet.OData
                     list.Add(propertyName);
                     return list;
             }
+        }
+        
+        public static Expression GetCountCall(this Expression expression, CountQueryOption count)
+        {
+            if (count == null) return expression;
+
+            return expression.GetCountCall(count.Value);
+        }
+        
+        public static Expression GetCountCall(this Expression expression, bool? count)
+        {
+            if (count == null) return expression;
+
+            return expression.GetCountCall();
         }
 
         public static Expression GetSkipCall(this Expression expression, SkipQueryOption skip)
@@ -573,14 +590,14 @@ namespace AutoMapper.AspNet.OData
 
                 QueryOptions GetQuery()
                     => HasQuery()
-                        ? new QueryOptions(next.OrderByOption, (int?)next.SkipOption, (int?)next.TopOption)
+                        ? new QueryOptions(next.OrderByOption, (int?)next.SkipOption, (int?)next.TopOption, next.CountOption)
                         : null;
 
                 bool HasFilter()
                     => memberType.IsList() && next.FilterOption != null;
 
                 bool HasQuery()
-                    => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue);
+                    => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue || next.CountOption.HasValue);
             });
         }
 
@@ -745,7 +762,7 @@ namespace AutoMapper.AspNet.OData
                                     MemberName = next.MemberName,
                                     MemberType = next.MemberType,
                                     ParentType = next.ParentType,
-                                    QueryOptions = new QueryOptions(next.QueryOptions.OrderByClause, next.QueryOptions.Skip, next.QueryOptions.Top)
+                                    QueryOptions = new QueryOptions(next.QueryOptions.OrderByClause, next.QueryOptions.Skip, next.QueryOptions.Top, next.QueryOptions.Count)
                                 }
                             );//add expansion with query options
 
@@ -773,13 +790,15 @@ namespace AutoMapper.AspNet.OData
 
     public class QueryOptions
     {
-        public QueryOptions(OrderByClause orderByClause, int? skip, int? top)
+        public QueryOptions(OrderByClause orderByClause, int? skip, int? top, bool? count)
         {
             OrderByClause = orderByClause;
             Skip = skip;
             Top = top;
+            Count = count;
         }
 
+        public bool? Count { get; set; }
         public OrderByClause OrderByClause { get; set; }
         public int? Skip { get; set; }
         public int? Top { get; set; }
