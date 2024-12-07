@@ -41,5 +41,22 @@ namespace AutoMapper.AspNet.OData
         /// Default is true.
         /// </value>
         public bool EnableConstantParameterization { get; set; } = true;
+        
+        /// <summary>
+        /// If sets to true, orderBy pk desc will always be present on main entity. 
+        /// </summary>
+        /// <example>
+        /// SELECT *
+        /// FROM "TEntitiy" AS "c"
+        /// ORDER BY "c"."Id" DESC
+        /// In case some orderBy was passed, additional thenBy pk will be applied
+        /// SELECT *
+        /// FROM "TEntitiy" AS "c"
+        /// ORDER BY "c"."Type" DESC, "c"."Id" DESC
+        /// </example>
+        /// <value>
+        /// Default is false.
+        /// </value>
+        public bool AlwaysSortByPrimaryKey { get; set; }
     }
 }

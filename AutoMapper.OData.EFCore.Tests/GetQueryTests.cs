@@ -265,6 +265,84 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal("Two", collection.First().Name);
             }
         }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async void OpsTenantNoExpandNoFilterNoOrderByShouldApplyByPk(bool alwaysSortByPk)
+        {
+            // Arrange
+            const string query = "/opstenant";
+            var querySettings = new QuerySettings
+            {
+                ODataSettings = new ODataSettings { AlwaysSortByPrimaryKey = alwaysSortByPk }
+            };
+            
+            Test(Get<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+            Test(await GetAsync<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+            return;
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                var expected = collection
+                    .Select(x => x.Identity)
+                    .OrderByDescending(identity => identity)
+                    .ToList();
+                
+                if (alwaysSortByPk)
+                {
+                    Assert.True(collection
+                    .Select(x => x.Identity)
+                    .SequenceEqual(expected));
+                }
+                else
+                {
+                    Assert.False(collection
+                        .Select(x => x.Identity)
+                        .SequenceEqual(expected));
+                }
+            }
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task OpsTenantNoExpandNoFilterWithOrderByShouldApplyByPk(bool alwaysSortByPk)
+        {
+            const string query = "/opstenant?$orderby=Name desc";
+            var querySettings = new QuerySettings
+            {
+                ODataSettings = new ODataSettings { AlwaysSortByPrimaryKey = alwaysSortByPk }
+            };
+            
+            // Test multiple scenarios
+            Test(Get<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+            Test(await GetAsync<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+            Test(await GetUsingCustomNameSpace<OpsTenant, TMandator>(query, GetMandators(), querySettings: querySettings));
+
+            return;
+
+            void Test(ICollection<OpsTenant> collection)
+            {
+                // Check if the collection is correctly ordered by Name (desc) and then by Identity (asc)
+                var expected = collection
+                    .OrderByDescending(x => x.Name)
+                    .ThenByDescending(x => x.Identity)
+                    .ToList();
+
+                if (alwaysSortByPk)
+                {
+                    Assert.True(collection.SequenceEqual(expected),
+                        "Collection is not ordered by Name (desc) and Identity (desc).");
+                }
+                else
+                {
+                    Assert.False(collection.SequenceEqual(expected),
+                    "Collection is ordered by Name (desc) and Identity (desc).");
+                }
+            }
+        }
 
         [Fact]
         public async void OpsTenantNoExpandFilterEqAndOrderBy()
@@ -846,6 +924,33 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal("London", collection.First().Builder.City.Name);
                 Assert.Equal("Leeds", collection.Last().Builder.City.Name);
             }
+        }
+        
+        private IQueryable<TMandator> GetMandators()
+        {
+            return new TMandator[]
+            {
+                new TMandator
+                {
+                    Identity = Guid.Empty, // The first guide in order.
+                    Name = "Two", // Duplicate name.
+                    CreatedDate = new DateTime(2011, 12, 12)
+                },
+                new TMandator
+                {
+                    Identity = Guid.NewGuid(),
+                    Name = "One",
+                    CreatedDate = new DateTime(2012, 12, 12),
+                    Buildings = new List<TBuilding>()
+                },
+                new TMandator
+                {
+                    Identity = Guid.NewGuid(),
+                    Name = "Two",
+                    CreatedDate = new DateTime(2012, 12, 12),
+                    Buildings = new List<TBuilding>()
+                }
+            }.AsQueryable();
         }
 
         private IQueryable<Category> GetCategories()
