@@ -30,7 +30,7 @@ namespace AutoMapper.OData.EFCore.Tests
         #endregion Fields
 
         [Fact]
-        public async void OpsTenantSelectNameExpandBuildings()
+        public async Task OpsTenantSelectNameExpandBuildings()
         {
             string query = "/opstenant?$select=Name&$expand=Buildings&$orderby=Name";
             Test(Get<OpsTenant, TMandator>(query));
@@ -47,7 +47,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void OpsTenantExpandBuildingsFilterEqAndOrderBy_FirstBuildingHasValues()
+        public async Task OpsTenantExpandBuildingsFilterEqAndOrderBy_FirstBuildingHasValues()
         {
             string query = "/opstenant?$top=5&$select=Buildings&$expand=Buildings&$filter=Name eq 'One'&$orderby=Name desc";
             Test(Get<OpsTenant, TMandator>(query));
@@ -66,7 +66,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void BuildingSelectNameExpandBuilder_BuilderNameShouldBeSam()
+        public async Task BuildingSelectNameExpandBuilder_BuilderNameShouldBeSam()
         {
             string query = "/corebuilding?$top=5&$select=Name&$expand=Builder($select=Name)&$filter=Name eq 'One L1'";
             Test(Get<CoreBuilding, TBuilding>(query));
@@ -85,7 +85,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void BuildingExpandBuilderSelectNamefilterEqAndOrderBy()
+        public async Task BuildingExpandBuilderSelectNamefilterEqAndOrderBy()
         {
             string query = "/corebuilding?$top=5&$expand=Builder($select=Name)&$filter=Name eq 'One L1'";
             Test(Get<CoreBuilding, TBuilding>(query));
@@ -104,7 +104,7 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public async void BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeExpanded_BuilderNameShouldBeSam_BuilderIdShouldBeZero()
+        public async Task BuildingExpandBuilderSelectNameExpandCityFilterEqAndOrderBy_CityShouldBeExpanded_BuilderNameShouldBeSam_BuilderIdShouldBeZero()
         {
             string query = "/corebuilding?$top=5&$expand=Builder($select=Name;$expand=City)&$filter=Name eq 'One L1'";
             Test(Get<CoreBuilding, TBuilding>(query));

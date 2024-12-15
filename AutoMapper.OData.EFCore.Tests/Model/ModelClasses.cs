@@ -193,3 +193,13 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         FourthLong
     }
 }
+
+namespace X
+{
+    public class CategoryModel
+    {
+        [Key]
+        public int CategoryID { get; set; }
+        public string CategoryName { get; set; }
+    }
+}

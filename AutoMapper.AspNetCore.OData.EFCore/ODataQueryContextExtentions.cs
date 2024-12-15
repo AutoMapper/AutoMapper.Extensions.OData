@@ -25,8 +25,16 @@ namespace AutoMapper.AspNet.OData
                 if (entities.Count == 1)
                     return entities[0];
 
+                if (entities.Count > 1)
+                {
+                    return entities.SingleOrDefault(e => GetClrType(e, context.Model).FullName == type.FullName);
+                }
+
                 return null;
             }
+
+            static Type GetClrType(IEdmEntityType entityType, IEdmModel edmModel)
+                => TypeExtensions.GetClrType(new EdmEntityTypeReference(entityType, true), edmModel, TypeExtensions.GetEdmToClrTypeMappings());
 
             static OrderBySetting FindProperties(IEdmEntityType entity, OrderByDirection orderByDirection)
             {
