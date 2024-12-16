@@ -164,7 +164,7 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetQueryableMethod(this Expression expression,
             ODataQueryContext context, OrderByClause orderByClause, Type type, int? skip, int? top,
-            ODataSettings? oDataSettings = null)
+            ODataSettings oDataSettings = null)
         {
             if (oDataSettings?.AlwaysSortByPrimaryKey is true)
             {
