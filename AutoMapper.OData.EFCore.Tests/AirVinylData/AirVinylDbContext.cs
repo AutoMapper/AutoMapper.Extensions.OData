@@ -11,6 +11,7 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
         public DbSet<PressingDetail> PressingDetails { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<DynamicProperty> DynamicVinylRecordProperties { get; set; }
+        public DbSet<DoorManufacturer> DoorManufacturers { get; set; }
 
         public AirVinylDbContext(DbContextOptions<AirVinylDbContext> options)
            : base(options)

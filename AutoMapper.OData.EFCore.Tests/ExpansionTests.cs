@@ -70,6 +70,25 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Country));
                 Assert.NotEmpty(collection.First().StoreAddress.Doors);
                 Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().Name));
+                Assert.Null(collection.First().StoreAddress.Doors.First().DoorManufacturer);
+            }
+        }
+
+        [Fact]
+        public async Task GetRecordStoresCanExpandNavigationPropertyOfNavigationPropertyUnderComplexType()
+        {
+            string query = "/recordstoremodel?$expand=StoreAddress/Doors($expand=DoorManufacturer)";
+            Test(await GetAsync<RecordStoreModel, RecordStore>(query));
+
+            static void Test(ICollection<RecordStoreModel> collection)
+            {
+                Assert.True(collection.Count > 0);
+                Assert.True(collection.All(r => r.Ratings.Count == 0));
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Country));
+                Assert.NotEmpty(collection.First().StoreAddress.Doors);
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().Name));
+                Assert.NotNull(collection.First().StoreAddress.Doors.First().DoorManufacturer);
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().DoorManufacturer.Name));
             }
         }
 

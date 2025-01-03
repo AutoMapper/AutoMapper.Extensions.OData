@@ -2,13 +2,10 @@
 
 namespace AutoMapper.OData.EFCore.Tests.AirVinylModel
 {
-    public class DoorModel
+    public class DoorManufacturerModel
     {
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
-        public int AddressId { get; set; }
-        public int DoorManufacturerId { get; set; }
-        public DoorManufacturerModel DoorManufacturer { get; set; }
     }
 }

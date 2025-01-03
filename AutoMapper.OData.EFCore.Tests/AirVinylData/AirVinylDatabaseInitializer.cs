@@ -308,6 +308,16 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
             });
             context.SaveChanges();
 
+            context.DoorManufacturers.AddRange(
+                new DoorManufacturer { Name = "Serta" }, 
+                new DoorManufacturer { Name = "Sealy" },
+                new DoorManufacturer { Name = "Ikea" },
+                new DoorManufacturer { Name = "Hardwood" }
+            );
+            context.SaveChanges();
+
+            ICollection<DoorManufacturer> doorManufacturers = [.. context.DoorManufacturers];
+
             context.RecordStores.AddRange(
                 new SpecializedRecordStore()
                 {
@@ -325,8 +335,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [3, 4, 5, 6],
                         Doors =
                         [
-                            new() { Name = "Front Door" },
-                            new() { Name = "Side Door" }
+                            new() { Name = "Front Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
+                            new() { Name = "Side Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Hardwood").Id }
                         ]
                     }
                 },
@@ -346,8 +356,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [2, 3, 4, 5],
                         Doors =
                         [
-                            new() { Name = "Main Door" },
-                            new() { Name = "Cabinet Door" }
+                            new() { Name = "Main Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
+                            new() { Name = "Cabinet Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id }
                         ]
                     }
                 },
@@ -366,8 +376,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [1, 2, 3, 4],
                         Doors =
                         [
-                            new() { Name = "Bedroom Door" },
-                            new() { Name = "Balcony Door" }
+                            new() { Name = "Bedroom Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
+                            new() { Name = "Balcony Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Sealy").Id }
                         ]
                     }
                 }

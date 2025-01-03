@@ -13,6 +13,8 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Door, DoorModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<DoorManufacturer, DoorManufacturerModel>()
+                .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DynamicProperty, DynamicPropertyModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Person, PersonModel>()

@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace AutoMapper.OData.EFCore.Tests.AirVinylData
 {
-    [Owned]
     public class Door
     {
+        [Key]
         public int Id { get; set; }
         public string Name{ get; set; }
         public int AddressId { get; set; }
+        public int DoorManufacturerId { get; set; }
+        public DoorManufacturer DoorManufacturer { get; set; }
     }
 }
