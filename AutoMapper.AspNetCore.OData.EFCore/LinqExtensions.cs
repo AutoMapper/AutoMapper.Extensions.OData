@@ -1,6 +1,5 @@
 ﻿using AutoMapper.AspNet.OData.Visitors;
 using LogicBuilder.Expressions.Utils;
-using LogicBuilder.Expressions.Utils.Expansions;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.UriParser;
 using System;
@@ -557,31 +556,43 @@ namespace AutoMapper.AspNet.OData
         private static List<List<ODataExpansionOptions>> GetExpansions(this IEnumerable<SelectItem> selectedItems, Type parentType)
         {
             if (selectedItems == null)
-                return new List<List<ODataExpansionOptions>>();
+                return [];
 
             return selectedItems.OfType<ExpandedNavigationSelectItem>().Aggregate(new List<List<ODataExpansionOptions>>(), (listOfExpansionLists, next) =>
             {
-                string path = next.PathToNavigationProperty.FirstSegment.Identifier;//Only first segment is necessary because of the new syntax $expand=Builder($expand=City) vs $expand=Builder/City
+                List<ODataExpansionOptions> segmentExpansions = [];
+                Type currentParentType = null;
+                Type memberType = null;
+                Type elementType = null;
 
-                Type currentParentType = parentType.GetCurrentType();
-                Type memberType = currentParentType.GetMemberInfo(path).GetMemberType();
-                Type elementType = memberType.GetCurrentType();
+                for (int i=0; i< next.PathToNavigationProperty.Count; i++ )
+                {//The for loop handles the syntax for expanding navigation objects within complex types e.g. $expand=StoreAddress/Doors.
+                 //next.GetNestedExpansions(elementType) handles the syntax for nested navigation objects e.g. $expand=Builder($expand=City).
+                    string path = next.PathToNavigationProperty[i].Identifier;
+                    currentParentType = i==0 ? parentType.GetCurrentType() : elementType;
+                    memberType = currentParentType.GetMemberInfo(path).GetMemberType();
+                    elementType = memberType.GetCurrentType();
 
-                ODataExpansionOptions exp = new()
-                {
-                    MemberType = memberType,
-                    ParentType = currentParentType,
-                    MemberName = path,
-                    FilterOptions = GetFilter(),
-                    QueryOptions = GetQuery(),
-                    Selects = next.SelectAndExpand.GetSelects()
-                };
+                    segmentExpansions.Add
+                    (
+                        new()
+                        {
+                            MemberType = memberType,
+                            ParentType = currentParentType,
+                            MemberName = path,
+                            FilterOptions = GetFilter(),
+                            QueryOptions = GetQuery(),
+                            Selects = next.SelectAndExpand.GetSelects()
+                        }
+                    );
+                }
 
                 List<List<ODataExpansionOptions>> navigationItems = next.GetNestedExpansions(elementType).Select
                 (
                     expansions =>
                     {
-                        expansions.Insert(0, exp);
+                        segmentExpansions.Reverse();
+                        segmentExpansions.ForEach(exp => expansions.Insert(0, exp));
                         return expansions;
                     }
                 ).ToList();
@@ -589,7 +600,7 @@ namespace AutoMapper.AspNet.OData
                 if (navigationItems.Any())
                     listOfExpansionLists.AddRange(navigationItems);
                 else
-                    listOfExpansionLists.Add(new List<ODataExpansionOptions> { exp });
+                    listOfExpansionLists.Add(segmentExpansions);
 
                 return listOfExpansionLists;
 
@@ -792,7 +803,7 @@ namespace AutoMapper.AspNet.OData
         }
     }
 
-    public class ODataExpansionOptions : Expansion
+    public class ODataExpansionOptions : Expansions.Expansion
     {
         public QueryOptions QueryOptions { get; set; }
         public FilterOptions FilterOptions { get; set; }
