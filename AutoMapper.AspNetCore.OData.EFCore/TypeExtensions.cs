@@ -1,12 +1,9 @@
 ﻿using LogicBuilder.Expressions.Utils;
 using Microsoft.AspNetCore.OData.Edm;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -14,28 +11,7 @@ namespace AutoMapper.AspNet.OData
 {
     internal static class TypeExtensions
     {
-        public static MemberInfo[] GetSelectedMembers(this Type parentType, List<string> selects)
-        {
-            if (selects == null || !selects.Any())
-                return parentType.GetValueTypeMembers();
 
-            return selects.Select(select => parentType.GetMemberInfo(select)).ToArray();
-        }
-
-        private static MemberInfo[] GetValueTypeMembers(this Type parentType)
-        {
-            if (parentType.IsList())
-                return new MemberInfo[] { };
-
-            return parentType.GetMemberInfos().Where
-            (
-                info => (info.MemberType == MemberTypes.Field || info.MemberType == MemberTypes.Property)
-                && info.GetMemberType().IsLiteralType()
-            ).ToArray();
-        }
-
-        private static MemberInfo[] GetMemberInfos(this Type parentType) 
-            => parentType.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.IgnoreCase);
 
         public static Type GetClrType(string fullName, bool isNullable, IDictionary<EdmTypeStructure, Type> typesCache)
             => GetClrType(new EdmTypeStructure(fullName, isNullable), typesCache);

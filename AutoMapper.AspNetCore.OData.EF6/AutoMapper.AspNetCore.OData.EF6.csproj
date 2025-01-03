@@ -32,6 +32,9 @@
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Constants.cs" Link="Constants.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\CustomMethodCache.cs" Link="CustomMethodCache.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\EdmTypeStructure.cs" Link="EdmTypeStructure.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Expansions\DefaultExpansionsBuilder.cs" Link="Expansions\DefaultExpansionsBuilder.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Expansions\Expansion.cs" Link="Expansions\Expansion.cs" />
+    <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\Expansions\ExpansionsHelper.cs" Link="Expansions\ExpansionsHelper.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\FilterHelper.cs" Link="FilterHelper.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\LinqExtensions.cs" Link="LinqExtensions.cs" />
     <Compile Include="..\AutoMapper.AspNetCore.OData.EFCore\ODataQueryContextExtentions.cs" Link="ODataQueryContextExtentions.cs" />
@@ -74,6 +77,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Expansions\" />
     <Folder Include="Visitors\" />
     <Folder Include="Properties\" />
   </ItemGroup>

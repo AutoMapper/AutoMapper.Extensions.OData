@@ -1,5 +1,4 @@
 ﻿using AutoMapper.Extensions.ExpressionMapping;
-using LogicBuilder.Expressions.Utils.Expansions;
 using Microsoft.AspNetCore.OData.Query;
 using System;
 using System.Collections.Generic;
@@ -186,16 +185,18 @@ namespace AutoMapper.AspNet.OData
             where TModel : class
         {
             var expansions = options.SelectExpand.GetExpansions(typeof(TModel));
-
+            Expansions.ExpansionsHelper helper = new Expansions.ExpansionsHelper(options.Context);
+            IEnumerable<Expression<Func<TModel, object>>> linqExpansions = helper.BuildExplicitExpansions<TModel>
+            (
+                expansions.Select(list => new List<Expansions.Expansion>(list)),
+                options.SelectExpand.GetSelects()
+            );
             return query.GetQuery
             (
                 mapper,
                 filter,
                 options.GetQueryableExpression(querySettings?.ODataSettings),
-                expansions
-                    .Select(list => new List<Expansion>(list))
-                    .BuildIncludes<TModel>(options.SelectExpand.GetSelects())
-                    .ToList(),
+                linqExpansions,
                 querySettings?.ProjectionSettings
             ).UpdateQueryableExpression(expansions, options.Context, mapper);
         }
