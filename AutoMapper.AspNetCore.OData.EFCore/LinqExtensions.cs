@@ -591,8 +591,7 @@ namespace AutoMapper.AspNet.OData
                 (
                     expansions =>
                     {
-                        segmentExpansions.Reverse();
-                        segmentExpansions.ForEach(exp => expansions.Insert(0, exp));
+                        expansions.InsertRange(0, segmentExpansions);
                         return expansions;
                     }
                 ).ToList();

@@ -89,6 +89,27 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().Name));
                 Assert.NotNull(collection.First().StoreAddress.Doors.First().DoorManufacturer);
                 Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().DoorManufacturer.Name));
+                Assert.Null(collection.First().StoreAddress.Doors.First().DoorKnob);
+            }
+        }
+
+        [Fact]
+        public async Task GetRecordStoresCanExpandMultipleNavigationPropertiesOfNavigationPropertyUnderComplexType()
+        {
+            string query = "/recordstoremodel?$expand=StoreAddress/Doors($expand=DoorManufacturer,DoorKnob)";
+            Test(await GetAsync<RecordStoreModel, RecordStore>(query));
+
+            static void Test(ICollection<RecordStoreModel> collection)
+            {
+                Assert.True(collection.Count > 0);
+                Assert.True(collection.All(r => r.Ratings.Count == 0));
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Country));
+                Assert.NotEmpty(collection.First().StoreAddress.Doors);
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().Name));
+                Assert.NotNull(collection.First().StoreAddress.Doors.First().DoorManufacturer);
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().DoorManufacturer.Name));
+                Assert.NotNull(collection.First().StoreAddress.Doors.First().DoorKnob);
+                Assert.False(string.IsNullOrEmpty(collection.First().StoreAddress.Doors.First().DoorKnob.Style));
             }
         }
 

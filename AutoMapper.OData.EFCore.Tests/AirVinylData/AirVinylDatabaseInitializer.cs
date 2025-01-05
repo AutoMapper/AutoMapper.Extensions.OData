@@ -314,9 +314,15 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                 new DoorManufacturer { Name = "Ikea" },
                 new DoorManufacturer { Name = "Hardwood" }
             );
+            context.DoorKnobs.AddRange(
+                new DoorKnob { Style = "Circular" },
+                new DoorKnob { Style = "Lever" }
+            );
+
             context.SaveChanges();
 
             ICollection<DoorManufacturer> doorManufacturers = [.. context.DoorManufacturers];
+            ICollection<DoorKnob> doorKnobs = [.. context.DoorKnobs];
 
             context.RecordStores.AddRange(
                 new SpecializedRecordStore()
@@ -335,8 +341,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [3, 4, 5, 6],
                         Doors =
                         [
-                            new() { Name = "Front Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
-                            new() { Name = "Side Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Hardwood").Id }
+                            new() { Name = "Front Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Circular").Id },
+                            new() { Name = "Side Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Hardwood").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Lever").Id }
                         ]
                     }
                 },
@@ -356,8 +362,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [2, 3, 4, 5],
                         Doors =
                         [
-                            new() { Name = "Main Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
-                            new() { Name = "Cabinet Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id }
+                            new() { Name = "Main Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Circular").Id },
+                            new() { Name = "Cabinet Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Circular").Id}
                         ]
                     }
                 },
@@ -376,8 +382,8 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
                         RoomNumbers = [1, 2, 3, 4],
                         Doors =
                         [
-                            new() { Name = "Bedroom Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id },
-                            new() { Name = "Balcony Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Sealy").Id }
+                            new() { Name = "Bedroom Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Serta").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Circular").Id },
+                            new() { Name = "Balcony Door", DoorManufacturerId = doorManufacturers.Single(m => m.Name == "Sealy").Id, DoorKnobId = doorKnobs.Single(k => k.Style == "Lever").Id}
                         ]
                     }
                 }
