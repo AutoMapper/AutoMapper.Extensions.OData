@@ -11,6 +11,8 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Car, CarModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
+            CreateMap<DoorKnob, DoorKnobModel>()
+               .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<Door, DoorModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<DoorManufacturer, DoorManufacturerModel>()
