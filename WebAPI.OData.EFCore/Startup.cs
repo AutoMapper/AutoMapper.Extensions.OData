@@ -66,6 +66,7 @@ namespace WebAPI.OData.EFCore
         private IEdmModel GetEdmModel()
         {
             var builder = new ODataConventionModelBuilder();
+            builder.EnableLowerCamelCase();
             //builder.Namespace = "com.FooBar";
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));

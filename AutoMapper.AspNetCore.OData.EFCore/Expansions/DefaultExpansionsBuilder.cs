@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -125,12 +126,12 @@ namespace AutoMapper.AspNet.OData.Expansions
             IEdmEntityType entityType = context.Model.SchemaElements.OfType<IEdmEntityType>()
                 .SingleOrDefault(e => GetClrTypeFromEntityType(e).FullName == type.FullName);
             if (entityType != null)
-                return entityType.NavigationProperties().Select(p => p.Name).ToHashSet();
+                return entityType.NavigationProperties().Select(GetNavigationPropertyName).ToHashSet();
 
             IEdmComplexType complexType = context.Model.SchemaElements.OfType<IEdmComplexType>()
                 .SingleOrDefault(e => GetClrTypeFromComplexType(e).FullName == type.FullName);
             if (complexType != null)
-                return complexType.NavigationProperties().Select(p => p.Name).ToHashSet();
+                return complexType.NavigationProperties().Select(GetNavigationPropertyName).ToHashSet();
 
             return [];
 
@@ -139,6 +140,14 @@ namespace AutoMapper.AspNet.OData.Expansions
 
             Type GetClrTypeFromComplexType(IEdmComplexType complexType)
                 => TypeExtensions.GetClrType(new EdmComplexTypeReference(complexType, true), context.Model, TypeExtensions.GetEdmToClrTypeMappings());
+
+            // Look up the name of the corresponding C# property, which may differ from the property name
+            // used in the EDM model, e.g. because the EnableLowerCamelCase option is being used.
+            string GetNavigationPropertyName(IEdmNavigationProperty prop)
+            {
+                var annotation = context.Model.GetAnnotationValue<ClrPropertyInfoAnnotation>(prop);
+                return annotation?.ClrPropertyInfo?.Name ?? prop.Name;
+            }
         }
     }
 }

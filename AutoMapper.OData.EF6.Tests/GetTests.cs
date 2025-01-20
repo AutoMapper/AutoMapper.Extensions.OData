@@ -645,6 +645,8 @@ namespace AutoMapper.OData.EF6.Tests
             if (customNamespace != null)
                 builder.Namespace = customNamespace;
 
+            builder.EnableLowerCamelCase();
+
             builder.EntitySet<T>(typeof(T).Name);
             IEdmModel model = builder.GetEdmModel();
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);

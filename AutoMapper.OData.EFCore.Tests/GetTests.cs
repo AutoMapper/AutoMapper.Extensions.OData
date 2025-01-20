@@ -686,6 +686,8 @@ namespace AutoMapper.OData.EFCore.Tests
             if (customNamespace != null)
                 builder.Namespace = customNamespace;
 
+            builder.EnableLowerCamelCase();
+
             builder.EntitySet<T>(typeof(T).Name);
             IEdmModel model = builder.GetEdmModel();
             IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
@@ -705,6 +707,8 @@ namespace AutoMapper.OData.EFCore.Tests
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             if (customNamespace != null)
                 builder.Namespace = customNamespace;
+
+            builder.EnableLowerCamelCase();
 
             builder.EntitySet<X.CategoryModel>(typeof(X.CategoryModel).Name + "X");
             builder.EntitySet<Model.CategoryModel>(nameof(Model.CategoryModel));
