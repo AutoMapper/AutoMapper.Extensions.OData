@@ -71,6 +71,7 @@ namespace WebAPI.OData.EF6
         {
             var builder = new ODataConventionModelBuilder();
             //builder.Namespace = "com.FooBar";
+            builder.EnableLowerCamelCase();
             builder.EntitySet<OpsTenant>(nameof(OpsTenant));
             builder.EntitySet<CoreBuilding>(nameof(CoreBuilding));
             builder.EntitySet<OpsBuilder>(nameof(OpsBuilder));

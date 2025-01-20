@@ -25,6 +25,7 @@ namespace ExpressionBuilder.Tests
 
             IEdmModel GetModel(ODataConventionModelBuilder builder)
             {
+                builder.EnableLowerCamelCase();
                 builder.EntitySet<T>(modelType.Name);
                 if (modelType == typeof(Product))
                 {
@@ -51,6 +52,7 @@ namespace ExpressionBuilder.Tests
                 entitySet,
                 queryOptions
             );
+            parser.Resolver = new ODataUriResolver { EnableCaseInsensitive = true };
 
             return parser.ParseSelectAndExpand();
         }
@@ -75,6 +77,7 @@ namespace ExpressionBuilder.Tests
                 entitySet,
                 queryOptions
             );
+            parser.Resolver = new ODataUriResolver { EnableCaseInsensitive = true };
 
             if (useFilterOption)
             {
@@ -108,6 +111,7 @@ namespace ExpressionBuilder.Tests
         public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, IRouteBuilder routeBuilder) where T : class
         {
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            builder.EnableLowerCamelCase();
 
             builder.EntitySet<T>(typeof(T).Name);
             IEdmModel model = builder.GetEdmModel();
