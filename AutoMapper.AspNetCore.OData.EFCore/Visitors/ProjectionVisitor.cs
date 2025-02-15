@@ -36,7 +36,7 @@ namespace AutoMapper.AspNet.OData.Visitors
 
             List<MemberBinding> AddBinding(List<MemberBinding> list, MemberAssignment binding)
             {
-                if (ListTypesAreEquivalent(binding.Member.GetMemberType(), expansion.MemberType)
+                if (TypesAreEquivalent(binding.Member.GetMemberType(), expansion.MemberType)
                         && string.Compare(binding.Member.Name, expansion.MemberName, true) == 0)//found the expansion
                 {
                     if (foundExpansions.Count > 0)
@@ -61,8 +61,11 @@ namespace AutoMapper.AspNet.OData.Visitors
 
         protected abstract Expression GetBindingExpression(MemberAssignment binding, ODataExpansionOptions expansion);
 
-        protected static bool ListTypesAreEquivalent(Type bindingType, Type expansionType)
+        protected static bool TypesAreEquivalent(Type bindingType, Type expansionType)
         {
+            if (!bindingType.IsList() && !expansionType.IsList())
+                return bindingType == expansionType;
+
             if (!bindingType.IsList() || !expansionType.IsList())
                 return false;
 

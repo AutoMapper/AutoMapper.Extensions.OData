@@ -192,6 +192,51 @@ namespace AutoMapper.OData.EFCore.Tests.Model
         ThirdLong,
         FourthLong
     }
+
+    public class Organization
+    {
+        public int Id { get; set; }
+        public virtual ICollection<OrganizationIdentity> Identities { get; set; }
+        public virtual ICollection<OrganizationName> Names { get; set; }
+    }
+
+    public class OrganizationName
+    {
+        public int Id { get; set; }
+        public int LangId { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class OrganizationIdentity
+    {
+        public int Id { get; set; }
+        public string Value { get; set; }
+        public int TypeId { get; set; }
+        public int OrganizationId { get; set; }
+        public Organization Organization { get; set; }
+    }
+
+    public class OrganizationDto
+    {
+        public int Id { get; set; }
+        public virtual ICollection<OrganizationIdentityDto> Identities { get; set; }
+        public virtual ICollection<OrganizationNameDto> Names { get; set; }
+    }
+
+    public class OrganizationNameDto
+    {
+        public int Id { get; set; }
+        public int LangId { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class OrganizationIdentityDto
+    {
+        public int Id { get; set; }
+        public string Value { get; set; }
+        public int TypeId { get; set; }
+        public OrganizationDto Organization { get; set; }
+    }
 }
 
 namespace X
