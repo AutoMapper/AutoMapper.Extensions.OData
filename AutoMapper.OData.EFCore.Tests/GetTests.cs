@@ -680,13 +680,14 @@ namespace AutoMapper.OData.EFCore.Tests
 
     public static class ODataHelpers
     {
-        public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, string customNamespace = null) where T : class
+        public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, string customNamespace = null, bool enableLowerCamelCase = false) where T : class
         {
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             if (customNamespace != null)
                 builder.Namespace = customNamespace;
 
-            builder.EnableLowerCamelCase();
+            if (enableLowerCamelCase)
+                builder.EnableLowerCamelCase();
 
             builder.EntitySet<T>(typeof(T).Name);
             IEdmModel model = builder.GetEdmModel();
