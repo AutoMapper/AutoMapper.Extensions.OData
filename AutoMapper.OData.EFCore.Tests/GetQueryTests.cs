@@ -897,6 +897,34 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public void BuildingsFilterNameDisableStableOrdering()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$top=10";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnsureStableOrdering = false } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("TOP", sqlQuery);
+                Assert.DoesNotContain("ORDER BY [o].[Identifier]", sqlQuery);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameEnableStableOrdering()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$top=10";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnsureStableOrdering = true } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("TOP", sqlQuery);
+                Assert.Contains("ORDER BY [o].[Identifier]", sqlQuery);
+            }
+        }
+
+        [Fact]
         public async Task OpsTenantOrderByCountOfReference()
         {
             string query = "/opstenant?$expand=Buildings&$orderby=Buildings/$count desc";

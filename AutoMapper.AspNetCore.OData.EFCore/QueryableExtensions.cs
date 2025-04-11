@@ -19,7 +19,8 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
+                querySettings?.ODataSettings?.EnableConstantParameterization ?? true,
+                querySettings?.ODataSettings?.EnsureStableOrdering ?? true);
 
             query.ApplyOptions(mapper, filter, options, querySettings);
             return query.Get
@@ -37,7 +38,8 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
+                querySettings?.ODataSettings?.EnableConstantParameterization ?? true,
+                querySettings?.ODataSettings?.EnsureStableOrdering ?? true);
             await query.ApplyOptionsAsync(mapper, filter, options, querySettings);
             return await query.GetAsync
             (
@@ -55,7 +57,8 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
+                querySettings?.ODataSettings?.EnableConstantParameterization ?? true,
+                querySettings?.ODataSettings?.EnsureStableOrdering ?? true);
                 
             await query.ApplyOptionsAsync(mapper, filter, options, querySettings);
             return query.GetQueryable(mapper, options, querySettings, filter);
@@ -67,7 +70,8 @@ namespace AutoMapper.AspNet.OData
             Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
                 querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
                 querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
+                querySettings?.ODataSettings?.EnableConstantParameterization ?? true,
+                querySettings?.ODataSettings?.EnsureStableOrdering ?? true);
             query.ApplyOptions(mapper, filter, options, querySettings);
             return query.GetQueryable(mapper, options, querySettings, filter);
         }

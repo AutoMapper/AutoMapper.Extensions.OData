@@ -41,7 +41,7 @@ namespace AutoMapper.AspNet.OData
         /// Default is true.
         /// </value>
         public bool EnableConstantParameterization { get; set; } = true;
-        
+
         /// <summary>
         /// If sets to true, orderBy pk desc will always be present on main entity. 
         /// </summary>
@@ -58,5 +58,14 @@ namespace AutoMapper.AspNet.OData
         /// Default is false.
         /// </value>
         public bool AlwaysSortByPrimaryKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether query composition should
+        /// alter the original query when necessary to ensure a stable sort order.
+        /// </summary>
+        /// <value>
+        /// Default is true.
+        /// </value>
+        public bool EnsureStableOrdering { get; set; } = true;
     }
 }
