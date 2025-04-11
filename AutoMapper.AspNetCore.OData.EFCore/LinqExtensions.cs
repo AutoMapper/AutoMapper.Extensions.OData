@@ -192,7 +192,8 @@ namespace AutoMapper.AspNet.OData
             if (orderByClause is null && skip is null && top is null)
                 return null;
 
-            if (orderByClause is null && !oDataSettings.EnsureStableOrdering)
+            bool ensureStableOrdering = oDataSettings?.EnsureStableOrdering ?? true;
+            if (orderByClause is null && !ensureStableOrdering)
                 return expression.GetSkipCall(skip).GetTakeCall(top);
 
             if (orderByClause is null && (skip is not null || top is not null))
