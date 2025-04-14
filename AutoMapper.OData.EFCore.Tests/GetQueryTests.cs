@@ -897,10 +897,10 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public void BuildingsFilterNameDisableStableOrdering()
+        public void BuildingsFilterNameWithTopAndDisabledAlwaysSortByPrimaryKey()
         {
             string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$top=10";
-            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnsureStableOrdering = false } }));
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { AlwaysSortByPrimaryKey = false } }));
 
             void Test(IQueryable<CoreBuilding> queryable)
             {
@@ -911,15 +911,43 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
-        public void BuildingsFilterNameEnableStableOrdering()
+        public void BuildingsFilterNameWithTopAndEnabledAlwaysSortByPrimaryKey()
         {
             string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$top=10";
-            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { EnsureStableOrdering = true } }));
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { AlwaysSortByPrimaryKey = true } }));
 
             void Test(IQueryable<CoreBuilding> queryable)
             {
                 string sqlQuery = queryable.ToQueryString();
                 Assert.Contains("TOP", sqlQuery);
+                Assert.Contains("ORDER BY [o].[Identifier]", sqlQuery);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameWithSkipAndDisabledAlwaysSortByPrimaryKey()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$skip=10";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { AlwaysSortByPrimaryKey = false } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("OFFSET", sqlQuery);
+                Assert.DoesNotContain("ORDER BY [o].[Identifier]", sqlQuery);
+            }
+        }
+
+        [Fact]
+        public void BuildingsFilterNameWithSkipAndEnabledAlwaysSortByPrimaryKey()
+        {
+            string query = "/corebuilding?$filter=contains(Name, 'Two L2')&$skip=10";
+            Test(GetQuery<CoreBuilding, TBuilding>(query, querySettings: new() { ODataSettings = new() { AlwaysSortByPrimaryKey = true } }));
+
+            void Test(IQueryable<CoreBuilding> queryable)
+            {
+                string sqlQuery = queryable.ToQueryString();
+                Assert.Contains("OFFSET", sqlQuery);
                 Assert.Contains("ORDER BY [o].[Identifier]", sqlQuery);
             }
         }

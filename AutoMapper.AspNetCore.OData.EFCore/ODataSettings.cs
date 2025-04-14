@@ -58,14 +58,5 @@ namespace AutoMapper.AspNet.OData
         /// Default is false.
         /// </value>
         public bool AlwaysSortByPrimaryKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether query composition should
-        /// alter the original query when necessary to ensure a stable sort order.
-        /// </summary>
-        /// <value>
-        /// Default is true.
-        /// </value>
-        public bool EnsureStableOrdering { get; set; } = true;
     }
 }

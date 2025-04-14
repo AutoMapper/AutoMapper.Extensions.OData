@@ -36,8 +36,7 @@ namespace AutoMapper.AspNet.OData
             this FilterQueryOption filterOption,
             HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
             TimeZoneInfo timeZone = null,
-            bool enableConstantParameterization = true, 
-            bool ensureStableOrdering = true)
+            bool enableConstantParameterization = true)
         {
             if (filterOption == null)
                 return null;
@@ -46,7 +45,7 @@ namespace AutoMapper.AspNet.OData
 
             queryable = filterOption.ApplyTo(
                 queryable,
-                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization, EnsureStableOrdering = ensureStableOrdering });
+                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization });
 
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
@@ -63,8 +62,7 @@ namespace AutoMapper.AspNet.OData
             this SearchQueryOption filterOption,            
             HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
             TimeZoneInfo timeZone = null,
-            bool enableConstantParameterization = true,
-            bool ensureStableOrdering = true)
+            bool enableConstantParameterization = true)
         {
             if (filterOption == null)
                 return null;
@@ -72,7 +70,7 @@ namespace AutoMapper.AspNet.OData
             IQueryable queryable = Enumerable.Empty<T>().AsQueryable();
             queryable = filterOption.ApplyTo(
                 queryable,
-                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization, EnsureStableOrdering = ensureStableOrdering });
+                new ODataQuerySettings() { HandleNullPropagation = handleNullPropagation, TimeZone = timeZone, EnableConstantParameterization = enableConstantParameterization });
 
             MethodCallExpression whereMethodCallExpression = (MethodCallExpression)queryable.Expression;
 
@@ -82,8 +80,7 @@ namespace AutoMapper.AspNet.OData
         public static Expression<Func<T, bool>> ToFilterExpression<T>(this ODataQueryOptions<T> options,
             HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default,
             TimeZoneInfo timeZone = null,
-            bool enableConstantParameterization = true,
-            bool ensureStableOrdering = true)
+            bool enableConstantParameterization = true)
         {
             if (options is null || options.Filter is null && options.Search is null)
             {
@@ -95,14 +92,14 @@ namespace AutoMapper.AspNet.OData
             Expression filterExpression = null;
             if (options.Filter is not null)
             {
-                var raw = options.Filter.ToFilterExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization, ensureStableOrdering);
+                var raw = options.Filter.ToFilterExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization);
                 filterExpression = raw.Body.ReplaceParameter(raw.Parameters[0], parameter);
             }
 
             Expression searchExpression = null;
             if (options.Search is not null)
             {
-                var raw = options.Search.ToSearchExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization, ensureStableOrdering);
+                var raw = options.Search.ToSearchExpression<T>(handleNullPropagation, timeZone, enableConstantParameterization);
                 searchExpression = raw.Body.ReplaceParameter(raw.Parameters[0], parameter);
             }
 
@@ -190,11 +187,7 @@ namespace AutoMapper.AspNet.OData
             }
             
             if (orderByClause is null && skip is null && top is null)
-                return null;
-
-            bool ensureStableOrdering = oDataSettings?.EnsureStableOrdering ?? true;
-            if (orderByClause is null && !ensureStableOrdering)
-                return expression.GetSkipCall(skip).GetTakeCall(top);
+                return null;            
 
             if (orderByClause is null && (skip is not null || top is not null))
             {
@@ -202,6 +195,9 @@ namespace AutoMapper.AspNet.OData
 
                 if (orderBySettings is null)
                     return null;
+
+                if (oDataSettings?.AlwaysSortByPrimaryKey is false)
+                    return expression.GetSkipCall(skip).GetTakeCall(top);
 
                 return expression
                     .GetDefaultOrderByCall(orderBySettings)
