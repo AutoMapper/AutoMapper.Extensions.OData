@@ -187,7 +187,7 @@ namespace AutoMapper.AspNet.OData
             }
             
             if (orderByClause is null && skip is null && top is null)
-                return null;            
+                return null;
 
             if (orderByClause is null && (skip is not null || top is not null))
             {
