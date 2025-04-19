@@ -196,6 +196,9 @@ namespace AutoMapper.AspNet.OData
                 if (orderBySettings is null)
                     return null;
 
+                if (oDataSettings?.AlwaysSortByPrimaryKey is false)
+                    return expression.GetSkipCall(skip).GetTakeCall(top);
+
                 return expression
                     .GetDefaultOrderByCall(orderBySettings)
                     .GetSkipCall(skip)

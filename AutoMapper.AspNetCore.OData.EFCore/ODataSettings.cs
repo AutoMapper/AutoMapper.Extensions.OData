@@ -41,7 +41,7 @@ namespace AutoMapper.AspNet.OData
         /// Default is true.
         /// </value>
         public bool EnableConstantParameterization { get; set; } = true;
-        
+
         /// <summary>
         /// If sets to true, orderBy pk desc will always be present on main entity. 
         /// </summary>
