@@ -43,6 +43,26 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async Task GetVinylRecordsExpandsComplexTypesByDefault()
+        {
+            string query = "/vinylrecordmodel";
+            Test(await GetAsync<VinylRecordModel, VinylRecord>(query));
+
+            void Test(ICollection<VinylRecordModel> collection)
+            {
+                Assert.True(collection.Count > 0);
+
+                //Navigation properties
+                Assert.True(collection.All(vinyl => vinyl.Person is null));
+                Assert.True(collection.All(vinyl => vinyl.PressingDetail is null));
+                
+                //Complex types
+                Assert.Contains(collection, vinyl => vinyl.Properties.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.DynamicVinylRecordProperties.Count != 0);
+            }
+        }
+
+        [Fact]
         public async Task GetRecordStoresExpandsComplexTypesByDefault()
         {
             string query = "/recordstoremodel";

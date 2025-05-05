@@ -51,6 +51,13 @@ namespace AutoMapper.AspNet.OData.Expansions
                 if (LogicBuilder.Expressions.Utils.TypeExtensions.IsLiteralType(memberType))
                     continue;
 
+                if (memberType.IsGenericType)
+                {
+                    Type genericTypeDef = memberType.GetGenericTypeDefinition();
+                    if (genericTypeDef == typeof(IDictionary<,>) || genericTypeDef == typeof(Dictionary<,>))
+                        continue;
+                }                
+
                 if (LogicBuilder.Expressions.Utils.TypeExtensions.IsList(memberType)
                     && LogicBuilder.Expressions.Utils.TypeExtensions.IsLiteralType
                         (
