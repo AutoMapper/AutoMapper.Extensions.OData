@@ -1,6 +1,7 @@
 ﻿using AutoMapper.AspNet.OData;
 using AutoMapper.OData.EFCore.Tests.AirVinylData;
 using AutoMapper.OData.EFCore.Tests.AirVinylModel;
+using LogicBuilder.Expressions.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Query;
@@ -58,7 +59,9 @@ namespace AutoMapper.OData.EFCore.Tests
                 
                 //Complex types
                 Assert.Contains(collection, vinyl => vinyl.Properties.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.Properties.Any(p => !p.Value.GetType().IsLiteralType()));
                 Assert.Contains(collection, vinyl => vinyl.DynamicVinylRecordProperties.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.Links.Count != 0);
             }
         }
 
