@@ -30,6 +30,7 @@ namespace AutoMapper.OData.EFCore.Tests.Mappings
             CreateMap<SpecializedRecordStore, SpecializedRecordStoreModel>()
                 .ForAllMembers(o => o.ExplicitExpansion());
             CreateMap<VinylRecord, VinylRecordModel>()
+                .ForMember(dest => dest.Links, o => o.Ignore())
                 .ForAllMembers(o => o.ExplicitExpansion());
         }
     }
