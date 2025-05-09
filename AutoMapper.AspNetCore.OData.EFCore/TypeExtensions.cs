@@ -5,6 +5,7 @@ using Microsoft.OData.ModelBuilder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace AutoMapper.AspNet.OData
@@ -101,6 +102,31 @@ namespace AutoMapper.AspNet.OData
         }
 
         public static Dictionary<EdmTypeStructure, Type> GetEdmToClrTypeMappings() => Constants.EdmToClrTypeMappings;
+
+        public static Type GetUnderlyingElementType(this Type type)
+        {
+            TypeInfo typeInfo = type.GetTypeInfo();
+            if (typeInfo.IsArray)
+                return typeInfo.GetElementType();
+
+            if (!type.IsGenericType)
+                throw new ArgumentException(nameof(type));
+
+            Type[] genericArguments = type.GetGenericArguments();
+            Type genericTypeDefinition = type.GetGenericTypeDefinition();
+
+            if (genericTypeDefinition == typeof(IGrouping<,>))
+                return genericArguments[1];
+            else if (typeof(IDictionary<,>).IsAssignableFrom(genericTypeDefinition))
+                return typeof(KeyValuePair<,>).MakeGenericType(genericArguments[0], genericArguments[1]);
+            else if (genericArguments.Length == 1)
+                return genericArguments[0];
+            else
+                throw new ArgumentException(nameof(type));
+        }
+
+        public static Type GetUnderlyingElementType(this Expression expression)
+           => GetUnderlyingElementType(expression.Type);
 
         private class AssemblyResolver : IAssemblyResolver
         {

@@ -302,9 +302,15 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylData
 
             context.DynamicVinylRecordProperties.Add(new DynamicProperty()
             {
-                VinylRecordId = vinylRecords.First(r => r.Title == "Nevermind").VinylRecordId,//1,
+                VinylRecordId = vinylRecords.First(r => r.Title == "Nevermind").VinylRecordId,//1
                 Key = "Publisher",
                 Value = "Geffen"
+            });
+            context.DynamicVinylRecordProperties.Add(new DynamicProperty()
+            {
+                VinylRecordId = vinylRecords.First(r => r.Title == "Nevermind").VinylRecordId,//1
+                Key = "SomeData",
+                Value = new { TestProp = "value" }
             });
             context.SaveChanges();
 

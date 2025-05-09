@@ -33,5 +33,22 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylModel
             = new List<DynamicPropertyModel>();
 
         public IDictionary<string, object> Properties { get; set; }
+
+        private Dictionary<string, VinylLinkModel> _links;
+        public IDictionary<string, VinylLinkModel> Links { 
+            get 
+            {
+                if (_links is null)
+                {
+                    _links = new Dictionary<string, VinylLinkModel>()
+                    {
+                        { "buyingLink", new VinylLinkModel { Href = $"http://test/buy/{VinylRecordId}" } },
+                        { "reviewLink", new VinylLinkModel { Href = $"http://test/review/{VinylRecordId}" } }
+                    };
+                }
+
+                return _links;
+            } 
+        }            
     }
 }

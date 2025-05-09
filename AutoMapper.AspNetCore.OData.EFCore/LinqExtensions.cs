@@ -398,7 +398,7 @@ namespace AutoMapper.AspNet.OData
             (
                 expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 "Skip",
-                new[] { expression.GetUnderlyingElementType() },
+                new[] { LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(expression) },
                 expression,
                 Expression.Constant(skip.Value)
             );
@@ -412,7 +412,7 @@ namespace AutoMapper.AspNet.OData
             (
                 expression.Type.IsIQueryable() ? typeof(Queryable) : typeof(Enumerable),
                 "Take",
-                new[] { expression.GetUnderlyingElementType() },
+                new[] { LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(expression) },
                 expression,
                 Expression.Constant(top.Value)
             );
@@ -433,7 +433,7 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, ODataQueryContext context, string selectorParameterName = "a")
         {
-            Type sourceType = expression.GetUnderlyingElementType();
+            Type sourceType = LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(expression);
             ParameterExpression param = Expression.Parameter(sourceType, selectorParameterName);
 
             Expression countSelector;
@@ -441,7 +441,7 @@ namespace AutoMapper.AspNet.OData
             if (countNode.FilterClause is not null)
             {
                 string memberFullName = countNode.GetPropertyPath();
-                Type filterType = sourceType.GetMemberInfoFromFullName(memberFullName).GetMemberType().GetUnderlyingElementType();
+                Type filterType = LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(sourceType.GetMemberInfoFromFullName(memberFullName).GetMemberType());
                 LambdaExpression filterExpression = countNode.FilterClause.GetFilterExpression(filterType, context);
                 countSelector = param.MakeSelector(memberFullName).GetCountCall(filterExpression);
             }
@@ -465,7 +465,7 @@ namespace AutoMapper.AspNet.OData
 
         public static Expression GetOrderByCall(this Expression expression, string memberFullName, string methodName, string selectorParameterName = "a")
         {
-            Type sourceType = expression.GetUnderlyingElementType();
+            Type sourceType = LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(expression);
             MemberInfo memberInfo = sourceType.GetMemberInfoFromFullName(memberFullName);
             return Expression.Call
             (

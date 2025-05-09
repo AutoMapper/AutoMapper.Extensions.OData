@@ -50,17 +50,17 @@ namespace AutoMapper.AspNet.OData.Expansions
 
                 if (LogicBuilder.Expressions.Utils.TypeExtensions.IsLiteralType(memberType))
                     continue;
-
+                
                 if (LogicBuilder.Expressions.Utils.TypeExtensions.IsList(memberType)
                     && LogicBuilder.Expressions.Utils.TypeExtensions.IsLiteralType
                         (
-                            LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(memberType)
+                            TypeExtensions.GetUnderlyingElementType(memberType)
                         ) == false)
                 {
                     List<LambdaExpression> childMemberSelectors = [];
                     ParameterExpression childParam = Expression.Parameter
                     (
-                         LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(memberType),
+                         TypeExtensions.GetUnderlyingElementType(memberType),
                          GetChildParameterName(param.Name)
                     );
 
@@ -76,7 +76,7 @@ namespace AutoMapper.AspNet.OData.Expansions
                                 (
                                     typeof(Enumerable),
                                     "Select",
-                                    [LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(selector), typeof(object)],
+                                    [TypeExtensions.GetUnderlyingElementType(selector), typeof(object)],
                                     selector,
                                     childSelector
                                 ),

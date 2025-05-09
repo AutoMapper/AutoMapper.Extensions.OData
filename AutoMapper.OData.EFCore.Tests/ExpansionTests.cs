@@ -1,6 +1,7 @@
 ﻿using AutoMapper.AspNet.OData;
 using AutoMapper.OData.EFCore.Tests.AirVinylData;
 using AutoMapper.OData.EFCore.Tests.AirVinylModel;
+using LogicBuilder.Expressions.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Query;
@@ -39,6 +40,28 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.True(collection.Count > 0);
                 Assert.True(collection.All(r => r.VinylRecords.Count == 0));
                 Assert.NotEmpty(collection.First().Cars);
+            }
+        }
+
+        [Fact]
+        public async Task GetVinylRecordsExpandsComplexTypesByDefault()
+        {
+            string query = "/vinylrecordmodel";
+            Test(await GetAsync<VinylRecordModel, VinylRecord>(query));
+
+            void Test(ICollection<VinylRecordModel> collection)
+            {
+                Assert.True(collection.Count > 0);
+
+                //Navigation properties
+                Assert.True(collection.All(vinyl => vinyl.Person is null));
+                Assert.True(collection.All(vinyl => vinyl.PressingDetail is null));
+                
+                //Complex types
+                Assert.Contains(collection, vinyl => vinyl.Properties.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.Properties.Any(p => !p.Value.GetType().IsLiteralType()));
+                Assert.Contains(collection, vinyl => vinyl.DynamicVinylRecordProperties.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.Links.Count != 0);
             }
         }
 
