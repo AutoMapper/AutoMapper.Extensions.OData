@@ -117,12 +117,18 @@ namespace AutoMapper.AspNet.OData
 
             if (genericTypeDefinition == typeof(IGrouping<,>))
                 return genericArguments[1];
-            else if (typeof(IDictionary<,>).IsAssignableFrom(genericTypeDefinition))
+            else if (IsGenericDictionaryType())
                 return typeof(KeyValuePair<,>).MakeGenericType(genericArguments[0], genericArguments[1]);
             else if (genericArguments.Length == 1)
                 return genericArguments[0];
             else
                 throw new ArgumentException(nameof(type));
+
+            bool IsGenericDictionaryType()
+            {
+                return (typeof(IDictionary<,>).IsAssignableFrom(genericTypeDefinition))
+                    || (type.GetInterface(typeof(System.Collections.IDictionary).FullName ?? "") != null && genericArguments.Length == 2);
+            }
         }
 
         public static Type GetUnderlyingElementType(this Expression expression)

@@ -49,6 +49,58 @@ namespace AutoMapper.OData.EFCore.Tests.AirVinylModel
 
                 return _links;
             } 
-        }            
+        }
+
+        private Dictionary<string, VinylLinkModel> _moreLinks;
+        public Dictionary<string, VinylLinkModel> MoreLinks
+        {
+            get
+            {
+                if (_moreLinks is null)
+                {
+                    _moreLinks = new Dictionary<string, VinylLinkModel>()
+                    {
+                        { "buyingLink", new VinylLinkModel { Href = $"http://test/buy/{VinylRecordId}" } },
+                        { "reviewLink", new VinylLinkModel { Href = $"http://test/review/{VinylRecordId}" } }
+                    };
+                }
+
+                return _moreLinks;
+            }
+        }
+
+        private SortedDictionary<string, VinylLinkModel> _extraLinks;
+        public SortedDictionary<string, VinylLinkModel> ExtraLinks
+        {
+            get
+            {
+                if (_extraLinks is null)
+                {
+                    _extraLinks = new SortedDictionary<string, VinylLinkModel>()
+                    {
+                        { "buyingLink", new VinylLinkModel { Href = $"http://test/buy/{VinylRecordId}" } },
+                        { "reviewLink", new VinylLinkModel { Href = $"http://test/review/{VinylRecordId}" } }
+                    };
+                }
+
+                return _extraLinks;
+            }
+        }
+
+        private System.Collections.Concurrent.ConcurrentDictionary<string, VinylLinkModel> _additionalLinks;
+        public System.Collections.Concurrent.ConcurrentDictionary<string, VinylLinkModel> AdditionalLinks
+        {
+            get
+            {
+                if (_additionalLinks is null)
+                {
+                    _additionalLinks = new System.Collections.Concurrent.ConcurrentDictionary<string, VinylLinkModel>();
+                    _additionalLinks.TryAdd("buyingLink", new VinylLinkModel { Href = $"http://test/buy/{VinylRecordId}" });
+                    _additionalLinks.TryAdd("reviewLink", new VinylLinkModel { Href = $"http://test/review/{VinylRecordId}" });
+                }
+
+                return _additionalLinks;
+            }
+        }
     }
 }

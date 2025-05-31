@@ -66,6 +66,22 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         [Fact]
+        public async Task ExpandingComplexTypesSupportsAllGenericDictionaries()
+        {
+            string query = "/vinylrecordmodel";
+            Test(await GetAsync<VinylRecordModel, VinylRecord>(query));
+
+            void Test(ICollection<VinylRecordModel> collection)
+            {
+                Assert.True(collection.Count > 0);
+                Assert.Contains(collection, vinyl => vinyl.Links.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.MoreLinks.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.ExtraLinks.Count != 0);
+                Assert.Contains(collection, vinyl => vinyl.AdditionalLinks.Count != 0);
+            }
+        }
+
+        [Fact]
         public async Task GetRecordStoresExpandsComplexTypesByDefault()
         {
             string query = "/recordstoremodel";
