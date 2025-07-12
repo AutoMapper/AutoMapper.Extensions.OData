@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using WebAPI.OData.EFCore.Binders;
@@ -38,7 +39,7 @@ namespace WebAPI.OData.EFCore
                 {
                     cfg.AddMaps(typeof(Startup).Assembly);
                     cfg.AllowNullCollections = true;
-                })
+                }, new NullLoggerFactory())
             )
             .AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<AutoMapper.IConfigurationProvider>(), sp.GetService));
         }

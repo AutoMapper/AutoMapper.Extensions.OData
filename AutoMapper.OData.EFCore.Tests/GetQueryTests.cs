@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper.AspNet.OData;
+﻿using AutoMapper.AspNet.OData;
 using AutoMapper.OData.EFCore.Tests.Data;
 using AutoMapper.OData.EFCore.Tests.Model;
 using DAL.EFCore;
@@ -14,6 +9,12 @@ using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace AutoMapper.OData.EFCore.Tests
@@ -1921,7 +1922,7 @@ namespace AutoMapper.OData.EFCore.Tests
                     ),
                     ServiceLifetime.Transient
                 )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly)))
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly), new NullLoggerFactory()))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddRouting()
