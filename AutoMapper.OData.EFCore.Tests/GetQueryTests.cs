@@ -416,7 +416,85 @@ namespace AutoMapper.OData.EFCore.Tests
                 Assert.Equal("Two", collection.First().Name);
             }
         }
+        [Fact]
+        public async Task FilterByDynamicParameterValueAfterProjectionReturnExpectedResults()
+        {
+            // Arrange
+            string buildingParameterValue = Guid.NewGuid().ToString();
 
+            var parameters = new { buildingParameter = buildingParameterValue };
+
+            var projectionSettings = new ProjectionSettings
+            {
+                Parameters = parameters,
+                //if false test will fail
+                ApplyFilterAfterProjection = true
+            };
+
+            var odataSettings = new ODataSettings
+            {
+                HandleNullPropagation = HandleNullPropagationOption.False
+            };
+
+            string query = $"/corebuilding?$filter=Parameter eq '{buildingParameterValue}'";
+
+            // Act
+            var result = await GetAsync<CoreBuilding, TBuilding>(
+                query,
+                null,
+                new QuerySettings
+                {
+                    ProjectionSettings = projectionSettings,
+                    ODataSettings = odataSettings
+                });
+
+            // Assert
+            if (result.Count == 0)
+            {
+                throw new Xunit.Sdk.XunitException(
+                    "Expected at least one CoreBuilding with matching Parameter value, " +
+                    "but none were returned. This replicates the case where a runtime parameter " +
+                    "(like CurrentUserId) was not propagated during OData filter translation."
+                );
+            }
+
+            Assert.All(result, b => Assert.Equal(buildingParameterValue, b.Parameter));
+        }
+
+        [Fact]
+        public async Task FilterByDynamicParameterValueBeforeProjectionReturnZeroResults()
+        {
+            // Arrange
+            string buildingParameterValue = Guid.NewGuid().ToString();
+
+            var parameters = new { buildingParameter = buildingParameterValue };
+
+            var projectionSettings = new ProjectionSettings
+            {
+                Parameters = parameters,
+                ApplyFilterAfterProjection = false
+            };
+
+            var odataSettings = new ODataSettings
+            {
+                HandleNullPropagation = HandleNullPropagationOption.False
+            };
+
+            string query = $"/corebuilding?$filter=Parameter eq '{buildingParameterValue}'";
+
+            // Act
+            var result = await GetAsync<CoreBuilding, TBuilding>(
+                query,
+                null,
+                new QuerySettings
+                {
+                    ProjectionSettings = projectionSettings,
+                    ODataSettings = odataSettings
+                });
+
+            // Assert
+            Assert.Empty(result);
+        }
         [Fact]
         public async Task BuildingExpandBuilderTenantFilterEqAndOrderByWithParameter()
         {
