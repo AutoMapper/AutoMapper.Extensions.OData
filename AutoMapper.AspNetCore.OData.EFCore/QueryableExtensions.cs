@@ -154,33 +154,21 @@ namespace AutoMapper.AspNet.OData
             IEnumerable<Expression<Func<TModel, object>>> includeProperties = null,
             ProjectionSettings projectionSettings = null)
         {
-            var applyFilterAfterProjection = projectionSettings?.ApplyFilterAfterProjection ?? false;
-
             Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
 
-            if (applyFilterAfterProjection)
-            {
-                Expression<Func<TModel, bool>> f = mapper.MapExpression<Expression<Func<TModel, bool>>>(filter);
+            if (filter != null && !FilterAfterProjection())
+                query = query.Where(mapper.MapExpression<Expression<Func<TData, bool>>>(filter));
 
-                var projectedQuery = mappedQueryFunc != null
+            var projectedQuery = mappedQueryFunc != null
                     ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
                     : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes());
 
-                return filter != null ? projectedQuery.Where(f) : projectedQuery;
-            }
-            else
-            {
-                Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
+            if (filter != null && FilterAfterProjection())
+                projectedQuery = projectedQuery.Where(filter);
 
-                if (filter != null)
-                    query = query.Where(f);
+            return projectedQuery;
 
-                return mappedQueryFunc != null
-                    ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
-                    : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes());
-
-            }
-
+            bool FilterAfterProjection() => projectionSettings?.ApplyFilterAfterProjection ?? false;
             Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? new Expression<Func<TModel, object>>[] { };
         }
         
