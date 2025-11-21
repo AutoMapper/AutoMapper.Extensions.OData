@@ -154,19 +154,24 @@ namespace AutoMapper.AspNet.OData
             IEnumerable<Expression<Func<TModel, object>>> includeProperties = null,
             ProjectionSettings projectionSettings = null)
         {
-            Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
             Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
 
-            if (filter != null)
-                query = query.Where(f);
+            if (filter != null && !FilterAfterProjection())
+                query = query.Where(mapper.MapExpression<Expression<Func<TData, bool>>>(filter));
 
-            return mappedQueryFunc != null
+            var projectedQuery = mappedQueryFunc != null
                     ? mapper.ProjectTo(mappedQueryFunc(query), projectionSettings?.Parameters, GetIncludes())
                     : mapper.ProjectTo(query, projectionSettings?.Parameters, GetIncludes());
 
+            if (filter != null && FilterAfterProjection())
+                projectedQuery = projectedQuery.Where(filter);
+
+            return projectedQuery;
+
+            bool FilterAfterProjection() => projectionSettings?.ApplyFilterAfterProjection ?? false;
             Expression<Func<TModel, object>>[] GetIncludes() => includeProperties?.ToArray() ?? new Expression<Func<TModel, object>>[] { };
         }
-
+        
         private static void ApplyOptions<TModel, TData>(this IQueryable<TData> query, IMapper mapper, Expression<Func<TModel, bool>> filter, ODataQueryOptions<TModel> options, QuerySettings querySettings)
         {
             ApplyOptions(options, querySettings);

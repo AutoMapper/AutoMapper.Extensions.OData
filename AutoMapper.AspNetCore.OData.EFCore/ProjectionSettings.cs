@@ -10,5 +10,6 @@ namespace AutoMapper.AspNet.OData
     public class ProjectionSettings
     {
         public object Parameters { get; set; }
+        public bool ApplyFilterAfterProjection { get; set; }
     }
 }
