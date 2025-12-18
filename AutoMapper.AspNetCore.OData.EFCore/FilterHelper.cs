@@ -241,10 +241,13 @@ namespace AutoMapper.AspNet.OData
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
 
-            if (!(arguments[1] is ConstantNode typeNode))
-                throw new ArgumentException("Expected ConstantNode for type node.");
+            if (arguments[1] is ConstantNode typeNode)
+                return IsOf(GetCastType(typeNode));
 
-            return IsOf(GetCastType(typeNode));
+            if (arguments[1] is SingleResourceCastNode singleResourceCastNode)
+                return IsOf(GetCastType(singleResourceCastNode));
+
+            throw new ArgumentException("Expected ConstantNode or SingleResourceCastNode for type node.");
 
             IExpressionPart IsOf(Type conversionType)
                 => new IsOfOperator(GetFilterPart(sourceNode), conversionType);
@@ -255,14 +258,25 @@ namespace AutoMapper.AspNet.OData
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
 
-            if (!(arguments[1] is ConstantNode typeNode))
-                throw new ArgumentException("Expected ConstantNode for type node.");
+            if (arguments[1] is ConstantNode typeNode)
+            {
+                return Convert
+                (
+                    GetClrType(sourceNode.TypeReference),
+                    GetCastType(typeNode)
+                );
+            }
 
-            return Convert
-            (
-                GetClrType(sourceNode.TypeReference),
-                GetCastType(typeNode)
-            );
+            if (arguments[1] is SingleResourceCastNode singleResourceCastNode)
+            {
+                return Convert
+                (
+                    GetClrType(sourceNode.TypeReference),
+                    GetCastType(singleResourceCastNode)
+                );
+            }
+
+            throw new ArgumentException("Expected ConstantNode or SingleResourceCastNode for type node.");
 
             IExpressionPart Convert(Type operandType, Type conversionType)
             {
@@ -291,23 +305,36 @@ namespace AutoMapper.AspNet.OData
             if (!(arguments[0] is SingleValueNode sourceNode))
                 throw new ArgumentException("Expected SingleValueNode for source node.");
 
-            if (!(arguments[1] is ConstantNode typeNode))
-                throw new ArgumentException("Expected ConstantNode for type node.");
+            if (arguments[1] is ConstantNode typeNode)
+            {
+                return Convert
+                (
+                    GetClrType(sourceNode.TypeReference),
+                    GetCastType(typeNode),
+                    typeNode.TypeReference
+                );
+            }
 
-            return Convert
-            (
-                GetClrType(sourceNode.TypeReference),
-                GetCastType(typeNode)
-            );
+            if (arguments[1] is SingleResourceCastNode singleResourceCastNode)
+            {
+                return Convert
+                (
+                    GetClrType(sourceNode.TypeReference),
+                    GetCastType(singleResourceCastNode),
+                    singleResourceCastNode.TypeReference
+                );
+            }
 
-            IExpressionPart Convert(Type operandType, Type conversionType)
+            throw new ArgumentException("Expected ConstantNode or SingleResourceCastNode for type node.");
+
+            IExpressionPart Convert(Type operandType, Type conversionType, IEdmTypeReference edmTypeReference)
             {
                 if (OperandIsNullConstant(sourceNode) || operandType == conversionType)
                     return GetFilterPart(sourceNode);
 
                 if (ShouldConvertTypes(operandType, conversionType, sourceNode))
                 {
-                    if ((!typeNode.TypeReference.IsPrimitive() && !typeNode.TypeReference.IsEnum())
+                    if ((!edmTypeReference.IsPrimitive() && !edmTypeReference.IsEnum())
                         || (!operandType.IsLiteralType() && !operandType.ToNullableUnderlyingType().IsEnum))
                         return new ConstantOperator(null);
 
@@ -344,6 +371,9 @@ namespace AutoMapper.AspNet.OData
 
         private Type GetCastType(ConstantNode constantNode)
             => TypeExtensions.GetClrType((string)constantNode.Value, false, typesCache);
+
+        private Type GetCastType(SingleResourceCastNode singleResourceCastNode)
+            => TypeExtensions.GetClrType(singleResourceCastNode.TypeReference, typesCache);
 
         private IExpressionPart GetCustomMehodFilterPart(string functionName, SingleValueNode[] arguments)
         {

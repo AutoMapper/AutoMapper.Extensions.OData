@@ -2359,10 +2359,9 @@ namespace ExpressionBuilder.Tests
 
         [Theory]
         [InlineData("cast(null,ExpressionBuilder.Tests.Data.Address) ne null",
-            "Encountered invalid type cast. " +
-            "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.DataTypes'.")]
+            "Encountered invalid type cast. 'ExpressionBuilder.Tests.Data.Address' is not assignable from '<null>'.")]
         [InlineData("cast(null,ExpressionBuilder.Tests.Data.DataTypes) ne null",
-            "Cast or IsOf Function must have a type in its arguments.")]
+            "Encountered invalid type cast. 'ExpressionBuilder.Tests.Data.DataTypes' is not assignable from '<null>'.")]
         public void Cast_NonPrimitiveTarget_ThrowsODataException(string filterString, string expectErrorMessage)
         {
             //assert
@@ -2502,22 +2501,22 @@ namespace ExpressionBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "cast(ExpressionBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast(null, ExpressionBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast('', ExpressionBuilder.Tests.Data.Address) eq null" },
-                    new [] { "cast(SupplierAddress, ExpressionBuilder.Tests.Data.Address) eq null" },
+                    new [] { "cast(ExpressionBuilder.Tests.Data.Address) eq null", "ExpressionBuilder.Tests.Data.Address", "ExpressionBuilder.Tests.Data.Product" },
+                    new [] { "cast(null, ExpressionBuilder.Tests.Data.Address) eq null", "ExpressionBuilder.Tests.Data.Address", "<null>" },
+                    new [] { "cast('', ExpressionBuilder.Tests.Data.Address) eq null", "ExpressionBuilder.Tests.Data.Address", "Edm.String" },
+                    new [] { "cast(null, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null", "ExpressionBuilder.Tests.Data.DerivedCategory", "<null>" },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(CastToUnquotedComplexType))]
-        public void CastToUnquotedComplexType_ThrowsODataException(string filterString)
+        public void CastToUnquotedComplexType_ThrowsODataException(string filterString, string propertyFullQualifiedName, string assignableFrom)
         {
             //arrange
             var expectedErrorMessage =
                 "Encountered invalid type cast. " +
-                "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.Product'.";
+                $"'{propertyFullQualifiedName}' is not assignable from '{assignableFrom}'.";
 
             //assert
             var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
@@ -2560,41 +2559,27 @@ namespace ExpressionBuilder.Tests
             Assert.True(result);
         }
 
-        public static List<object[]> CastToUnquotedEntityType
+        [Theory]
+        [InlineData("cast(SupplierAddress, ExpressionBuilder.Tests.Data.Address) eq null")]
+        [InlineData("cast(ExpressionBuilder.Tests.Data.DerivedProduct)/DerivedProductName eq null")]
+        [InlineData("cast(Category, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null")]
+        public void CastToRelatedUnquotedEntityType_DoesNotThrowODataException(string filterString)
         {
-            get
-            {
-                return new List<object[]>
-                {
-                    new [] {
-                        "cast(ExpressionBuilder.Tests.Data.DerivedProduct)/DerivedProductName eq null",
-                        "Cast or IsOf Function must have a type in its arguments."
-                    },
-                    new [] {
-                        "cast(null, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                    new [] {
-                        "cast(Category, ExpressionBuilder.Tests.Data.DerivedCategory)/DerivedCategoryName eq null",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                };
-            }
+            // Arrange & Act & Assert
+            var exception = Record.Exception(() => GetFilter<Product>(filterString));
+            Assert.Null(exception);
         }
 
         [Theory]
-        [MemberData(nameof(CastToUnquotedEntityType))]
-        public void CastToUnquotedEntityType_ThrowsODataException(string filterString, string expectedMessage)
+        [InlineData("isof(SupplierAddress,ExpressionBuilder.Tests.Data.Address)")]
+        [InlineData("isof(SupplierAddress, ExpressionBuilder.Tests.Data.Address)")]
+        public void IsOfUnquotedTypeParameter_RelatedToComplexTypeProperty_DoNotThrowODataException(string filterString)
         {
-            //assert
-            var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
-            Assert.Equal
-            (
-                expectedMessage,
-                exception.Message
-            );
+            // Arrange
+            var exception = Record.Exception(() => GetFilter<Product>(filterString));
+
+            // Act & Assert
+            Assert.Null(exception);
         }
 
         [Theory]
@@ -2807,23 +2792,21 @@ namespace ExpressionBuilder.Tests
             {
                 return new List<object[]>
                 {
-                    new [] { "isof(ExpressionBuilder.Tests.Data.Address)" },
-                    new [] { "isof(null,ExpressionBuilder.Tests.Data.Address)" },
-                    new [] { "isof(null, ExpressionBuilder.Tests.Data.Address)" },
-                    new [] { "isof(SupplierAddress,ExpressionBuilder.Tests.Data.Address)" },
-                    new [] { "isof(SupplierAddress, ExpressionBuilder.Tests.Data.Address)" },
+                    new [] { "isof(ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "ExpressionBuilder.Tests.Data.Product" },
+                    new [] { "isof(null,ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "<null>" },
+                    new [] { "isof(null, ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "<null>" },
+                    new [] { "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)", "ExpressionBuilder.Tests.Data.DerivedCategory", "<null>" },
+                    new [] { "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)", "ExpressionBuilder.Tests.Data.DerivedCategory", "<null>" },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(IsOfUnquotedComplexType))]
-        public void IsOfUnquotedComplexType_ThrowsODataException(string filterString)
+        public void IsOfUnquotedComplexType_ThrowsODataException(string filterString, string source, string assignableFrom)
         {
             //arrange
-            var expectedMessage =
-                "Encountered invalid type cast. " +
-                "'ExpressionBuilder.Tests.Data.Address' is not assignable from 'ExpressionBuilder.Tests.Data.Product'.";
+            var expectedMessage = $"Encountered invalid type cast. '{source}' is not assignable from '{assignableFrom}'.";
 
             //assert
             var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
@@ -2832,53 +2815,22 @@ namespace ExpressionBuilder.Tests
                 expectedMessage,
                 exception.Message
             );
-        }
-
-        public static List<object[]> IsOfUnquotedEntityType
-        {
-            get
-            {
-                return new List<object[]>
-                {
-                    new [] {
-                        "isof(ExpressionBuilder.Tests.Data.DerivedProduct)",
-                        "Cast or IsOf Function must have a type in its arguments."
-                    },
-                    new [] {
-                        "isof(null,ExpressionBuilder.Tests.Data.DerivedCategory)",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                    new [] {
-                        "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                    new [] {
-                        "isof(Category,ExpressionBuilder.Tests.Data.DerivedCategory)",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                    new [] {
-                        "isof(Category, ExpressionBuilder.Tests.Data.DerivedCategory)",
-                        "Encountered invalid type cast. " +
-                        "'ExpressionBuilder.Tests.Data.DerivedCategory' is not assignable from 'ExpressionBuilder.Tests.Data.Product'."
-                    },
-                };
-            }
         }
 
         [Theory]
-        [MemberData(nameof(IsOfUnquotedEntityType))]
-        public void IsOfUnquotedEntityType_ThrowsODataException(string filterString, string expectedMessage)
+        [InlineData("isof(ExpressionBuilder.Tests.Data.DerivedProduct)")]
+        [InlineData("isof('ExpressionBuilder.Tests.Data.DerivedProduct')")]
+        [InlineData("isof(Category,ExpressionBuilder.Tests.Data.DerivedCategory)")]
+        [InlineData("isof(Category,  ExpressionBuilder.Tests.Data.DerivedCategory)")]
+        [InlineData("isof(Category,  'ExpressionBuilder.Tests.Data.DerivedCategory')")]
+        [InlineData("isof(Category, ExpressionBuilder.Tests.Data.DerivedCategory)")]
+        [InlineData("isof(Category, 'ExpressionBuilder.Tests.Data.DerivedCategory')")]
+        public void IsOfUnquotedTypeParameter_RelatedToEntityTypeProperty_DoNotThrowODataException(string filterString)
         {
-            //assert
-            var exception = Assert.Throws<ODataException>(() => GetFilter<Product>(filterString));
-            Assert.Equal
-            (
-                expectedMessage,
-                exception.Message
-            );
+            // Arrange & Act & Assert
+            var exception = Record.Exception(() => GetFilter<Product>(filterString));
+
+            Assert.Null(exception);
         }
 
         public static List<object[]> IsOfQuotedNonPrimitiveType
