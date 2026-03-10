@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="10.1.0" />
+    <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="[10.1.0,11.0.0)" />
     <PackageReference Include="LogicBuilder.Expressions.Utils" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
     <PackageReference Include="MinVer" Version="6.0.0">
