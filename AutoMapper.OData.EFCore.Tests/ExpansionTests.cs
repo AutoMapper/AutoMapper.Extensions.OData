@@ -218,7 +218,7 @@ namespace AutoMapper.OData.EFCore.Tests
                     ),
                     ServiceLifetime.Transient
                 )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly), new NullLoggerFactory()))
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetQueryTests).Assembly), new NullLoggerFactory()))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddRouting()

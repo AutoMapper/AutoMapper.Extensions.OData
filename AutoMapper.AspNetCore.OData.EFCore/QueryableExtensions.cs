@@ -13,6 +13,7 @@ namespace AutoMapper.AspNet.OData
 {
     public static class QueryableExtensions
     {
+        [Obsolete("Use \"Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" or \"IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" instead.")]
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
@@ -31,6 +32,7 @@ namespace AutoMapper.AspNet.OData
             );
         }
 
+        [Obsolete("Use \"Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" or \"IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" instead.")]
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {            
@@ -72,6 +74,7 @@ namespace AutoMapper.AspNet.OData
             return query.GetQueryable(mapper, options, querySettings, filter);
         }
 
+        [Obsolete("This method was meant for internal use. The equivalent GetQueryable methods are private.")]
         public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
@@ -81,7 +84,7 @@ namespace AutoMapper.AspNet.OData
                 query.GetDataQuery(mapper, filter, queryFunc, includeProperties).ToList()
             ).ToList();
 
-
+        [Obsolete("This method was meant for internal use. The equivalent GetQueryable methods are private.")]
         public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
             Expression<Func<TModel, bool>> filter = null,
             Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,

@@ -1,15 +1,22 @@
 ﻿using AutoMapper.AspNet.OData;
+using AutoMapper.OData.EFCore.Tests.Binders;
 using AutoMapper.OData.EFCore.Tests.Data;
 using AutoMapper.OData.EFCore.Tests.Model;
 using DAL.EFCore;
 using Domain.OData;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Query.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -2000,7 +2007,7 @@ namespace AutoMapper.OData.EFCore.Tests
                     ),
                     ServiceLifetime.Transient
                 )
-                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetTests).Assembly), new NullLoggerFactory()))
+                .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg => cfg.AddMaps(typeof(GetQueryTests).Assembly), new NullLoggerFactory()))
                 .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService))
                 .AddTransient<IApplicationBuilder>(sp => new ApplicationBuilder(sp))
                 .AddRouting()
@@ -2015,5 +2022,83 @@ namespace AutoMapper.OData.EFCore.Tests
         }
 
         internal IServiceProvider ServiceProvider;
+    }
+
+    public static class ODataHelpers
+    {
+        public static ODataQueryOptions<T> GetODataQueryOptions<T>(string queryString, IServiceProvider serviceProvider, string customNamespace = null, bool enableLowerCamelCase = false) where T : class
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            if (customNamespace != null)
+                builder.Namespace = customNamespace;
+
+            if (enableLowerCamelCase)
+                builder.EnableLowerCamelCase();
+
+            builder.EntitySet<T>(typeof(T).Name);
+            IEdmModel model = builder.GetEdmModel();
+            IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(T).Name);
+            ODataPath path = new ODataPath(new EntitySetSegment(entitySet));
+
+            var oDataQueryOptions = new ODataQueryOptions<T>
+            (
+                new ODataQueryContext(model, typeof(T), path),
+                BuildRequest(serviceProvider, model, new Uri(BASEADDRESS + queryString))
+            );
+
+            return oDataQueryOptions;
+        }
+
+        public static ODataQueryOptions<Model.CategoryModel> GetODataQueryOptionsWithDuplicateEntityName(string queryString, IServiceProvider serviceProvider, string customNamespace = null)
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            if (customNamespace != null)
+                builder.Namespace = customNamespace;
+
+            builder.EnableLowerCamelCase();
+
+            builder.EntitySet<X.CategoryModel>(typeof(X.CategoryModel).Name + "X");
+            builder.EntitySet<Model.CategoryModel>(nameof(Model.CategoryModel));
+            IEdmModel model = builder.GetEdmModel();
+            IEdmEntitySet entitySet = model.EntityContainer.FindEntitySet(typeof(Model.CategoryModel).Name);
+            ODataPath path = new ODataPath(new EntitySetSegment(entitySet));
+
+            var oDataQueryOptions = new ODataQueryOptions<Model.CategoryModel>
+            (
+                new ODataQueryContext(model, typeof(Model.CategoryModel), path),
+                BuildRequest(serviceProvider, model, new Uri(BASEADDRESS + queryString))
+            );
+
+            return oDataQueryOptions;
+        }
+
+        static HttpRequest BuildRequest(IServiceProvider serviceProvider, IEdmModel model, Uri uri)
+        {
+            var request = new DefaultHttpContext()
+            {
+                RequestServices = serviceProvider
+            }.Request;
+
+            var oDataOptions = new ODataOptions().AddRouteComponents("key", model,
+                x => x.AddSingleton<ISearchBinder, OpsTenantSearchBinder>());
+            var (_, routeProvider) = oDataOptions.RouteComponents["key"];
+
+            request.ODataFeature().Services = routeProvider;
+
+            request.Method = "GET";
+            request.Host = new HostString(uri.Host, uri.Port);
+            request.Path = uri.LocalPath;
+            request.QueryString = new QueryString(uri.Query);
+
+            return request;
+        }
+
+        static readonly string BASEADDRESS = "http://localhost:16324";
+    }
+
+    internal class TestMvcCoreBuilder : IMvcCoreBuilder
+    {
+        public ApplicationPartManager PartManager { get; set; }
+        public IServiceCollection Services { get; set; }
     }
 }
