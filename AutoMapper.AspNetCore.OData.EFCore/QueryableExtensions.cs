@@ -13,44 +13,6 @@ namespace AutoMapper.AspNet.OData
 {
     public static class QueryableExtensions
     {
-        [Obsolete("Use \"Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" or \"IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" instead.")]
-        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
-            where TModel : class
-        {
-            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
-                querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
-                querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
-
-            query.ApplyOptions(mapper, filter, options, querySettings);
-            return query.Get
-            (
-                mapper,
-                filter,
-                options.GetQueryableExpression(querySettings?.ODataSettings),
-                options.SelectExpand.GetIncludes().BuildIncludesExpressionCollection<TModel>()?.ToList()
-            );
-        }
-
-        [Obsolete("Use \"Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" or \"IQueryable<TModel> GetQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)\" instead.")]
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
-            where TModel : class
-        {            
-            Expression<Func<TModel, bool>> filter = options.ToFilterExpression<TModel>(
-                querySettings?.ODataSettings?.HandleNullPropagation ?? HandleNullPropagationOption.False,
-                querySettings?.ODataSettings?.TimeZone,
-                querySettings?.ODataSettings?.EnableConstantParameterization ?? true);
-            await query.ApplyOptionsAsync(mapper, filter, options, querySettings);
-            return await query.GetAsync
-            (
-                mapper,
-                filter,
-                options.GetQueryableExpression(querySettings?.ODataSettings),
-                options.SelectExpand.GetIncludes().BuildIncludesExpressionCollection<TModel>()?.ToList(),
-                querySettings?.AsyncSettings
-            );
-        }
-
         public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, QuerySettings querySettings = null)
             where TModel : class
         {
@@ -74,55 +36,11 @@ namespace AutoMapper.AspNet.OData
             return query.GetQueryable(mapper, options, querySettings, filter);
         }
 
-        [Obsolete("This method was meant for internal use. The equivalent GetQueryable methods are private.")]
-        public static ICollection<TModel> Get<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
-            Expression<Func<TModel, bool>> filter = null,
-            Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
-            => mapper.Map<IEnumerable<TData>, IEnumerable<TModel>>
-            (
-                query.GetDataQuery(mapper, filter, queryFunc, includeProperties).ToList()
-            ).ToList();
-
-        [Obsolete("This method was meant for internal use. The equivalent GetQueryable methods are private.")]
-        public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
-            Expression<Func<TModel, bool>> filter = null,
-            Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null,
-            AsyncSettings asyncSettings = null)
-            => mapper.Map<IEnumerable<TData>, IEnumerable<TModel>>
-            (
-                await query
-                    .GetDataQuery(mapper, filter, queryFunc, includeProperties)
-                    .ToListAsync
-                    (
-                        asyncSettings?.CancellationToken ?? default
-                    )
-            ).ToList();
-
         public static async Task ApplyOptionsAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, Expression<Func<TModel, bool>> filter, ODataQueryOptions<TModel> options, QuerySettings querySettings)
         {
             ApplyOptions(options, querySettings);
             if (options.Count?.Value == true)
                 options.AddCountOptionsResult(await query.QueryLongCountAsync(mapper, filter, querySettings?.AsyncSettings?.CancellationToken ?? default));
-        }
-
-        private static IQueryable<TData> GetDataQuery<TModel, TData>(this IQueryable<TData> query, IMapper mapper,
-            Expression<Func<TModel, bool>> filter = null,
-            Expression<Func<IQueryable<TModel>, IQueryable<TModel>>> queryFunc = null,
-            ICollection<Expression<Func<IQueryable<TModel>, IIncludableQueryable<TModel, object>>>> includeProperties = null)
-        {
-            Expression<Func<TData, bool>> f = mapper.MapExpression<Expression<Func<TData, bool>>>(filter);
-            Func<IQueryable<TData>, IQueryable<TData>> mappedQueryFunc = mapper.MapExpression<Expression<Func<IQueryable<TData>, IQueryable<TData>>>>(queryFunc)?.Compile();
-            ICollection<Expression<Func<IQueryable<TData>, IIncludableQueryable<TData, object>>>> includes = mapper.MapIncludesList<Expression<Func<IQueryable<TData>, IIncludableQueryable<TData, object>>>>(includeProperties);
-
-            if (filter != null)
-                query = query.Where(f);
-
-            if (includes != null)
-                query = includes.Select(i => i.Compile()).Aggregate(query, (q, next) => q = next(q));
-
-            return mappedQueryFunc != null ? mappedQueryFunc(query) : query;
         }
 
         private static IQueryable<TModel> GetQueryable<TModel, TData>(this IQueryable<TData> query,

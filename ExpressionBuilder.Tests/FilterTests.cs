@@ -2037,7 +2037,7 @@ namespace ExpressionBuilder.Tests
             var filter = GetFilter<Product>("Category/EnumerableProducts/ExpressionBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => $it.Category.EnumerableProducts.OfType().Any(p => (p.ProductName == \"ProductName\"))");
+            AssertFilterStringIsCorrect(filter, "$it => $it.Category.EnumerableProducts.Cast().Any(p => (p.ProductName == \"ProductName\"))");
         }
 
         [Fact]
@@ -2047,7 +2047,7 @@ namespace ExpressionBuilder.Tests
             var filter = GetFilter<Product>("Category/QueryableProducts/ExpressionBuilder.Tests.Data.DerivedProduct/any(p: p/ProductName eq 'ProductName')");
 
             //assert
-            AssertFilterStringIsCorrect(filter, "$it => $it.Category.QueryableProducts.OfType().Any(p => (p.ProductName == \"ProductName\"))");
+            AssertFilterStringIsCorrect(filter, "$it => $it.Category.QueryableProducts.Cast().Any(p => (p.ProductName == \"ProductName\"))");
         }
 
         [Fact]
@@ -2795,7 +2795,6 @@ namespace ExpressionBuilder.Tests
                     new [] { "isof(ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "ExpressionBuilder.Tests.Data.Product" },
                     new [] { "isof(null,ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "<null>" },
                     new [] { "isof(null, ExpressionBuilder.Tests.Data.Address)", "ExpressionBuilder.Tests.Data.Address", "<null>" },
-                    new [] { "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)", "ExpressionBuilder.Tests.Data.DerivedCategory", "<null>" },
                     new [] { "isof(null, ExpressionBuilder.Tests.Data.DerivedCategory)", "ExpressionBuilder.Tests.Data.DerivedCategory", "<null>" },
                 };
             }

@@ -40,9 +40,3 @@ jobs:
         PROJECT_NAME: AutoMapper.AspNetCore.OData.EFCore
       run: ./Pack_Push.ps1
       shell: pwsh
-
-    - name: Pack and push AutoMapper.AspNetCore.OData.EF6
-      env:
-        PROJECT_NAME: AutoMapper.AspNetCore.OData.EF6
-      run: ./Pack_Push.ps1
-      shell: pwsh

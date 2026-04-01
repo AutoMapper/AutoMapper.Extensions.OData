@@ -10,7 +10,7 @@ namespace MigrationTool
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=.\SQL2016;Database=YourDB;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=WebApiEFCoreDatabase;ConnectRetryCount=0");
         }
 
         public DbSet<TMandator> MandatorSet { get; set; }
