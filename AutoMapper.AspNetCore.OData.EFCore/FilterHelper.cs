@@ -166,9 +166,6 @@ namespace AutoMapper.AspNet.OData
 
         private IExpressionPart GetAllNodeFilterPart(AllNode allNode)
         {
-            if (allNode.Body == null || IsTrueConstantExpression(allNode.Body))
-                return new AllOperator(GetFilterPart(allNode.Source));
-
             //Creating filter part for method call expression with a filter
             //e.g. $it.Property.ChildCollection.Any(c => c.Active);
             return new AllOperator

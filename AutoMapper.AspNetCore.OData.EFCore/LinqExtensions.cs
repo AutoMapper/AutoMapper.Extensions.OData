@@ -425,12 +425,6 @@ namespace AutoMapper.AspNet.OData
             return Expression.Lambda(delegateType, body, param);//Resulting lambda expression for the selector.
         }
 
-        [Obsolete("\"Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, ODataQueryContext context, string selectorParameterName = \"a\")\"")]
-        public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, string selectorParameterName = "a")
-        {
-            return expression.GetOrderByCountCall(countNode, methodName, null, selectorParameterName);
-        }
-
         public static Expression GetOrderByCountCall(this Expression expression, CountNode countNode, string methodName, ODataQueryContext context, string selectorParameterName = "a")
         {
             Type sourceType = LogicBuilder.Expressions.Utils.TypeExtensions.GetUnderlyingElementType(expression);
@@ -623,10 +617,6 @@ namespace AutoMapper.AspNet.OData
                     => memberType.IsList() && (next.OrderByOption != null || next.SkipOption.HasValue || next.TopOption.HasValue);
             });
         }
-
-        [Obsolete("\"LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)\"")]
-        public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type)
-            => filterClause.GetFilterExpression(type, null);
 
         public static LambdaExpression GetFilterExpression(this FilterClause filterClause, Type type, ODataQueryContext context)
         {

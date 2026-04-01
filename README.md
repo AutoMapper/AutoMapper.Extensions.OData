@@ -3,9 +3,7 @@ Creates LINQ expressions from ODataQueryOptions and executes the query.
 
 ## NuGet Package Downloads
 
-[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNetCore.OData.EFCore?label=AutoMapper.AspNetCore.OData.EFCore)](https://www.nuget.org/packages/AutoMapper.AspNetCore.OData.EFCore/)  
-[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNetCore.OData.EF6?label=AutoMapper.AspNetCore.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNetCore.OData.EF6/)  
-[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNet.OData.EF6?label=AutoMapper.AspNet.OData.EF6)](https://www.nuget.org/packages/AutoMapper.AspNet.OData.EF6/)  
+[![NuGet](http://img.shields.io/nuget/v/AutoMapper.AspNetCore.OData.EFCore?label=AutoMapper.AspNetCore.OData.EFCore)](https://www.nuget.org/packages/AutoMapper.AspNetCore.OData.EFCore/) 
 
 ## Usage
 To use:
@@ -31,7 +29,6 @@ To use:
 ```
 
 ```c#
-public static async Task<ICollection<TModel>> GetAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default);
 public static async Task<IQueryable<TModel>> GetQueryAsync<TModel, TData>(this IQueryable<TData> query, IMapper mapper, ODataQueryOptions<TModel> options, HandleNullPropagationOption handleNullPropagation = HandleNullPropagationOption.Default);
 ```
 
