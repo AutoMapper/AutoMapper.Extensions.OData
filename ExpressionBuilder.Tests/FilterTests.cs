@@ -1327,9 +1327,9 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
-        [InlineData("fractionalseconds(DiscontinuedDate) eq 0.2", "$it => ((Convert($it.DiscontinuedDate.Value.Millisecond) / 1000) == 0.2)")]
-        [InlineData("fractionalseconds(NullableTimeOfDayProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOfDayProperty.Value.Milliseconds) / 1000) == 0.2)")]
-        [InlineData("fractionalseconds(NullableTimeOnlyProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOnlyProperty.Value.Millisecond) / 1000) == 0.2)")]
+        [InlineData("fractionalseconds(DiscontinuedDate) eq 0.2", "$it => ((Convert($it.DiscontinuedDate.Value.Millisecond) / 1000) == 0.20000000298023223876953125)")]//OData FilterCluase constant returns higher precision in .NET 11
+        [InlineData("fractionalseconds(NullableTimeOfDayProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOfDayProperty.Value.Milliseconds) / 1000) == 0.20000000298023223876953125)")]
+        [InlineData("fractionalseconds(NullableTimeOnlyProperty) eq 0.2", "$it => ((Convert($it.NullableTimeOnlyProperty.Value.Millisecond) / 1000) == 0.20000000298023223876953125)")]
         public void FractionalsecondsFunction_Nullable(string filterString, string expression)
         {
             //act
@@ -1340,9 +1340,9 @@ namespace ExpressionBuilder.Tests
         }
 
         [Theory]
-        [InlineData("fractionalseconds(NonNullableDiscontinuedDate) eq 0.2", "$it => ((Convert($it.NonNullableDiscontinuedDate.Millisecond) / 1000) == 0.2)")]
-        [InlineData("fractionalseconds(TimeOfDayProperty) eq 0.2", "$it => ((Convert($it.TimeOfDayProperty.Milliseconds) / 1000) == 0.2)")]
-        [InlineData("fractionalseconds(TimeOnlyProperty) eq 0.2", "$it => ((Convert($it.TimeOnlyProperty.Millisecond) / 1000) == 0.2)")]
+        [InlineData("fractionalseconds(NonNullableDiscontinuedDate) eq 0.2", "$it => ((Convert($it.NonNullableDiscontinuedDate.Millisecond) / 1000) == 0.20000000298023223876953125)")]//OData FilterCluase constant returns higher precision in .NET 11
+        [InlineData("fractionalseconds(TimeOfDayProperty) eq 0.2", "$it => ((Convert($it.TimeOfDayProperty.Milliseconds) / 1000) == 0.20000000298023223876953125)")]
+        [InlineData("fractionalseconds(TimeOnlyProperty) eq 0.2", "$it => ((Convert($it.TimeOnlyProperty.Millisecond) / 1000) == 0.20000000298023223876953125)")]
         public void FractionalsecondsFunction_NonNullable(string filterString, string expression)
         {
             //act
